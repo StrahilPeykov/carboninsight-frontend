@@ -26,7 +26,7 @@ export default function SelfAssessmentPage() {
             <input
               type="text"
               id="company-name"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
+              className="p-1 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
               placeholder="Your company name"
             />
           </div>
@@ -37,7 +37,7 @@ export default function SelfAssessmentPage() {
             </label>
             <select
               id="industry"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
+              className="p-1 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
             >
               <option>Manufacturing - Electronics</option>
               <option>Manufacturing - Automotive</option>
@@ -53,7 +53,7 @@ export default function SelfAssessmentPage() {
             </label>
             <select
               id="employees"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
+              className="p-1 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
             >
               <option>1-10</option>
               <option>11-50</option>
@@ -69,7 +69,7 @@ export default function SelfAssessmentPage() {
             <input
               type="text"
               id="location"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
+              className="p-1 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
               placeholder="City, Country"
             />
           </div>

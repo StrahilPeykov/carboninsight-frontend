@@ -50,7 +50,7 @@ export default function SupplyChainPage() {
                   <input
                     type="text"
                     id="supplier-name"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
+                    className="p-1 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
                     placeholder="Supplier company name"
                   />
                 </div>
@@ -62,7 +62,7 @@ export default function SupplyChainPage() {
                   <input
                     type="text"
                     id="supplier-component"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
+                    className="p-1 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
                     placeholder="e.g. Electronic components, raw materials"
                   />
                 </div>
@@ -87,7 +87,7 @@ export default function SupplyChainPage() {
                   </label>
                   <select
                     id="supplier-format"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
+                    className="p-1 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
                   >
                     <option>Digital Product Passport (DPP in AASX format)</option>
                     <option>Other digital format</option>

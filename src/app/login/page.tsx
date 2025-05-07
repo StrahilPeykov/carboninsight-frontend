@@ -1,42 +1,43 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
+import { useAuth } from "../context/AuthContext";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setError(null);
 
     try {
-      const response = await fetch('http://localhost:8000/api/login/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Login failed');
-      }
-
-      const data = await response.json();
-      localStorage.setItem('accessToken', data.access);
-      localStorage.setItem('refreshToken', data.refresh);
+      // Use the login method from AuthContext
+      await login(formData.username, formData.password);
       
-      router.push('/self-assessment');
+      // Redirect to self-assessment page on success
+      router.push("/self-assessment");
     } catch (err) {
-      setError('Login failed. Please check your credentials.');
+      setError("Login failed. Please check your credentials.");
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -63,35 +64,57 @@ export default function LoginPage() {
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-              Username
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Email
             </label>
             <input
-              type="text"
               id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              name="username"
+              type="email"
+              autoComplete="email"
               required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
+              value={formData.username}
+              onChange={handleChange}
+              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
+              placeholder="your@email.com"
             />
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               Password
             </label>
             <input
-              type="password"
               id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              name="password"
+              type="password"
+              autoComplete="current-password"
               required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
+              value={formData.password}
+              onChange={handleChange}
+              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
             />
           </div>
 
-          <Button type="submit" disabled={isLoading} className="w-full">
-            {isLoading ? 'Logging in...' : 'Login'}
+          <div className="flex items-center">
+            <div className="text-sm">
+              <Link
+                href="/register"
+                className="font-medium text-red hover:text-red-700 dark:text-red-400"
+              >
+                Need an account? Register
+              </Link>
+            </div>
+          </div>
+
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? "Logging in..." : "Login"}
           </Button>
         </form>
       </Card>

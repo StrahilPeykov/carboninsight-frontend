@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
+import { AuthProvider } from "./context/AuthContext";
 import "./globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-  display: "swap", // Ensures fonts are swapped without layout shift
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
@@ -30,13 +31,15 @@ export default function RootLayout({
     <html lang="en">
     <body
       className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
-      suppressHydrationWarning // Suppresses hydration warnings
+      suppressHydrationWarning 
     >
-      <Navbar />
-      <main className="flex-grow">
-        {children}
-      </main>
-      <Footer />
+      <AuthProvider>
+        <Navbar />
+        <main className="flex-grow">
+          {children}
+        </main>
+        <Footer />
+      </AuthProvider>
     </body>
     </html>
   );

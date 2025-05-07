@@ -2,10 +2,10 @@
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 
-export default function RegisterPage() {
-    return (
-        <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+export default function ManageUserPage() {
+  return (
+    <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        </div>
-    );
+    </div>
+  );
 }

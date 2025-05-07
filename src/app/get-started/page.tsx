@@ -47,7 +47,7 @@ export default function GetStartedPage() {
                     <h2 className="text-xl font-semibold mb-6">Choose your method</h2>
                     <div className="space-y-6">
                         <div className="flex items-center space-x-4">
-                            <button className={`px-4 py-2 border-2 ${showUploadCard ? 'border-green-500 text-green-600' : 'border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300'} rounded-md font-medium hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500`}
+                            <button className={`px-4 py-2 border-2 ${showUploadCard ? 'border-red text-red' : 'border-gray-300 text-gray-700 dark:border-gray-600 dark:text-gray-300'} rounded-md font-medium hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500`}
                                 onClick={() => setShowUploadCard(!showUploadCard)}>
                                 File Upload
                             </button>

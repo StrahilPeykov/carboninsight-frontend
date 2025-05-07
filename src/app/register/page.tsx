@@ -29,11 +29,7 @@ export default function RegisterPage() {
   };
 
   const validatePassword = () => {
-    // Password strength check (minimum 8 characters with at least 1 number and 1 letter)
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
-    if (!passwordRegex.test(formData.password)) {
-      return "Password must be at least 8 characters long and contain at least one letter and one number.";
-    }
+    // Do basic validation here, most of it is handled by the backend
 
     // Password match check
     if (formData.password !== formData.confirm_password) {

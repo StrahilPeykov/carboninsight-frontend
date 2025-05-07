@@ -81,7 +81,7 @@ export default function AccountPage() {
       }
 
       const userId = user?.id;
-      const response = await fetch(`${API_URL}/users/${userId}/update_profile/`, {
+      const response = await fetch(`${API_URL}/user_profile/`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -125,15 +125,16 @@ export default function AccountPage() {
       }
 
       const userId = user?.id;
-      const response = await fetch(`${API_URL}/users/${userId}/change_password/`, {
+      const response = await fetch(`${API_URL}/change_password/`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          current_password: passwordData.current_password,
+          old_password: passwordData.current_password,
           new_password: passwordData.new_password,
+          new_password_confirm: passwordData.confirm_password,
         }),
       });
 
@@ -184,7 +185,7 @@ export default function AccountPage() {
       }
 
       const userId = user?.id;
-      const response = await fetch(`${API_URL}/users/${userId}/`, {
+      const response = await fetch(`${API_URL}/user_profile/`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

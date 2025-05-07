@@ -33,7 +33,7 @@ export default function LoginPage() {
     try {
       // Use the login method from AuthContext
       await login(formData.username, formData.password);
-      
+
       // Redirect to self-assessment page on success
       router.push("/self-assessment");
     } catch (err) {
@@ -56,12 +56,8 @@ export default function LoginPage() {
       </div>
 
       <Card className="max-w-md mx-auto">
-        {error && (
-          <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md">
-            {error}
-          </div>
-        )}
-        
+        {error && <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md">{error}</div>}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label
@@ -78,7 +74,7 @@ export default function LoginPage() {
               required
               value={formData.username}
               onChange={handleChange}
-              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
+              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600"
               placeholder="your@email.com"
             />
           </div>
@@ -98,7 +94,7 @@ export default function LoginPage() {
               required
               value={formData.password}
               onChange={handleChange}
-              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
+              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600"
             />
           </div>
 

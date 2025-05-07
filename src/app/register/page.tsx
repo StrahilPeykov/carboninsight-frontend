@@ -109,7 +109,7 @@ export default function RegisterPage() {
                 required
                 value={formData.first_name}
                 onChange={handleChange}
-                className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
+                className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600"
               />
             </div>
 
@@ -127,7 +127,7 @@ export default function RegisterPage() {
                 required
                 value={formData.last_name}
                 onChange={handleChange}
-                className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
+                className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600"
               />
             </div>
           </div>
@@ -147,7 +147,7 @@ export default function RegisterPage() {
               required
               value={formData.email}
               onChange={handleChange}
-              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
+              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600"
               placeholder="your@email.com"
             />
           </div>
@@ -166,7 +166,7 @@ export default function RegisterPage() {
               required
               value={formData.password}
               onChange={handleChange}
-              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
+              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600"
             />
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               Password must be at least 8 characters long and contain at least one letter and one
@@ -188,7 +188,7 @@ export default function RegisterPage() {
               required
               value={formData.confirm_password}
               onChange={handleChange}
-              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
+              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600"
             />
           </div>
 
@@ -196,7 +196,7 @@ export default function RegisterPage() {
             <div className="text-sm">
               <Link
                 href="/login"
-                className="font-medium text-green-600 hover:text-green-500 dark:text-green-400"
+                className="font-medium text-red hover:text-red-700 dark:text-red-400"
               >
                 Already have an account? Sign in
               </Link>

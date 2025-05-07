@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -12,6 +12,8 @@ export default function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+  const profileButtonRef = useRef<HTMLButtonElement>(null);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -26,6 +28,31 @@ export default function Navbar() {
     router.push('/');
   };
 
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        isProfileMenuOpen &&
+        profileMenuRef.current &&
+        profileButtonRef.current &&
+        !profileMenuRef.current.contains(event.target as Node) &&
+        !profileButtonRef.current.contains(event.target as Node)
+      ) {
+        setIsProfileMenuOpen(false);
+      }
+    }
+
+    // Add event listener only when dropdown is open
+    if (isProfileMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    // Cleanup the event listener
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isProfileMenuOpen]);
+
   return (
     <nav className="sticky top-0 z-50 h-16 bg-white shadow-sm dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -33,11 +60,11 @@ export default function Navbar() {
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Link href="/" className="flex items-center space-x-2">
-                <Image 
+                <Image
                   src="/brainport-logo-white.webp"
-                  alt="Carbon Footprint Calculator" 
-                  width={32} 
-                  height={32} 
+                  alt="Carbon Footprint Calculator"
+                  width={32}
+                  height={32}
                   className="hidden dark:block"
                 />
                 <Image
@@ -56,7 +83,7 @@ export default function Navbar() {
           <div className="flex items-center sm:hidden">
             <button
               onClick={toggleMenu}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500"
             >
               <span className="sr-only">Open main menu</span>
               {/* Icon for menu open/close */}
@@ -126,11 +153,12 @@ export default function Navbar() {
                   >
                     Results
                   </Link>
-                  <div className="relative ml-3">
+                  <div className="relative ml-3" ref={profileMenuRef}>
                     <div>
                       <button
+                        ref={profileButtonRef}
                         onClick={toggleProfileMenu}
-                        className="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        className="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                         id="user-menu"
                         aria-expanded="false"
                         aria-haspopup="true"
@@ -150,11 +178,15 @@ export default function Navbar() {
                         <Link
                           href="/account"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                          onClick={() => setIsProfileMenuOpen(false)}
                         >
                           Account Settings
                         </Link>
                         <button
-                          onClick={handleLogout}
+                          onClick={() => {
+                            setIsProfileMenuOpen(false);
+                            handleLogout();
+                          }}
                           className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
                         >
                           Sign out
@@ -165,16 +197,10 @@ export default function Navbar() {
                 </>
               ) : (
                 <>
-                  <Link
-                    href="/register"
-                    className="py-2 rounded-md text-sm font-bold"
-                  >
+                  <Link href="/register" className="py-2 rounded-md text-sm font-bold">
                     <Button size="md">Register</Button>
                   </Link>
-                  <Link
-                    href="/login"
-                    className="py-2 rounded-md text-sm font-bold"
-                  >
+                  <Link href="/login" className="py-2 rounded-md text-sm font-bold">
                     <Button size="md">Login</Button>
                   </Link>
                 </>

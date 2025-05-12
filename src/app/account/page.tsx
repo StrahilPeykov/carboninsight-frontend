@@ -5,12 +5,15 @@ import { useRouter } from "next/navigation";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
+import Modal from "../components/ui/PopupModal";
 
 export default function AccountPage() {
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Password state
   const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -41,7 +44,6 @@ export default function AccountPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
   useEffect(() => {
-    // If user data is available in context, use it
     if (user) {
       setFormData({
         first_name: user.first_name || "",
@@ -80,7 +82,6 @@ export default function AccountPage() {
         return;
       }
 
-      const userId = user?.id;
       const response = await fetch(`${API_URL}/user_profile/`, {
         method: "PATCH",
         headers: {
@@ -110,7 +111,6 @@ export default function AccountPage() {
     setSuccess(null);
     setIsPasswordSubmitting(true);
 
-    // Validate passwords match
     if (passwordData.new_password !== passwordData.confirm_password) {
       setError("New passwords don't match.");
       setIsPasswordSubmitting(false);
@@ -124,7 +124,6 @@ export default function AccountPage() {
         return;
       }
 
-      const userId = user?.id;
       const response = await fetch(`${API_URL}/change_password/`, {
         method: "POST",
         headers: {
@@ -150,14 +149,11 @@ export default function AccountPage() {
 
       setSuccess("Your password has been changed successfully!");
 
-      // Clear password fields
       setPasswordData({
         current_password: "",
         new_password: "",
         confirm_password: "",
       });
-
-      // Hide password form
       setShowPasswordForm(false);
     } catch (error) {
       console.error("Error changing password:", error);
@@ -167,13 +163,11 @@ export default function AccountPage() {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    if (
-      !window.confirm("Are you sure you want to delete your account? This action cannot be undone.")
-    ) {
-      return;
-    }
+  const handleDeleteAccount = () => {
+    setShowDeleteConfirm(true);
+  };
 
+  const confirmDeleteAccount = async () => {
     setIsLoading(true);
     setError(null);
 
@@ -184,7 +178,6 @@ export default function AccountPage() {
         return;
       }
 
-      const userId = user?.id;
       const response = await fetch(`${API_URL}/user_profile/`, {
         method: "DELETE",
         headers: {
@@ -197,7 +190,6 @@ export default function AccountPage() {
         throw new Error(errorData.detail || "Failed to delete account");
       }
 
-      // Log out and redirect to homepage
       logout();
       router.push("/");
     } catch (error) {
@@ -205,10 +197,10 @@ export default function AccountPage() {
       setError(error instanceof Error ? error.message : "An unknown error occurred");
     } finally {
       setIsLoading(false);
+      setShowDeleteConfirm(false);
     }
   };
 
-  // Redirect if not authenticated
   useEffect(() => {
     if (!isAuthenticated && !isLoading) {
       router.push("/login");
@@ -430,6 +422,24 @@ export default function AccountPage() {
             </div>
           </div>
         </Card>
+
+        {showDeleteConfirm && (
+          <Modal title="Confirm Delete Account" onClose={() => setShowDeleteConfirm(false)}>
+            <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+            <div className="mt-4 flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={confirmDeleteAccount}
+                disabled={isLoading}
+                className="bg-red-600 text-white hover:bg-red-700 focus:ring-red-500"
+              >
+                {isLoading ? "Processing..." : "Delete"}
+              </Button>
+            </div>
+          </Modal>
+        )}
       </div>
     </div>
   );

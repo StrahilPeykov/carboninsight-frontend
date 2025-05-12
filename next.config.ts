@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'export',
+  output: "export",
 
   images: {
     unoptimized: true,
@@ -9,12 +9,12 @@ const nextConfig: NextConfig = {
 
   // Optional: Change links `/me` -> `/me/` and emit `/me.html` -> `/me/index.html`
   // trailingSlash: true,
- 
+
   // Optional: Prevent automatic `/me` -> `/me/`, instead preserve `href`
   // skipTrailingSlashRedirect: true,
- 
+
   // Optional: Change the output directory `out` -> `dist`
-  distDir: 'out',
+  distDir: "out",
   /* config options here */
 };
 

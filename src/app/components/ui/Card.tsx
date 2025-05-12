@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode } from "react";
 
 interface CardProps {
   children: ReactNode;
@@ -6,7 +6,7 @@ interface CardProps {
   className?: string;
 }
 
-export default function Card({ children, title, className = '' }: CardProps) {
+export default function Card({ children, title, className = "" }: CardProps) {
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden ${className}`}>
       {title && (

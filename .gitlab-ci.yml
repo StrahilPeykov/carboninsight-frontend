@@ -1,0 +1,13 @@
+# The Docker image that will be used to build your app
+image: node:lts
+
+before_script:
+  # Functions that should be executed before the build script is run
+  - npm ci
+
+test-can-build:
+  stage: build
+  script:
+    - npm install
+    - npm run build
+    # npm run build should run without errors, checking types and linting

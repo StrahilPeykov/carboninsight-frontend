@@ -14,6 +14,13 @@ export default function Navbar() {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const profileButtonRef = useRef<HTMLButtonElement>(null);
+  const [companyId, setCompanyId] = useState<string | null>(null);
+  const [companyData, setCompanyData] = useState({
+    name: "",
+    vat_number: "",
+    business_registration_number: "",
+  });
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -25,8 +32,41 @@ export default function Navbar() {
 
   const handleLogout = () => {
     logout();
-    router.push('/');
+    router.push("/");
   };
+
+  useEffect(() => {
+    if (!companyId) return;
+
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    const fetchCompany = async () => {
+      try {
+        const response = await fetch(`${API_URL}/companies/${companyId}/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          const message = await response.text();
+          throw new Error(`Error ${response.status}: ${message}`);
+        }
+
+        const data = await response.json();
+        setCompanyData(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchCompany();
+  }, [API_URL, router, companyId]);
 
   // Close profile dropdown when clicking outside
   useEffect(() => {
@@ -52,6 +92,15 @@ export default function Navbar() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isProfileMenuOpen]);
+
+  useEffect(() => {
+    const id = localStorage.getItem("selected_company_id");
+    // if (!id) {
+    //   router.push("/list-companies");
+    //   return;
+    // }
+    setCompanyId(id);
+  }, [router]);
 
   return (
     <nav className="sticky top-0 z-50 h-16 bg-white shadow-sm dark:bg-gray-900">
@@ -172,6 +221,9 @@ export default function Navbar() {
                     {isProfileMenuOpen && (
                       <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 dark:ring-gray-700">
                         <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
+                          <p className="text-gray-500 dark:text-gray-400 truncate">
+                            {companyData.name}
+                          </p>
                           <p className="font-medium">{user?.username}</p>
                           <p className="text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
                         </div>

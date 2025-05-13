@@ -6,14 +6,13 @@ import Link from "next/link";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
-import { LoginCredentials } from "@/lib/api/authApi";
 
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState<LoginCredentials>({
+  const [formData, setFormData] = useState({
     username: "",
     password: "",
   });
@@ -32,8 +31,8 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      // Use the login method from AuthContext with the credentials object
-      await login(formData);
+      // Use the login method from AuthContext
+      await login(formData.username, formData.password);
 
       // Redirect to self-assessment page on success
       router.push("/self-assessment");

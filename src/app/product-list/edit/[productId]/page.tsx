@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Card from "../../components/ui/Card";
-import Button from "../../components/ui/Button";
+import Card from "../../../components/ui/Card";
+import Button from "../../../components/ui/Button";
 import { ArrowLeft } from "lucide-react";
 
-export default function AddProductPage() {
+export default function EditProductPage({ params }: { params: { productId: string } }) {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: "",
@@ -18,6 +18,7 @@ export default function AddProductPage() {
     weight: "",
     weight_unit: "kg",
   });
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string[] }>({});
@@ -27,6 +28,61 @@ export default function AddProductPage() {
   
   // Get the company ID from localStorage
   const companyId = localStorage.getItem("selected_company_id");
+
+  useEffect(() => {
+    if (!companyId) {
+      setError("No company selected. Please select a company first.");
+      setIsLoading(false);
+      return;
+    }
+    
+    if (!params.productId) {
+      setError("No product selected. Please select a product first.");
+      setIsLoading(false);
+      return;
+    }
+    
+    // Fetch product data
+    const fetchProductData = async () => {
+      try {
+        const token = localStorage.getItem("access_token");
+        if (!token) {
+          router.push("/login");
+          return;
+        }
+
+        // In a real app, this would make an API call
+        // For now, we'll use mock data
+        
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Mock product data
+        const mockProductData = {
+          name: "Electronic Component A",
+          sku: "EC-001",
+          description: "High-quality electronic component for various applications",
+          manufacturer: "Acme Corp",
+          category: "Electronics",
+          weight: "0.5",
+          weight_unit: "kg",
+        };
+        
+        setFormData(mockProductData);
+      } catch (err) {
+        console.error("Error fetching product:", err);
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unexpected error occurred");
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchProductData();
+  }, [companyId, params.productId, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -58,10 +114,10 @@ export default function AddProductPage() {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Redirect to product list page
-      router.push("/product-list");
+      // Redirect to product details page
+      router.push(`/product-list/${params.productId}`);
     } catch (err) {
-      console.error("Error adding product:", err);
+      console.error("Error updating product:", err);
       if (err instanceof Error) {
         setError(err.message);
       } else {
@@ -72,18 +128,26 @@ export default function AddProductPage() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
+        <p className="text-gray-500 dark:text-gray-400">Loading product data...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="mb-8">
         <div className="flex items-center mb-4">
-          <Link href="/product-list" className="inline-flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+          <Link href={`/product-list/${params.productId}`} className="inline-flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
             <ArrowLeft className="h-5 w-5 mr-1" />
-            <span>Back to Products</span>
+            <span>Back to Product Details</span>
           </Link>
         </div>
         
-        <h1 className="text-3xl font-bold">Add New Product</h1>
-        <p className="text-gray-500 mt-1">Create a new product in your catalog</p>
+        <h1 className="text-3xl font-bold">Edit Product</h1>
+        <p className="text-gray-500 mt-1">Update product information</p>
       </div>
 
       {error && (
@@ -224,7 +288,7 @@ export default function AddProductPage() {
           
           <div className="pt-5 border-t border-gray-200 dark:border-gray-700">
             <div className="flex justify-end space-x-3">
-              <Link href="/product-list">
+              <Link href={`/product-list/${params.productId}`}>
                 <Button variant="outline" type="button">
                   Cancel
                 </Button>
@@ -233,7 +297,7 @@ export default function AddProductPage() {
                 type="submit"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Adding Product..." : "Add Product"}
+                {isSubmitting ? "Saving Changes..." : "Save Changes"}
               </Button>
             </div>
           </div>

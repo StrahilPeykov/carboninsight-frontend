@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
@@ -41,11 +41,12 @@ interface Product {
   dpp_available: boolean;
 }
 
-export default function ProductDetailsPage() {
-  // Get params from the URL using useParams hook instead of props
-  const params = useParams();
-  const productId = params.productId as string;
-
+export default function ProductDetailsPage({
+  params
+}: {
+  params: { productId: string }
+}) {
+  const productId = params.productId;
   const router = useRouter();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);

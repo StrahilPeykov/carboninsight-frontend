@@ -47,7 +47,7 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
   const [error, setError] = useState("");
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  
+
   // API URL from environment variables with fallback
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -62,7 +62,7 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
 
         // this should be a proper API endpoint
         // for now, we use placeholder data for the product with ID params.productId
-        
+
         // Mock placeholder data
         const mockProduct: Product = {
           id: params.productId,
@@ -79,12 +79,12 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
               description: "Energy used in production",
             },
             {
-              id: "2", 
+              id: "2",
               type: "Transport",
               value: 2.1,
               unit: "kg CO2e",
               description: "Shipping from factory to warehouse",
-            }
+            },
           ],
           bill_of_materials: [
             {
@@ -116,11 +116,11 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
               carbon_footprint: 0.9,
               carbon_footprint_unit: "kg CO2e",
               is_self_estimated: true,
-            }
+            },
           ],
           total_carbon_footprint: 12.5,
           carbon_footprint_unit: "kg CO2e",
-          dpp_available: true
+          dpp_available: true,
         };
 
         setProduct(mockProduct);
@@ -142,7 +142,7 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
 
   const handleDeleteProduct = async () => {
     setIsDeleting(true);
-    
+
     try {
       const token = localStorage.getItem("access_token");
       if (!token) {
@@ -160,7 +160,7 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
 
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       router.push("/product-list");
     } catch (err) {
       console.error("Error deleting product:", err);
@@ -210,18 +210,23 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
       {/* Header with navigation and actions */}
       <div className="mb-8">
         <div className="flex items-center mb-4">
-          <Link href="/product-list" className="inline-flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+          <Link
+            href="/product-list"
+            className="inline-flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+          >
             <ArrowLeft className="h-5 w-5 mr-1" />
             <span>Back to Products</span>
           </Link>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold">{product.name}</h1>
-            <p className="text-gray-500 mt-1">SKU: {product.sku} | Manufacturer: {product.manufacturer}</p>
+            <p className="text-gray-500 mt-1">
+              SKU: {product.sku} | Manufacturer: {product.manufacturer}
+            </p>
           </div>
-          
+
           <div className="flex flex-wrap gap-2">
             <Link href={`/product-list/edit/${product.id}`}>
               <Button variant="outline" className="flex items-center gap-2">
@@ -229,8 +234,8 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
                 <span>Edit</span>
               </Button>
             </Link>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="flex items-center gap-2 text-red-600 border-red-200 hover:bg-red-50"
               onClick={() => setIsDeleteModalOpen(true)}
             >
@@ -247,30 +252,43 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
         <div className="lg:col-span-1 space-y-6">
           <Card>
             <h2 className="text-xl font-semibold mb-4">Carbon Footprint Summary</h2>
-            
+
             <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-4 text-center">
               <span className="block text-sm text-gray-500 dark:text-gray-400">Total PCF</span>
-              <span className="block text-3xl font-bold mt-1">{product.total_carbon_footprint}</span>
-              <span className="block text-sm text-gray-500 dark:text-gray-400">{product.carbon_footprint_unit}</span>
+              <span className="block text-3xl font-bold mt-1">
+                {product.total_carbon_footprint}
+              </span>
+              <span className="block text-sm text-gray-500 dark:text-gray-400">
+                {product.carbon_footprint_unit}
+              </span>
             </div>
-            
+
             <div className="space-y-4">
               <div>
-                <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product Status</span>
-                <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                  product.status === "Imported" ? "bg-green-100 text-green-700" :
-                  product.status === "Estimated" ? "bg-red-100 text-red-700" :
-                  product.status === "Pending" ? "bg-yellow-100 text-yellow-700" :
-                  "bg-gray-100 text-gray-700"
-                }`}>
+                <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Product Status
+                </span>
+                <span
+                  className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    product.status === "Imported"
+                      ? "bg-green-100 text-green-700"
+                      : product.status === "Estimated"
+                        ? "bg-red-100 text-red-700"
+                        : product.status === "Pending"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-gray-100 text-gray-700"
+                  }`}
+                >
                   {product.status}
                 </span>
               </div>
-              
+
               <div>
-                <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Digital Product Passport</span>
+                <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Digital Product Passport
+                </span>
                 {product.dpp_available ? (
-                  <Button 
+                  <Button
                     variant="outline"
                     className="w-full flex items-center justify-center gap-2"
                     onClick={handleDownloadDPP}
@@ -279,7 +297,7 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
                     <span>Download DPP</span>
                   </Button>
                 ) : (
-                  <Button 
+                  <Button
                     className="w-full flex items-center justify-center gap-2"
                     onClick={handleGenerateDPP}
                   >
@@ -288,11 +306,13 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
                   </Button>
                 )}
               </div>
-              
+
               <div>
-                <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Carbon Reduction</span>
+                <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Carbon Reduction
+                </span>
                 <Link href={`/carbon-reduction/${product.id}`}>
-                  <Button 
+                  <Button
                     variant="outline"
                     className="w-full flex items-center justify-center gap-2"
                   >
@@ -303,22 +323,29 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
               </div>
             </div>
           </Card>
-          
+
           <Card>
             <h2 className="text-xl font-semibold mb-4">Carbon Emissions</h2>
-            
+
             {product.carbon_emissions.length > 0 ? (
               <div className="space-y-4">
                 {product.carbon_emissions.map(emission => (
-                  <div key={emission.id} className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0 last:pb-0">
+                  <div
+                    key={emission.id}
+                    className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0 last:pb-0"
+                  >
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="font-medium">{emission.type} Emissions</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{emission.description}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {emission.description}
+                        </p>
                       </div>
                       <div className="text-right">
                         <span className="font-bold">{emission.value}</span>
-                        <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">{emission.unit}</span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">
+                          {emission.unit}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -327,7 +354,7 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
             ) : (
               <p className="text-gray-500 dark:text-gray-400">No emission data available</p>
             )}
-            
+
             <div className="mt-4">
               <Link href={`/product-list/emissions/${product.id}`}>
                 <Button variant="outline" className="w-full flex items-center justify-center gap-2">
@@ -351,28 +378,46 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
                 </Button>
               </Link>
             </div>
-            
+
             {product.bill_of_materials.length > 0 ? (
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                   <thead className="bg-gray-50 dark:bg-gray-800">
                     <tr>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                      <th
+                        scope="col"
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400"
+                      >
                         Component
                       </th>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                      <th
+                        scope="col"
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400"
+                      >
                         Quantity
                       </th>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                      <th
+                        scope="col"
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400"
+                      >
                         Supplier
                       </th>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                      <th
+                        scope="col"
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400"
+                      >
                         Type
                       </th>
-                      <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                      <th
+                        scope="col"
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400"
+                      >
                         Carbon Footprint
                       </th>
-                      <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
+                      <th
+                        scope="col"
+                        className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400"
+                      >
                         Actions
                       </th>
                     </tr>
@@ -390,16 +435,20 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
                           {item.supplier}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            item.is_self_estimated 
-                              ? "bg-yellow-100 text-yellow-700" 
-                              : "bg-green-100 text-green-700"
-                          }`}>
+                          <span
+                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              item.is_self_estimated
+                                ? "bg-yellow-100 text-yellow-700"
+                                : "bg-green-100 text-green-700"
+                            }`}
+                          >
                             {item.is_self_estimated ? "Self-estimated" : "Imported"}
                           </span>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                          {item.carbon_footprint !== null ? `${item.carbon_footprint} ${item.carbon_footprint_unit}` : "N/A"}
+                          {item.carbon_footprint !== null
+                            ? `${item.carbon_footprint} ${item.carbon_footprint_unit}`
+                            : "N/A"}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex justify-end space-x-2">
@@ -429,11 +478,14 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
           </Card>
         </div>
       </div>
-      
+
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && (
         <Modal title="Confirm Delete Product" onClose={() => setIsDeleteModalOpen(false)}>
-          <p>Are you sure you want to delete <strong>{product.name}</strong>? This action cannot be undone.</p>
+          <p>
+            Are you sure you want to delete <strong>{product.name}</strong>? This action cannot be
+            undone.
+          </p>
           <div className="mt-4 flex justify-end space-x-2">
             <Button variant="outline" onClick={() => setIsDeleteModalOpen(false)}>
               Cancel

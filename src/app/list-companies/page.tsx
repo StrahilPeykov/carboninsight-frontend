@@ -64,7 +64,9 @@ export default function ListCompaniesPage() {
     <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">Your Companies</h1>
+          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
+            Your Companies
+          </h1>
           <p className="mt-2 text-lg text-gray-500 dark:text-gray-400">
             Select a company to manage or create a new one
           </p>
@@ -91,7 +93,8 @@ export default function ListCompaniesPage() {
         <Card className="p-8 text-center">
           <h2 className="text-2xl font-semibold mb-4">No companies found</h2>
           <p className="text-gray-500 dark:text-gray-400 mb-6">
-            You don't have any companies yet. Create one to get started with calculating your product carbon footprint.
+            You don't have any companies yet. Create one to get started with calculating your
+            product carbon footprint.
           </p>
           <Link href="/create-company">
             <Button size="lg">Create Your First Company</Button>
@@ -117,15 +120,15 @@ export default function ListCompaniesPage() {
 
                 {/* Action buttons */}
                 <div className="mt-6 grid grid-cols-2 gap-3">
-                  <Button 
+                  <Button
                     onClick={() => selectCompany(company.id)}
                     className="flex items-center justify-center gap-2"
                   >
                     <LogIn className="w-4 h-4" />
                     Select
                   </Button>
-                  
-                  <Button 
+
+                  <Button
                     variant="outline"
                     onClick={() => {
                       localStorage.setItem("selected_company_id", company.id);
@@ -137,11 +140,11 @@ export default function ListCompaniesPage() {
                     Edit
                   </Button>
                 </div>
-                
+
                 {/* Additional action buttons */}
                 <div className="mt-3 grid grid-cols-3 gap-3">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => {
                       localStorage.setItem("selected_company_id", company.id);
@@ -152,9 +155,9 @@ export default function ListCompaniesPage() {
                     <Users className="w-3 h-3" />
                     <span className="hidden sm:inline">Users</span>
                   </Button>
-                  
-                  <Button 
-                    variant="outline" 
+
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => {
                       localStorage.setItem("selected_company_id", company.id);
@@ -165,9 +168,9 @@ export default function ListCompaniesPage() {
                     <BarChart className="w-3 h-3" />
                     <span className="hidden sm:inline">Products</span>
                   </Button>
-                  
-                  <Button 
-                    variant="outline" 
+
+                  <Button
+                    variant="outline"
                     size="sm"
                     onClick={() => {
                       localStorage.setItem("selected_company_id", company.id);

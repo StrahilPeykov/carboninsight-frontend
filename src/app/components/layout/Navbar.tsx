@@ -6,7 +6,15 @@ import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../ui/Button";
-import { ChevronDown, HomeIcon, SettingsIcon, BuildingIcon, LayoutDashboardIcon, Boxes, BarChart } from "lucide-react";
+import {
+  ChevronDown,
+  HomeIcon,
+  SettingsIcon,
+  BuildingIcon,
+  LayoutDashboardIcon,
+  Boxes,
+  BarChart,
+} from "lucide-react";
 
 export default function Navbar() {
   const router = useRouter();
@@ -102,7 +110,7 @@ export default function Navbar() {
 
   // Helper function to determine if a navigation item is active
   const isActive = (path: string) => {
-    return pathname === path || pathname?.startsWith(path + '/');
+    return pathname === path || pathname?.startsWith(path + "/");
   };
 
   return (
@@ -178,48 +186,61 @@ export default function Navbar() {
                   <Link
                     href="/dashboard"
                     className={`flex items-center px-3 py-2 rounded-md text-sm font-medium 
-                      ${isActive('/dashboard') 
-                        ? 'bg-red text-white' 
-                        : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700'}`}
+                      ${
+                        isActive("/dashboard")
+                          ? "bg-red text-white"
+                          : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                      }`}
                   >
                     <LayoutDashboardIcon size={16} className="mr-1" />
                     Dashboard
                   </Link>
-                  
+
                   <Link
                     href="/list-companies"
                     className={`flex items-center px-3 py-2 rounded-md text-sm font-medium 
-                      ${isActive('/list-companies') || isActive('/company-details') || isActive('/manage-user')
-                        ? 'bg-red text-white' 
-                        : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700'}`}
+                      ${
+                        isActive("/list-companies") ||
+                        isActive("/company-details") ||
+                        isActive("/manage-user")
+                          ? "bg-red text-white"
+                          : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                      }`}
                   >
                     <BuildingIcon size={16} className="mr-1" />
                     Companies
                   </Link>
-                  
+
                   <Link
                     href="/product-list"
                     className={`flex items-center px-3 py-2 rounded-md text-sm font-medium 
-                      ${isActive('/product-list') 
-                        ? 'bg-red text-white' 
-                        : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700'}`}
+                      ${
+                        isActive("/product-list")
+                          ? "bg-red text-white"
+                          : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                      }`}
                   >
                     <Boxes size={16} className="mr-1" />
                     Products
                   </Link>
-                  
+
                   <Link
                     href="/get-started"
                     className={`flex items-center px-3 py-2 rounded-md text-sm font-medium 
-                      ${isActive('/get-started') || isActive('/self-assessment') || isActive('/manufacturing-data') 
-                          || isActive('/supply-chain-data') || isActive('/results')
-                        ? 'bg-red text-white' 
-                        : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700'}`}
+                      ${
+                        isActive("/get-started") ||
+                        isActive("/self-assessment") ||
+                        isActive("/manufacturing-data") ||
+                        isActive("/supply-chain-data") ||
+                        isActive("/results")
+                          ? "bg-red text-white"
+                          : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                      }`}
                   >
                     <BarChart size={16} className="mr-1" />
                     Calculate PCF
                   </Link>
-                  
+
                   <div className="relative ml-3" ref={profileMenuRef}>
                     <div>
                       <button
@@ -309,48 +330,61 @@ export default function Navbar() {
               <Link
                 href="/dashboard"
                 className={`flex items-center px-3 py-2 rounded-md text-base font-medium 
-                  ${isActive('/dashboard') 
-                    ? 'bg-red text-white' 
-                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700'}`}
+                  ${
+                    isActive("/dashboard")
+                      ? "bg-red text-white"
+                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                  }`}
               >
                 <LayoutDashboardIcon size={16} className="mr-2" />
                 Dashboard
               </Link>
-              
+
               <Link
                 href="/list-companies"
                 className={`flex items-center px-3 py-2 rounded-md text-base font-medium 
-                  ${isActive('/list-companies') || isActive('/company-details') || isActive('/manage-user')
-                    ? 'bg-red text-white' 
-                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700'}`}
+                  ${
+                    isActive("/list-companies") ||
+                    isActive("/company-details") ||
+                    isActive("/manage-user")
+                      ? "bg-red text-white"
+                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                  }`}
               >
                 <BuildingIcon size={16} className="mr-2" />
                 Companies
               </Link>
-              
+
               <Link
                 href="/product-list"
                 className={`flex items-center px-3 py-2 rounded-md text-base font-medium 
-                  ${isActive('/product-list') 
-                    ? 'bg-red text-white' 
-                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700'}`}
+                  ${
+                    isActive("/product-list")
+                      ? "bg-red text-white"
+                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                  }`}
               >
                 <Boxes size={16} className="mr-2" />
                 Products
               </Link>
-              
+
               <Link
                 href="/get-started"
                 className={`flex items-center px-3 py-2 rounded-md text-base font-medium 
-                  ${isActive('/get-started') || isActive('/self-assessment') || isActive('/manufacturing-data') 
-                      || isActive('/supply-chain-data') || isActive('/results')
-                    ? 'bg-red text-white' 
-                    : 'text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700'}`}
+                  ${
+                    isActive("/get-started") ||
+                    isActive("/self-assessment") ||
+                    isActive("/manufacturing-data") ||
+                    isActive("/supply-chain-data") ||
+                    isActive("/results")
+                      ? "bg-red text-white"
+                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                  }`}
               >
                 <BarChart size={16} className="mr-2" />
                 Calculate PCF
               </Link>
-              
+
               <Link
                 href="/account"
                 className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"

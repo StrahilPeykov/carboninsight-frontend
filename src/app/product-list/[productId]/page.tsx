@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import { ArrowLeft, Download, Edit, Plus, Trash2, BarChart4, FileText } from "lucide-react";
+import { Info, ArrowLeft, Download, Edit, Plus, Trash2, BarChart4, FileText } from "lucide-react";
 import Modal from "../../components/ui/PopupModal";
 
+// Using interfaces for our data models
 interface CarbonEmission {
   id: string;
   type: string;
@@ -40,7 +41,11 @@ interface Product {
   dpp_available: boolean;
 }
 
-export default function ProductDetailsPage({ params }: { params: { productId: string } }) {
+export default function ProductDetailsPage() {
+  // Get params from the URL using useParams hook instead of props
+  const params = useParams();
+  const productId = params.productId as string;
+
   const router = useRouter();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -60,12 +65,9 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
           return;
         }
 
-        // this should be a proper API endpoint
-        // for now, we use placeholder data for the product with ID params.productId
-
         // Mock placeholder data
         const mockProduct: Product = {
-          id: params.productId,
+          id: productId,
           name: "Electronic Component A",
           sku: "EC-001",
           manufacturer: "Acme Corp",
@@ -135,10 +137,10 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
       }
     }
 
-    if (params.productId) {
+    if (productId) {
       fetchProductDetails();
     }
-  }, [API_URL, params.productId, router]);
+  }, [API_URL, productId, router]);
 
   const handleDeleteProduct = async () => {
     setIsDeleting(true);
@@ -150,8 +152,8 @@ export default function ProductDetailsPage({ params }: { params: { productId: st
         return;
       }
 
-      // TODO this should delete the product
-      // await fetch(`${API_URL}/products/${params.productId}`, {
+      // TODO: This should delete the product
+      // await fetch(`${API_URL}/products/${productId}`, {
       //   method: "DELETE",
       //   headers: {
       //     Authorization: `Bearer ${token}`,

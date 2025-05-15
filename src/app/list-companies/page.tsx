@@ -93,8 +93,8 @@ export default function ListCompaniesPage() {
         <Card className="p-8 text-center">
           <h2 className="text-2xl font-semibold mb-4">No companies found</h2>
           <p className="text-gray-500 dark:text-gray-400 mb-6">
-            You do not have any companies yet. Create one to get started with calculating
-            your product carbon footprint.
+            You do not have any companies yet. Create one to get started with calculating your
+            product carbon footprint.
           </p>
           <Link href="/create-company">
             <Button size="lg">Create Your First Company</Button>

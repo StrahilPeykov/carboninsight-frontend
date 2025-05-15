@@ -8,7 +8,6 @@ import { useAuth } from "../../context/AuthContext";
 import Button from "../ui/Button";
 import {
   ChevronDown,
-  HomeIcon,
   SettingsIcon,
   BuildingIcon,
   LayoutDashboardIcon,

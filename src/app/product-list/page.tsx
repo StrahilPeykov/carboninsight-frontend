@@ -6,7 +6,6 @@ import Link from "next/link";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { Info, Plus, ChevronLeft, ChevronRight, Filter, Search } from "lucide-react";
-import EmptyState from "../components/ui/EmptyState";
 import ErrorBanner from "../components/ui/ErrorBanner";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 

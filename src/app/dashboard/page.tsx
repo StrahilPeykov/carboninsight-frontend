@@ -6,22 +6,13 @@ import Link from "next/link";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
-import { Building2, BoxesIcon, BarChartIcon, ShareIcon, FileTextIcon } from "lucide-react";
+import { Building2, BoxesIcon, BarChartIcon, FileTextIcon } from "lucide-react";
 
 interface CompanyData {
   id: string;
   name: string;
   vat_number: string;
   business_registration_number: string;
-}
-
-interface ProductData {
-  id: string;
-  name: string;
-  supplier: string;
-  description?: string;
-  manufacturer: string;
-  sku: string;
 }
 
 interface ActivityItem {
@@ -35,7 +26,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [companyCount, setCompanyCount] = useState(0);
   const [productCount, setProductCount] = useState(0);
-  const [dppCount, setDppCount] = useState(0);
+  const [dppCount] = useState(0);
   const [selectedCompany, setSelectedCompany] = useState<CompanyData | null>(null);
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
 

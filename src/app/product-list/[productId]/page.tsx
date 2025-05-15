@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
-import { Info, ArrowLeft, Download, Edit, Plus, Trash2, BarChart4, FileText } from "lucide-react";
+import { ArrowLeft, Download, Edit, Plus, Trash2, BarChart4, FileText } from "lucide-react";
 import Modal from "../../components/ui/PopupModal";
 
 // Using interfaces for our data models

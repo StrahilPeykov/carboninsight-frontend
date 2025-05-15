@@ -22,9 +22,6 @@ export default function AddProductPage() {
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string[] }>({});
 
-  // API URL from environment variables with fallback
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
   // Get the company ID from localStorage
   const companyId = localStorage.getItem("selected_company_id");
 

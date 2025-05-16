@@ -62,11 +62,11 @@ export default function ListCompaniesPage() {
 
       <Card className="p-4">
         {loading ? (
-          <p className="text-sm">Loading...</p>
+          <p className="text-base">Loading...</p>
         ) : (
-          <table className="min-w-full table-auto text-sm">
+          <table className="min-w-full table-auto text-xl">
             <thead>
-              <tr className="text-left border-b">
+              <tr className="py-3 px-6 font-medium text-left">
                 <th className="p-2">
                   <div className="flex items-center gap-1">
                     <Building2 className="w-4 h-4" />
@@ -74,18 +74,21 @@ export default function ListCompaniesPage() {
                   </div>
                 </th>
                 <th className="p-2 w-24 sm:w-32 text-right">
-                  <span className="inline-flex items-center justify-end w-full px-3 py-1 text-sm">
+                  <span className="inline-flex items-center justify-end w-full px-3 py-1 text-xl">
                     <LogIn className="w-4 h-4 mr-1" />
                     Action
                   </span>
                 </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="text-xl">
               {companies.map(company => (
-                <tr key={company.id} className="border-b hover:bg-gray-400">
+                <tr
+                  key={company.id}
+                  className="border-b hover:bg-gray-500 transition-colors duration-200"
+                >
                   <td className="p-2">{company.name}</td>
-                  <td className="p-2 w-24 sm:w-32">
+                  <td className="py-3 px-6 whitespace-nowrap text-left">
                     <div className="flex justify-end w-full">
                       <Button
                         variant="primary"

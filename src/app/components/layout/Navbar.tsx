@@ -221,18 +221,34 @@ export default function Navbar() {
                     {isProfileMenuOpen && (
                       <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 dark:ring-gray-700">
                         <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
+                          <p className="font-medium">{companyData.name}</p>
                           <p className="text-gray-500 dark:text-gray-400 truncate">
-                            {companyData.name}
+                            {user?.username}
                           </p>
-                          <p className="font-medium">{user?.username}</p>
                           <p className="text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
                         </div>
+                        <div className="border-b border-gray-200 dark:border-gray-700">
+                          <Link
+                            href="/account"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                            onClick={() => setIsProfileMenuOpen(false)}
+                          >
+                            Account Settings
+                          </Link>
+                          <Link
+                            href="/company-details"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                            onClick={() => setIsProfileMenuOpen(false)}
+                          >
+                            Company Details
+                          </Link>
+                        </div>
                         <Link
-                          href="/account"
+                          href="/list-companies"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
                           onClick={() => setIsProfileMenuOpen(false)}
                         >
-                          Account Settings
+                          Switch company
                         </Link>
                         <button
                           onClick={() => {
@@ -304,6 +320,19 @@ export default function Navbar() {
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
               >
                 Account Settings
+              </Link>
+              <Link
+                href="/company-details"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+              >
+                Company details
+              </Link>
+              <Link
+                href="/list-companies"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                onClick={() => setIsProfileMenuOpen(false)}
+              >
+                Switch company
               </Link>
               <button
                 onClick={handleLogout}

@@ -277,16 +277,16 @@ export default function ManageUserPage() {
         <Card className="max-w-[90vw]">
           <div className="overflow-x-auto">
             <table className="min-w-full table-auto">
-              <thead className="border-b uppercase text-md">
+              <thead className="border-b uppercase text-xl">
                 <tr>
-                  <th className="py-3 px-6 text-center">Username</th>
-                  <th className="py-3 px-6 text-center">Email</th>
-                  <th className="py-3 px-6 text-center">First Name</th>
-                  <th className="py-3 px-6 text-center">Last Name</th>
-                  <th className="py-3 px-6 text-center">Remove</th>
+                  <th className="py-3 px-6 text-left">Username</th>
+                  <th className="py-3 px-6 text-left">Email</th>
+                  <th className="py-3 px-6 text-left">First Name</th>
+                  <th className="py-3 px-6 text-left">Last Name</th>
+                  <th className="py-3 px-6 text-left">Remove</th>
                 </tr>
               </thead>
-              <tbody className="text-sm">
+              <tbody className="text-lg">
                 {/* Map all users to an actual div */}
                 {isLoading && (
                   <tr>
@@ -305,12 +305,12 @@ export default function ManageUserPage() {
                   users.map(user => (
                     <tr
                       key={user.username}
-                      className="border-b border-gray-200 hover:bg-slate-700 transition"
+                      className="border-b border-gray-500 hover:bg-gray-500 transition"
                     >
-                      <td className="py-3 px-6 text-center whitespace-nowrap">{user.username}</td>
-                      <td className="py-3 px-6 text-center">{user.email}</td>
-                      <td className="py-3 px-6 text-center">{user.first_name}</td>
-                      <td className="py-3 px-6 text-center">{user.last_name}</td>
+                      <td className="py-3 px-6 text-left whitespace-nowrap">{user.username}</td>
+                      <td className="py-3 px-6 text-left">{user.email}</td>
+                      <td className="py-3 px-6 text-left">{user.first_name}</td>
+                      <td className="py-3 px-6 text-left">{user.last_name}</td>
                       <td className="py-1 px-6">
                         <button
                           className="flex justify-center items-center w-full py-2 text-red-500 hover:text-red-700"

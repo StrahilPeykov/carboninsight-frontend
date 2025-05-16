@@ -127,20 +127,20 @@ export default function ProductListPage() {
         ) : error ? (
           <p className="text-red-500">{error}</p>
         ) : (
-          <table className="min-w-full text-sm">
+          <table className="min-w-full table-auto text-xl">
             <thead>
               <tr className="text-left border-b">
-                <th className="p-2">Company</th>
-                <th className="p-2">Product name</th>
-                <th className="p-2">SKU</th>
-                <th className="p-2">Status</th>
-                <th className="p-2">PCF calculation method</th>
-                <th className="p-2">PCF</th>
+                <th className="py-3 px-6 font-medium text-left">Company</th>
+                <th className="py-3 px-6 font-medium text-left">Product name</th>
+                <th className="py-3 px-6 font-medium text-left">SKU</th>
+                <th className="py-3 px-6 font-medium text-left">Status</th>
+                <th className="py-3 px-6 font-medium text-left">PCF calculation method</th>
+                <th className="py-3 px-6 font-medium text-left">PCF</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="text-xl">
               {paginatedProducts.map((product, idx) => (
-                <tr key={idx} className="border-b hover:bg-gray-50">
+                <tr key={idx} className="border-b hover:bg-gray-500 transition-colors duration-200">
                   <td className="p-2">{product.company_name}</td>
                   <td className="p-2">{product.product_name}</td>
                   <td className="p-2">{product.sku}</td>
@@ -152,7 +152,7 @@ export default function ProductListPage() {
                     </span>
                   </td>
                   <td className="p-2">{product.pcf_calculation_method}</td>
-                  <td className="p-2 flex items-center gap-1">
+                  <td className="py-3 px-6 whitespace-nowrap text-left">
                     {product.pcf_value}
                     <Info className="w-4 h-4 text-gray-400" />
                   </td>

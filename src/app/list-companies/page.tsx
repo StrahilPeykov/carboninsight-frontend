@@ -5,52 +5,37 @@ import { Building2, LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
-
-type Company = {
-  id: string;
-  name: string;
-  vat_number: string;
-  business_registration_number: string;
-};
+import { companyApi, Company } from "@/lib/api/companyApi";
 
 export default function ListCompaniesPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-
-  // API URL from environment variables with fallback
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
   useEffect(() => {
     async function fetchCompanies() {
       try {
-        const token = localStorage.getItem("access_token");
-        if (!token) {
-          router.push("/login");
-          return;
-        }
-
-        const response = await fetch(`${API_URL}/companies/my/`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) throw new Error("Failed to fetch");
-
-        const data = await response.json();
+        setLoading(true);
+        // Using companyApi instead of direct fetch
+        const data = await companyApi.listCompanies();
         setCompanies(data);
-      } catch (error) {
-        console.error("Error fetching companies:", error);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching companies:", err);
+        setError(err instanceof Error ? err.message : "Failed to fetch companies");
       } finally {
         setLoading(false);
       }
     }
 
     fetchCompanies();
-  }, [API_URL, router]);
+  }, []);
+
+  const handleSelectCompany = (companyId: string) => {
+    localStorage.setItem("selected_company_id", companyId);
+    router.push(`/get-started`);
+  };
 
   return (
     <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -60,9 +45,31 @@ export default function ListCompaniesPage() {
         </h1>
       </div>
 
+      {error && <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md">{error}</div>}
+
+      <div className="mb-6 flex justify-between items-center">
+        <div></div>
+        <Button 
+          onClick={() => router.push('/create-company')}
+          className="bg-green-600 hover:bg-green-700"
+        >
+          Create New Company
+        </Button>
+      </div>
+
       <Card className="p-4">
         {loading ? (
           <p className="text-base">Loading...</p>
+        ) : companies.length === 0 ? (
+          <div className="text-center p-6">
+            <p className="text-gray-500 mb-4">You don't have any companies yet.</p>
+            <Button 
+              onClick={() => router.push('/create-company')}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              Create Your First Company
+            </Button>
+          </div>
         ) : (
           <table className="min-w-full table-auto text-xl">
             <thead>
@@ -73,6 +80,8 @@ export default function ListCompaniesPage() {
                     Company
                   </div>
                 </th>
+                <th className="p-2 hidden md:table-cell">VAT Number</th>
+                <th className="p-2 hidden md:table-cell">Registration Number</th>
                 <th className="p-2 w-24 sm:w-32 text-right">
                   <span className="inline-flex items-center justify-end w-full px-3 py-1 text-xl">
                     <LogIn className="w-4 h-4 mr-1" />
@@ -88,16 +97,15 @@ export default function ListCompaniesPage() {
                   className="border-b hover:bg-gray-500 transition-colors duration-200"
                 >
                   <td className="p-2">{company.name}</td>
+                  <td className="p-2 hidden md:table-cell">{company.vat_number}</td>
+                  <td className="p-2 hidden md:table-cell">{company.business_registration_number}</td>
                   <td className="py-3 px-6 whitespace-nowrap text-left">
                     <div className="flex justify-end w-full">
                       <Button
                         variant="primary"
                         size="sm"
                         className="flex items-center gap-1"
-                        onClick={() => {
-                          localStorage.setItem("selected_company_id", company.id);
-                          router.push(`/get-started`);
-                        }}
+                        onClick={() => handleSelectCompany(company.id)}
                       >
                         <LogIn className="w-4 h-4" />
                         Enter

@@ -3,21 +3,12 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../ui/Button";
-import {
-  ChevronDown,
-  SettingsIcon,
-  BuildingIcon,
-  LayoutDashboardIcon,
-  Boxes,
-  BarChart,
-} from "lucide-react";
 
 export default function Navbar() {
   const router = useRouter();
-  const pathname = usePathname();
   const { user, isAuthenticated, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -104,13 +95,12 @@ export default function Navbar() {
 
   useEffect(() => {
     const id = localStorage.getItem("selected_company_id");
+    // if (!id) {
+    //   router.push("/list-companies");
+    //   return;
+    // }
     setCompanyId(id);
   }, [router]);
-
-  // Helper function to determine if a navigation item is active
-  const isActive = (path: string) => {
-    return pathname === path || pathname?.startsWith(path + "/");
-  };
 
   return (
     <nav className="sticky top-0 z-50 h-16 bg-white shadow-sm dark:bg-gray-900">
@@ -133,7 +123,7 @@ export default function Navbar() {
                   height={32}
                   className="block dark:hidden"
                 />
-                <span className="text-2xl font-bold ml-1">Carbon Insight</span>
+                <span className="text-4xl font-bold ml-1">Carbon Insight</span>
               </Link>
             </div>
           </div>
@@ -183,69 +173,41 @@ export default function Navbar() {
               {isAuthenticated ? (
                 <>
                   <Link
-                    href="/dashboard"
-                    className={`flex items-center px-3 py-2 rounded-md text-sm font-medium 
-                      ${
-                        isActive("/dashboard")
-                          ? "bg-red text-white"
-                          : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
-                      }`}
-                  >
-                    <LayoutDashboardIcon size={16} className="mr-1" />
-                    Dashboard
-                  </Link>
-
-                  <Link
-                    href="/list-companies"
-                    className={`flex items-center px-3 py-2 rounded-md text-sm font-medium 
-                      ${
-                        isActive("/list-companies") ||
-                        isActive("/company-details") ||
-                        isActive("/manage-user")
-                          ? "bg-red text-white"
-                          : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
-                      }`}
-                  >
-                    <BuildingIcon size={16} className="mr-1" />
-                    Companies
-                  </Link>
-
-                  <Link
-                    href="/product-list"
-                    className={`flex items-center px-3 py-2 rounded-md text-sm font-medium 
-                      ${
-                        isActive("/product-list")
-                          ? "bg-red text-white"
-                          : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
-                      }`}
-                  >
-                    <Boxes size={16} className="mr-1" />
-                    Products
-                  </Link>
-
-                  <Link
                     href="/get-started"
-                    className={`flex items-center px-3 py-2 rounded-md text-sm font-medium 
-                      ${
-                        isActive("/get-started") ||
-                        isActive("/self-assessment") ||
-                        isActive("/manufacturing-data") ||
-                        isActive("/supply-chain-data") ||
-                        isActive("/results")
-                          ? "bg-red text-white"
-                          : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
-                      }`}
+                    className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
                   >
-                    <BarChart size={16} className="mr-1" />
-                    Calculate PCF
+                    Get Started
                   </Link>
-
+                  <Link
+                    href="/self-assessment"
+                    className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                  >
+                    Self Assessment
+                  </Link>
+                  <Link
+                    href="/manufacturing-data"
+                    className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                  >
+                    Manufacturing Data
+                  </Link>
+                  <Link
+                    href="/supply-chain-data"
+                    className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                  >
+                    Supply Chain
+                  </Link>
+                  <Link
+                    href="/results"
+                    className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                  >
+                    Results
+                  </Link>
                   <div className="relative ml-3" ref={profileMenuRef}>
                     <div>
                       <button
                         ref={profileButtonRef}
                         onClick={toggleProfileMenu}
-                        className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                        className="flex text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                         id="user-menu"
                         aria-expanded="false"
                         aria-haspopup="true"
@@ -254,42 +216,23 @@ export default function Navbar() {
                         <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700">
                           {user?.username?.charAt(0)?.toUpperCase() || "U"}
                         </div>
-                        <ChevronDown size={16} className="ml-1" />
                       </button>
                     </div>
                     {isProfileMenuOpen && (
                       <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 dark:ring-gray-700">
                         <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
-                          {companyData.name && (
-                            <p className="text-gray-500 dark:text-gray-400 truncate">
-                              {companyData.name}
-                            </p>
-                          )}
+                          <p className="text-gray-500 dark:text-gray-400 truncate">
+                            {companyData.name}
+                          </p>
                           <p className="font-medium">{user?.username}</p>
                           <p className="text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
                         </div>
-                        <div className="border-b border-gray-200 dark:border-gray-700">
-                          <Link
-                            href="/account"
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                            onClick={() => setIsProfileMenuOpen(false)}
-                          >
-                            Account Settings
-                          </Link>
-                          <Link
-                            href="/company-details"
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                            onClick={() => setIsProfileMenuOpen(false)}
-                          >
-                            Company Details
-                          </Link>
-                        </div>
                         <Link
-                          href="/list-companies"
+                          href="/account"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
                           onClick={() => setIsProfileMenuOpen(false)}
                         >
-                          Switch company
+                          Account Settings
                         </Link>
                         <button
                           onClick={() => {
@@ -327,86 +270,44 @@ export default function Navbar() {
           {isAuthenticated ? (
             <>
               <Link
-                href="/dashboard"
-                className={`flex items-center px-3 py-2 rounded-md text-base font-medium 
-                  ${
-                    isActive("/dashboard")
-                      ? "bg-red text-white"
-                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
-                  }`}
-              >
-                <LayoutDashboardIcon size={16} className="mr-2" />
-                Dashboard
-              </Link>
-
-              <Link
-                href="/list-companies"
-                className={`flex items-center px-3 py-2 rounded-md text-base font-medium 
-                  ${
-                    isActive("/list-companies") ||
-                    isActive("/company-details") ||
-                    isActive("/manage-user")
-                      ? "bg-red text-white"
-                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
-                  }`}
-              >
-                <BuildingIcon size={16} className="mr-2" />
-                Companies
-              </Link>
-
-              <Link
-                href="/product-list"
-                className={`flex items-center px-3 py-2 rounded-md text-base font-medium 
-                  ${
-                    isActive("/product-list")
-                      ? "bg-red text-white"
-                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
-                  }`}
-              >
-                <Boxes size={16} className="mr-2" />
-                Products
-              </Link>
-
-              <Link
                 href="/get-started"
-                className={`flex items-center px-3 py-2 rounded-md text-base font-medium 
-                  ${
-                    isActive("/get-started") ||
-                    isActive("/self-assessment") ||
-                    isActive("/manufacturing-data") ||
-                    isActive("/supply-chain-data") ||
-                    isActive("/results")
-                      ? "bg-red text-white"
-                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
-                  }`}
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
               >
-                <BarChart size={16} className="mr-2" />
-                Calculate PCF
+                Get Started
               </Link>
-
+              <Link
+                href="/self-assessment"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+              >
+                Self Assessment
+              </Link>
+              <Link
+                href="/manufacturing-data"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+              >
+                Manufacturing Data
+              </Link>
+              <Link
+                href="/supply-chain-data"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+              >
+                Supply Chain
+              </Link>
+              <Link
+                href="/results"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+              >
+                Results
+              </Link>
               <Link
                 href="/account"
-                className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
               >
-                <SettingsIcon size={16} className="mr-2" />
                 Account Settings
-              </Link>
-              <Link
-                href="/company-details"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
-              >
-                Company details
-              </Link>
-              <Link
-                href="/list-companies"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
-                onClick={() => setIsProfileMenuOpen(false)}
-              >
-                Switch company
               </Link>
               <button
                 onClick={handleLogout}
-                className="flex items-center w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
               >
                 Sign out
               </button>

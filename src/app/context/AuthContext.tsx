@@ -2,34 +2,18 @@
 
 import { createContext, useState, useContext, useEffect, ReactNode } from "react";
 import { useRouter } from "next/navigation";
-
-// Get API URL from environment variables with fallback
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-interface User {
-  id: number;
-  username: string;
-  email: string;
-  first_name?: string;
-  last_name?: string;
-}
+import { authApi, LoginCredentials, RegisterData } from "@/lib/api/authApi";
+import { userApi, User } from "@/lib/api/userApi";
+import { ApiError } from "@/lib/api/apiClient";
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (username: string, password: string) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<void>;
   register: (userData: RegisterData) => Promise<void>;
   logout: () => void;
   refreshToken: () => Promise<boolean>;
-}
-
-interface RegisterData {
-  first_name: string;
-  last_name: string;
-  email: string;
-  password: string;
-  confirm_password: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -51,16 +35,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         // Get user profile
-        const response = await fetch(`${API_URL}/user_profile/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (response.ok) {
-          const userData = await response.json();
+        try {
+          const userData = await userApi.getProfile();
           setUser(userData);
-        } else {
+        } catch (error) {
           // Token might be invalid - try to refresh it
           const refreshed = await refreshToken();
           if (!refreshed) {
@@ -70,17 +48,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(null);
           } else {
             // If refresh succeeds, try to get user profile again
-            const newToken = localStorage.getItem("access_token");
-            const retryResponse = await fetch(`${API_URL}/user_profile/`, {
-              headers: {
-                Authorization: `Bearer ${newToken}`,
-              },
-            });
-
-            if (retryResponse.ok) {
-              const userData = await retryResponse.json();
+            try {
+              const userData = await userApi.getProfile();
               setUser(userData);
-            } else {
+            } catch (retryError) {
               // If it still fails, clear tokens
               localStorage.removeItem("access_token");
               localStorage.removeItem("refresh_token");
@@ -114,39 +85,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => clearInterval(refreshInterval);
   }, [user]);
 
-  const login = async (username: string, password: string) => {
+  const login = async (credentials: LoginCredentials) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_URL}/login/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Invalid credentials");
-      }
-
-      const data = await response.json();
-      localStorage.setItem("access_token", data.access);
-      localStorage.setItem("refresh_token", data.refresh);
+      const tokens = await authApi.login(credentials);
+      localStorage.setItem("access_token", tokens.access);
+      localStorage.setItem("refresh_token", tokens.refresh);
 
       // Get user profile
-      const userResponse = await fetch(`${API_URL}/user_profile/`, {
-        headers: {
-          Authorization: `Bearer ${data.access}`,
-        },
-      });
-
-      if (userResponse.ok) {
-        const userData = await userResponse.json();
-        setUser(userData);
-      }
+      const userData = await userApi.getProfile();
+      setUser(userData);
     } catch (error) {
       console.error("Login failed:", error);
-      throw error;
+      throw error instanceof ApiError
+        ? new Error(error.message)
+        : new Error("Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -155,28 +108,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (userData: RegisterData) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_URL}/register/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.email || errorData.password || errorData.detail || "Registration failed"
-        );
-      }
-
-      const data = await response.json();
-      localStorage.setItem("access_token", data.access);
-      localStorage.setItem("refresh_token", data.refresh);
-      setUser(data.user);
+      const response = await authApi.register(userData);
+      localStorage.setItem("access_token", response.access);
+      localStorage.setItem("refresh_token", response.refresh);
+      setUser(response.user);
     } catch (error) {
       console.error("Registration failed:", error);
-      throw error;
+      if (error instanceof ApiError) {
+        // Extract field-specific errors if available
+        if (typeof error.data === "object" && error.data !== null) {
+          const fieldErrors = Object.entries(error.data)
+            .map(([field, errors]) => {
+              // Handle both string and array error messages
+              const errorMsg = Array.isArray(errors) ? errors[0] : errors;
+              return `${field}: ${errorMsg}`;
+            })
+            .join(". ");
+
+          if (fieldErrors) {
+            throw new Error(fieldErrors);
+          }
+        }
+        throw new Error(error.message);
+      }
+      throw new Error("Registration failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -189,22 +144,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return false;
       }
 
-      const response = await fetch(`${API_URL}/token/refresh/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ refresh: refreshToken }),
-      });
-
-      if (!response.ok) {
-        // If refresh fails, return false
-        return false;
-      }
-
-      // If refresh succeeds, update access token
-      const data = await response.json();
-      localStorage.setItem("access_token", data.access);
+      const { access } = await authApi.refreshToken(refreshToken);
+      localStorage.setItem("access_token", access);
       return true;
     } catch (error) {
       console.error("Token refresh failed:", error);

@@ -4,58 +4,72 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
-import { companyApi, CompanyCreateData } from "@/lib/api/companyApi";
-import { ApiError } from "@/lib/api/apiClient";
 
 export default function CreateCompanyPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState<CompanyCreateData>({
-    name: "",
-    vat_number: "",
-    business_registration_number: "",
-  });
+  const [name, setName] = useState("");
+  const [vatNumber, setVatNumber] = useState("");
+  const [businessRegistryNumber, setBusinessRegistryNumber] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string[] }>({});
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  // API URL from environment variables with fallback
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-    setFieldErrors({});
-    setSuccessMessage("");
 
     try {
-      // Using companyApi instead of direct fetch
-      const newCompany = await companyApi.createCompany(formData);
-      
-      setSuccessMessage("Company successfully created!");
-      
-      // Store the new company ID in localStorage
-      localStorage.setItem("selected_company_id", newCompany.id);
-      
-      // Redirect after a short delay to show the success message
-      setTimeout(() => {
-        router.push("/company-details");
-      }, 2000);
-    } catch (err) {
-      console.error("Error creating company:", err);
-      
-      // Handle validation errors from API
-      if (err instanceof ApiError && err.data && typeof err.data === "object") {
-        setFieldErrors(err.data as { [key: string]: string[] });
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+
+      setError("");
+      setFieldErrors({});
+      setSuccessMessage("");
+      setIsLoading(true);
+
+      const response = await fetch(`${API_URL}/companies/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name,
+          vat_number: vatNumber,
+          business_registration_number: businessRegistryNumber,
+        }),
+      });
+
+      if (response.ok) {
+        setSuccessMessage("Company successfully created!");
+        setTimeout(() => {
+          router.push("/company-details");
+        }, 3000);
+        return;
+      }
+
+      const errorData = await response.json().catch(() => null);
+
+      if (errorData && typeof errorData === "object") {
+        setFieldErrors(errorData);
         setError("Please check company details.");
       } else {
-        setError(err instanceof Error ? err.message : "An unexpected error occurred.");
+        setError("An unexpected error occurred.");
+      }
+    } catch (err: unknown) {
+      console.error(err);
+      if (err instanceof Error) {
+        setError(err?.message);
+      } else {
+        setError("An unexpected error occurred.");
       }
     } finally {
       setIsLoading(false);
@@ -93,12 +107,11 @@ export default function CreateCompanyPage() {
             <input
               type="text"
               id="name"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
+              value={name}
+              onChange={e => setName(e.target.value)}
               required
               disabled={isDisabled}
-              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
             />
             {fieldErrors.name && (
               <p className="mt-1 text-sm text-red-600 dark:text-red-400">{fieldErrors.name[0]}</p>
@@ -107,20 +120,19 @@ export default function CreateCompanyPage() {
 
           <div>
             <label
-              htmlFor="vat_number"
+              htmlFor="vatNumber"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
               VAT number
             </label>
             <input
               type="text"
-              id="vat_number"
-              name="vat_number"
-              value={formData.vat_number}
-              onChange={handleChange}
+              id="vatNumber"
+              value={vatNumber}
+              onChange={e => setVatNumber(e.target.value)}
               required
               disabled={isDisabled}
-              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
             />
             {fieldErrors.vat_number && (
               <p className="mt-1 text-sm text-red-600 dark:text-red-400">
@@ -131,20 +143,19 @@ export default function CreateCompanyPage() {
 
           <div>
             <label
-              htmlFor="business_registration_number"
+              htmlFor="businessRegistryNumber"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
               Business registry number
             </label>
             <input
               type="text"
-              id="business_registration_number"
-              name="business_registration_number"
-              value={formData.business_registration_number}
-              onChange={handleChange}
+              id="businessRegistryNumber"
+              value={businessRegistryNumber}
+              onChange={e => setBusinessRegistryNumber(e.target.value)}
               required
               disabled={isDisabled}
-              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
             />
             {fieldErrors.business_registration_number && (
               <p className="mt-1 text-sm text-red-600 dark:text-red-400">

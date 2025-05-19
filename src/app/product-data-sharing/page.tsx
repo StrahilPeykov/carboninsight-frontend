@@ -5,47 +5,48 @@ import Button from "../components/ui/Button";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Trash } from "lucide-react";
-import { productApi, ProductSharingRequest } from "@/lib/api/productApi";
-import { companyApi } from "@/lib/api/companyApi";
+
+enum Status {
+  Pending = "Pending",
+  Accepted = "Accepted",
+  Rejected = "Rejected",
+}
+
+interface DataSharingRequestAPI {
+  id: number;
+  product_name: string;
+  status: Status;
+  created_at: string; // Date-time format.
+  product: number;
+  requester: number; // Id of requesting company.
+}
 
 interface DataSharingRequestDisplay {
   id: number;
   product_name: string;
   requesting_company_name: string;
-  status: "Pending" | "Accepted" | "Rejected";
+  status: Status;
   formatted_date: string;
 }
 
 export default function ProductDataSharing() {
   const router = useRouter();
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
+  const [token, setToken] = useState<string | null>(null);
   const [companyId, setCompanyId] = useState<string | null>(null);
 
-  // Requests state
-  const [requests, setRequests] = useState<DataSharingRequestDisplay[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadingError, setLoadingError] = useState<string | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
-
-  // Modal and form state
-  const [activeApprovingModal, setApprovingModal] = useState(false);
-  const [requestToApprove, setRequestToApprove] = useState<string>("");
-  const [isApprovingRequest, setIsApprovingRequest] = useState(false);
-  const [approveMessage, setApproveMessage] = useState<string | null>(null);
-  const [approveError, setApproveError] = useState<string | null>(null);
-  
-  const [activeDenyModal, setDenyModal] = useState(false);
-  const [requestToDeny, setRequestToDeny] = useState<string>("");
-  const [isDenyingRequest, setIsDenyingRequest] = useState(false);
-  const [denyMessage, setDenyMessage] = useState<string | null>(null);
-  const [denyError, setDenyError] = useState<string | null>(null);
-
-  // Check authentication and get company ID
+  // Retrieve token.
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token) {
+    const storedToken = localStorage.getItem("access_token");
+    if (storedToken) {
+      setToken(storedToken);
+    } else {
       router.push("/login");
     }
-    
+  }, [router]);
+
+  useEffect(() => {
     const id = localStorage.getItem("selected_company_id");
     if (!id) {
       router.push("/list-companies");
@@ -54,86 +55,146 @@ export default function ProductDataSharing() {
     setCompanyId(id);
   }, [router]);
 
-  // Fetch sharing requests and company names when company ID changes or refresh is needed
-  useEffect(() => {
-    if (!companyId) return;
+  const [requests, setRequests] = useState<DataSharingRequestDisplay[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadingError, setLoadingError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-    const fetchRequests = async () => {
+  useEffect(() => {
+    if (!token) {
+      return;
+    }
+
+    const getCompanyName = async (requesting_company_id: number): Promise<string> => {
       try {
-        setIsLoading(true);
-        // Using productApi instead of direct fetch
-        if (companyId) { // Explicit null check for TypeScript
-          const sharingRequests = await productApi.getProductSharingRequests(companyId);
-          
-          // Process the requests to include company names
-          const requestsWithCompanyNames: DataSharingRequestDisplay[] = await Promise.all(
-            sharingRequests.map(async (request: ProductSharingRequest) => {
-              let companyName = "Unknown Company";
-              
-              try {
-                // Get the requesting company details
-                const companyData = await companyApi.getCompany(request.requester.toString());
-                companyName = companyData.name;
-              } catch (err) {
-                console.error("Error fetching company name:", err);
-              }
-              
-              return {
-                id: request.id,
-                product_name: request.product_name,
-                requesting_company_name: companyName,
-                status: request.status,
-                formatted_date: new Date(request.created_at).toLocaleString()
-              };
-            })
-          );
-          
-          setRequests(requestsWithCompanyNames);
-          setLoadingError(null);
+        const response = await fetch(`${API_URL}/companies/${requesting_company_id}/`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-      } catch (err) {
-        console.error("Error fetching sharing requests:", err);
-        setLoadingError(
-          err instanceof Error ? err.message : "Failed to load sharing requests"
-        );
-      } finally {
-        setIsLoading(false);
+
+        const companyData = await response.json();
+        const companyName: string = companyData.name;
+
+        return companyName as string;
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setLoadingError(err.message);
+        } else {
+          setLoadingError("Something went wrong");
+        }
+        return "";
       }
     };
 
-    fetchRequests();
-  }, [companyId, refreshKey]);
+    const getRequests = async (): Promise<DataSharingRequestDisplay[]> => {
+      try {
+        const response = await fetch(
+          `${API_URL}/companies/${companyId}/product_sharing_requests/`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-  const handleApproveRequest = async () => {
-    if (!requestToApprove || !companyId || isApprovingRequest) return;
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
 
-    setIsApprovingRequest(true);
+        const APIdata = await response.json();
+
+        const displayData: DataSharingRequestDisplay[] = APIdata.map(
+          (request: DataSharingRequestAPI) => ({
+            id: request.id,
+            product_name: request.product_name,
+            requesting_company_name: getCompanyName(request.requester),
+            status: request.status,
+            formatted_date: new Date(request.created_at).toLocaleString(),
+          })
+        );
+
+        return displayData as DataSharingRequestDisplay[];
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setLoadingError(err.message);
+        } else {
+          setLoadingError("Something went wrong");
+        }
+        return [];
+      }
+    };
+
+    if (token) {
+      getRequests()
+        .then(data => setRequests(data))
+        .catch(err => setLoadingError(err.message))
+        .finally(() => setIsLoading(false));
+    }
+  }, [API_URL, companyId, token, refreshKey]); // Rerun when either token or refreshkey updates.
+
+  const [activeApprovingModal, setApprovingModal] = useState(false);
+  const [requestToApprove, setRequestToApprove] = useState<string>("");
+  const [isApprovingUser, setIsApprovingUser] = useState(false);
+  const [approveMessage, setApproveMessage] = useState<string | null>(null);
+  const [approveError, setApproveError] = useState<string | null>(null);
+  const [activeDenyModal, setDenyModal] = useState(false);
+  const [requestToDeny, setRequestToDeny] = useState<string>("");
+  const [isDenyingRequest, setIsDenyingRequest] = useState(false);
+  const [denyMessage, setDenyMessage] = useState<string | null>(null);
+  const [denyError, setDenyError] = useState<string | null>(null);
+
+  const handleApproveUser = async () => {
+    if (!requestToApprove) return;
+    if (isApprovingUser) return;
+
+    setIsApprovingUser(true);
     setApproveError(null);
     setApproveMessage(null);
     setDenyError(null);
     setDenyMessage(null);
 
     try {
-      if (companyId) { // Explicit null check for TypeScript
-        // Using productApi instead of direct fetch
-        await productApi.approveProductSharingRequests(companyId, [requestToApprove]);
-        
-        setApproveMessage(`Successfully approved request: ${requestToApprove}!`);
-        setRefreshKey(prev => prev + 1); // Trigger a refresh of the requests list
-        setRequestToApprove("");
-      }
-    } catch (err) {
-      console.error("Error approving request:", err);
-      setApproveError(
-        err instanceof Error ? err.message : "Failed to approve sharing request"
+      const response = await fetch(
+        `${API_URL}/companies/${companyId}/product_sharing_requests/bulk_approve/`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ ids: [requestToApprove] }),
+        }
       );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      await response.json(); // Should get a response if the api call was successfull.
+      setApproveMessage(`Successfully approved request: ${requestToApprove}!`);
+      setRefreshKey(prev => prev + 1);
+      setRequestToApprove("");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setApproveError(err.message);
+      } else {
+        setApproveError("Something went wrong");
+      }
     } finally {
-      setIsApprovingRequest(false);
+      setIsApprovingUser(false);
     }
   };
 
   const handleDenyRequest = async () => {
-    if (!requestToDeny || !companyId || isDenyingRequest) return;
+    if (!requestToDeny) return;
+    if (isDenyingRequest) return;
 
     setIsDenyingRequest(true);
     setApproveError(null);
@@ -142,19 +203,31 @@ export default function ProductDataSharing() {
     setDenyMessage(null);
 
     try {
-      if (companyId) { // Explicit null check for TypeScript
-        // Using productApi instead of direct fetch
-        await productApi.denyProductSharingRequests(companyId, [requestToDeny]);
-        
-        setDenyMessage(`Successfully denied request: ${requestToDeny}!`);
-        setRefreshKey(prev => prev + 1); // Trigger a refresh of the requests list
-        setRequestToDeny("");
-      }
-    } catch (err) {
-      console.error("Error denying request:", err);
-      setDenyError(
-        err instanceof Error ? err.message : "Failed to deny sharing request"
+      const response = await fetch(
+        `${API_URL}/companies/${companyId}/product_sharing_requests/bulk_deny/`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ ids: [requestToDeny] }),
+        }
       );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status}`);
+      }
+
+      setDenyMessage(`Successfully denied request: ${requestToDeny}!`);
+      setRefreshKey(prev => prev + 1);
+      setRequestToDeny("");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setDenyError(err.message);
+      } else {
+        setDenyError("Something went wrong");
+      }
     } finally {
       setIsDenyingRequest(false);
     }
@@ -170,24 +243,28 @@ export default function ProductDataSharing() {
               <div className="flex w-full">
                 <Button className="invisible flex-none"> X </Button>
                 <div className="grow flex justify-center items-center px-4 text-2xl font-bold">
-                  Approve Request
+                  {" "}
+                  Add User{" "}
                 </div>
                 <Button className="flex-none" onClick={() => setApprovingModal(false)}>
-                  X
+                  {" "}
+                  X{" "}
                 </Button>
               </div>
               <div className="w-100 max-w-full text-center">
-                Are you sure you want to approve request: {requestToApprove}?
+                {" "}
+                Are you sure you want to approve request: {requestToApprove}?{" "}
               </div>
 
               <Button
                 className="w-full"
                 onClick={() => {
-                  handleApproveRequest();
+                  handleApproveUser();
                   setApprovingModal(false);
                 }}
               >
-                Accept Request
+                {" "}
+                Accept Request{" "}
               </Button>
             </div>
           </Card>
@@ -202,14 +279,17 @@ export default function ProductDataSharing() {
               <div className="flex w-full">
                 <Button className="invisible flex-none"> X </Button>
                 <div className="grow flex justify-center items-center px-4 text-2xl font-bold">
-                  Deny Request
+                  {" "}
+                  Remove User{" "}
                 </div>
                 <Button className="flex-none" onClick={() => setDenyModal(false)}>
-                  X
+                  {" "}
+                  X{" "}
                 </Button>
               </div>
               <div className="w-100 max-w-full text-center">
-                Are you sure you want to deny request: {requestToDeny}?
+                {" "}
+                Are you sure you want to deny request: {requestToDeny}?{" "}
               </div>
               <Button
                 className="w-full"
@@ -218,7 +298,8 @@ export default function ProductDataSharing() {
                   setDenyModal(false);
                 }}
               >
-                Deny Request
+                {" "}
+                Deny Request{" "}
               </Button>
             </div>
           </Card>
@@ -226,12 +307,18 @@ export default function ProductDataSharing() {
       )}
 
       <div className="flex flex-col justify-self-center items-center gap-8">
-        <div className="font-bold text-4xl text-center w-auto">Manage Data Requests</div>
+        <div className="font-bold text-4xl text-center w-auto"> Manage Data Requests </div>
 
-        {/* Status messages */}
+        {/* Display Adding Message */}
         {approveMessage && <div className="text-green-500 rounded-md">{approveMessage}</div>}
+
+        {/* Display Adding Error */}
         {approveError && <div className="text-red-500 rounded-md">{approveError}</div>}
+
+        {/* Display Removal Message */}
         {denyMessage && <div className="text-green-500 rounded-md">{denyMessage}</div>}
+
+        {/* Display Removing Error */}
         {denyError && <div className="text-red-500 rounded-md">{denyError}</div>}
 
         {/* Table */}
@@ -248,23 +335,15 @@ export default function ProductDataSharing() {
                 </tr>
               </thead>
               <tbody className="text-lg">
+                {/* Map all requests to an actual div */}
                 {isLoading && (
                   <tr>
-                    <td colSpan={5} className="py-3 px-6 text-center">Loading requests...</td>
+                    <td>Loading users...</td>
                   </tr>
                 )}
                 {loadingError && (
                   <tr>
-                    <td colSpan={5} className="py-3 px-6 text-center text-red-500">
-                      Error: {loadingError}
-                    </td>
-                  </tr>
-                )}
-                {!isLoading && !loadingError && requests.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="py-5 text-center">
-                      This company currently has no data sharing requests.
-                    </td>
+                    <td className="text-red-500">Error: {loadingError} </td>
                   </tr>
                 )}
                 {!isLoading &&
@@ -275,11 +354,11 @@ export default function ProductDataSharing() {
                       <td className="py-3 px-6 text-left">{request.requesting_company_name}</td>
                       <td
                         className={`py-3 px-6 text-left ${
-                          request.status === "Accepted"
+                          request.status == "Accepted"
                             ? "text-green-500"
-                            : request.status === "Pending"
+                            : request.status == "Pending"
                               ? "text-yellow-500"
-                              : request.status === "Rejected"
+                              : request.status == "Rejected"
                                 ? "text-red-500"
                                 : "text-gray-500"
                         }`}
@@ -315,6 +394,11 @@ export default function ProductDataSharing() {
                   ))}
               </tbody>
             </table>
+            {!isLoading && !loadingError && requests.length == 0 ? (
+              <div className="p-5"> This company currently has no data sharing requests. </div>
+            ) : (
+              <div></div>
+            )}
           </div>
         </Card>
       </div>

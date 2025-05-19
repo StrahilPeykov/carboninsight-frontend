@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Modal from "../components/ui/PopupModal";
+import { companyApi, CompanyCreateData } from "@/lib/api/companyApi";
+import { ApiError } from "@/lib/api/apiClient";
 
 export default function CompanyDetailsPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<CompanyCreateData>({
     name: "",
     vat_number: "",
     business_registration_number: "",
@@ -22,9 +24,6 @@ export default function CompanyDetailsPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // API URL from environment variables with fallback
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
   useEffect(() => {
     const id = localStorage.getItem("selected_company_id");
     if (!id) {
@@ -37,36 +36,21 @@ export default function CompanyDetailsPage() {
   useEffect(() => {
     if (!companyId) return;
 
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      router.push("/login");
-      return;
-    }
-
     const fetchCompany = async () => {
       try {
-        const response = await fetch(`${API_URL}/companies/${companyId}/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          const message = await response.text();
-          throw new Error(`Error ${response.status}: ${message}`);
+        // Using the companyApi instead of direct fetch, with explicit null check
+        if (companyId) {
+          const companyData = await companyApi.getCompany(companyId);
+          setFormData(companyData);
         }
-
-        const data = await response.json();
-        setFormData(data);
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching company:", err);
         setError("Could not load company data.");
       }
     };
 
     fetchCompany();
-  }, [API_URL, router, companyId]);
+  }, [companyId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -82,52 +66,27 @@ export default function CompanyDetailsPage() {
     setFieldErrors({});
     setSuccessMessage("");
 
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      router.push("/login");
-      return;
-    }
-
     if (!companyId) {
       setError("No company ID available");
       setIsLoading(false);
       return;
     }
 
-    const payload = {
-      name: formData.name.trim(),
-      vat_number: formData.vat_number.trim(),
-      business_registration_number: formData.business_registration_number.trim(),
-    };
-
     try {
-      const response = await fetch(`${API_URL}/companies/${companyId}/`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      // Using the companyApi instead of direct fetch
+      const updatedCompany = await companyApi.updateCompany(companyId, formData);
+      setFormData(updatedCompany);
+      setSuccessMessage("Company data successfully edited!");
+    } catch (err) {
+      console.error("Error updating company:", err);
 
-      if (response.ok) {
-        const updated = await response.json();
-        setFormData(updated);
-        setSuccessMessage("Company data successfully edited!");
-        return;
-      }
-
-      const errorData = await response.json().catch(() => null);
-
-      if (errorData && typeof errorData === "object") {
-        setFieldErrors(errorData);
+      // Handle validation errors from API
+      if (err instanceof ApiError && err.data && typeof err.data === "object") {
+        setFieldErrors(err.data as { [key: string]: string[] });
         setError("Please check company details.");
       } else {
-        setError(`Update failed: ${response.status}`);
+        setError(err instanceof Error ? err.message : "An unexpected error occurred.");
       }
-    } catch (err) {
-      console.error(err);
-      setError((err as Error).message || "An unexpected error occurred.");
     } finally {
       setIsLoading(false);
     }
@@ -142,32 +101,18 @@ export default function CompanyDetailsPage() {
     setError("");
 
     try {
-      const token = localStorage.getItem("access_token");
-      if (!token) {
-        router.push("/login");
-        return;
-      }
       if (!companyId) {
         setError("No company ID available");
         return;
       }
 
-      const response = await fetch(`${API_URL}/companies/${companyId}/`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      // Using the companyApi instead of direct fetch
+      await companyApi.deleteCompany(companyId);
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || `Delete failed: ${response.status}`);
-      }
-
-      // on success, go back to the list
+      // On success, go back to the list
       router.push("/list-companies");
     } catch (err) {
-      console.error(err);
+      console.error("Error deleting company:", err);
       setError(err instanceof Error ? err.message : "An unknown error occurred");
     } finally {
       setIsDeleting(false);

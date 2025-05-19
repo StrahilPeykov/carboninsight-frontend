@@ -6,6 +6,7 @@ import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
 import Modal from "../components/ui/PopupModal";
+import { userApi } from "@/lib/api/userApi";
 
 export default function AccountPage() {
   const router = useRouter();
@@ -40,9 +41,6 @@ export default function AccountPage() {
     confirm_password: "",
   });
 
-  // API URL from environment variables with fallback
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
   useEffect(() => {
     if (user) {
       setFormData({
@@ -76,26 +74,8 @@ export default function AccountPage() {
     setIsSaving(true);
 
     try {
-      const token = localStorage.getItem("access_token");
-      if (!token) {
-        router.push("/login");
-        return;
-      }
-
-      const response = await fetch(`${API_URL}/user_profile/`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to update profile");
-      }
-
+      // Using userApi.updateProfile instead of direct fetch
+      await userApi.updateProfile(formData);
       setSuccess("Your profile has been updated successfully!");
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -118,34 +98,12 @@ export default function AccountPage() {
     }
 
     try {
-      const token = localStorage.getItem("access_token");
-      if (!token) {
-        router.push("/login");
-        return;
-      }
-
-      const response = await fetch(`${API_URL}/change_password/`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          old_password: passwordData.current_password,
-          new_password: passwordData.new_password,
-          new_password_confirm: passwordData.confirm_password,
-        }),
+      // Using userApi.changePassword instead of direct fetch
+      await userApi.changePassword({
+        old_password: passwordData.current_password,
+        new_password: passwordData.new_password,
+        new_password_confirm: passwordData.confirm_password,
       });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.current_password?.[0] ||
-            errorData.new_password?.[0] ||
-            errorData.detail ||
-            "Failed to change password"
-        );
-      }
 
       setSuccess("Your password has been changed successfully!");
 
@@ -172,24 +130,8 @@ export default function AccountPage() {
     setError(null);
 
     try {
-      const token = localStorage.getItem("access_token");
-      if (!token) {
-        router.push("/login");
-        return;
-      }
-
-      const response = await fetch(`${API_URL}/user_profile/`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Failed to delete account");
-      }
-
+      // Using userApi.deleteAccount instead of direct fetch
+      await userApi.deleteAccount();
       logout();
       router.push("/");
     } catch (error) {

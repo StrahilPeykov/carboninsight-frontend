@@ -6,13 +6,14 @@ import Link from "next/link";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
+import { RegisterData } from "@/lib/api/authApi";
 
 export default function RegisterPage() {
   const router = useRouter();
   const { register } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<RegisterData>({
     first_name: "",
     last_name: "",
     email: "",
@@ -30,8 +31,6 @@ export default function RegisterPage() {
 
   const validatePassword = () => {
     // Do basic validation here, most of it is handled by the backend
-
-    // Password match check
     if (formData.password !== formData.confirm_password) {
       return "Passwords do not match.";
     }
@@ -53,14 +52,8 @@ export default function RegisterPage() {
     }
 
     try {
-      // Use the register method from AuthContext instead of directly making the API call
-      await register({
-        first_name: formData.first_name,
-        last_name: formData.last_name,
-        email: formData.email,
-        password: formData.password,
-        confirm_password: formData.confirm_password,
-      });
+      // Use the register method from AuthContext which now uses our API client
+      await register(formData);
 
       // Redirect to home page or dashboard on success
       router.push("/");

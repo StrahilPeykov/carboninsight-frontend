@@ -5,84 +5,19 @@ import Button from "../components/ui/Button";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Trash } from "lucide-react";
-
-interface AuthenticatedUser {
-  company_id: number;
-  username: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-}
+import { companyApi, AuthenticatedUser } from "@/lib/api/companyApi";
 
 export default function ManageUserPage() {
   const router = useRouter();
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-  const [token, setToken] = useState<string | null>(null);
   const [companyId, setCompanyId] = useState<string | null>(null);
 
-  // Retrieve token.
-  useEffect(() => {
-    const storedToken = localStorage.getItem("access_token");
-    if (storedToken) {
-      setToken(storedToken);
-    } else {
-      router.push("/login");
-    }
-  }, [router]);
-
-  useEffect(() => {
-    const id = localStorage.getItem("selected_company_id");
-    if (!id) {
-      router.push("/list-companies");
-      return;
-    }
-    setCompanyId(id);
-  }, [router]);
-
+  // User management state
   const [users, setUsers] = useState<AuthenticatedUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  useEffect(() => {
-    // Returns an array of authenticated users.
-    const getAuthenticatedUsers = async (): Promise<AuthenticatedUser[]> => {
-      if (!token) {
-        return [];
-      }
-
-      try {
-        const response = await fetch(`${API_URL}/companies/${companyId}/list_users/`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        return data as AuthenticatedUser[];
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          setLoadingError(err.message);
-        } else {
-          setLoadingError("Something went wrong");
-        }
-        return [];
-      }
-    };
-
-    if (token) {
-      getAuthenticatedUsers()
-        .then(data => setUsers(data))
-        .catch(err => setLoadingError(err.message))
-        .finally(() => setIsLoading(false));
-    }
-  }, [API_URL, companyId, token, refreshKey]); // Rerun when either token or refreshkey updates.
-
+  // Modal and form state
   const [activeAddingModal, setAddingModal] = useState(false);
   const [userToAdd, setUserToAdd] = useState<string>("");
   const [isAddingUser, setIsAddingUser] = useState(false);
@@ -94,9 +29,47 @@ export default function ManageUserPage() {
   const [removalMessage, setRemovalMessage] = useState<string | null>(null);
   const [removingError, setRemovingError] = useState<string | null>(null);
 
+  // Check authentication and get company ID
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      router.push("/login");
+    }
+
+    const id = localStorage.getItem("selected_company_id");
+    if (!id) {
+      router.push("/list-companies");
+      return;
+    }
+    setCompanyId(id);
+  }, [router]);
+
+  // Fetch users when company ID changes or refresh is needed
+  useEffect(() => {
+    if (!companyId) return;
+
+    const fetchUsers = async () => {
+      try {
+        setIsLoading(true);
+        if (companyId) {
+          // Explicit null check for TypeScript
+          const userData = await companyApi.listUsers(companyId);
+          setUsers(userData);
+          setLoadingError(null);
+        }
+      } catch (err) {
+        console.error("Error fetching users:", err);
+        setLoadingError(err instanceof Error ? err.message : "Failed to load authorized users");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, [companyId, refreshKey]);
+
   const handleAddingUser = async () => {
-    if (!userToAdd) return;
-    if (isAddingUser) return;
+    if (!userToAdd || !companyId || isAddingUser) return;
 
     setIsAddingUser(true);
     setRemovalMessage(null);
@@ -104,37 +77,20 @@ export default function ManageUserPage() {
     setAddingError(null);
 
     try {
-      const response = await fetch(`${API_URL}/companies/${companyId}/add_user/`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username: userToAdd }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-
-      await response.json(); // Should get a response if the api call was successfull.
-      setAddingMessage(`Successfully added  ${userToAdd} to the company!`);
-      setRefreshKey(prev => prev + 1);
+      await companyApi.addUser(companyId, userToAdd);
+      setAddingMessage(`Successfully added ${userToAdd} to the company!`);
+      setRefreshKey(prev => prev + 1); // Trigger a refresh of the users list
       setUserToAdd("");
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setAddingError(err.message);
-      } else {
-        setAddingError("Something went wrong");
-      }
+    } catch (err) {
+      console.error("Error adding user:", err);
+      setAddingError(err instanceof Error ? err.message : "Failed to add user to company");
     } finally {
       setIsAddingUser(false);
     }
   };
 
   const handleRemovingUser = async () => {
-    if (!userToRemove) return;
-    if (isRemovingUser) return;
+    if (!userToRemove || !companyId || isRemovingUser) return;
 
     setIsRemovingUser(true);
     setAddingError(null);
@@ -142,28 +98,13 @@ export default function ManageUserPage() {
     setRemovingError(null);
 
     try {
-      const response = await fetch(`${API_URL}/companies/${companyId}/remove_user/`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username: userToRemove }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-
+      await companyApi.removeUser(companyId, userToRemove);
       setRemovalMessage(`Successfully removed ${userToRemove} from the company!`);
-      setRefreshKey(prev => prev + 1);
+      setRefreshKey(prev => prev + 1); // Trigger a refresh of the users list
       setUserToRemove("");
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setRemovingError(err.message);
-      } else {
-        setRemovingError("Something went wrong");
-      }
+    } catch (err) {
+      console.error("Error removing user:", err);
+      setRemovingError(err instanceof Error ? err.message : "Failed to remove user from company");
     } finally {
       setIsRemovingUser(false);
     }

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../ui/Button";
+<<<<<<< HEAD
 import {
   ChevronDown,
   SettingsIcon,
@@ -14,6 +15,9 @@ import {
   Boxes,
   BarChart,
 } from "lucide-react";
+=======
+import { companyApi } from "@/lib/api/companyApi";
+>>>>>>> main
 
 export default function Navbar() {
   const router = useRouter();
@@ -29,7 +33,6 @@ export default function Navbar() {
     vat_number: "",
     business_registration_number: "",
   });
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -47,27 +50,10 @@ export default function Navbar() {
   useEffect(() => {
     if (!companyId) return;
 
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      router.push("/login");
-      return;
-    }
-
     const fetchCompany = async () => {
       try {
-        const response = await fetch(`${API_URL}/companies/${companyId}/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          const message = await response.text();
-          throw new Error(`Error ${response.status}: ${message}`);
-        }
-
-        const data = await response.json();
+        // Using companyApi.getCompany instead of direct fetch
+        const data = await companyApi.getCompany(companyId);
         setCompanyData(data);
       } catch (err) {
         console.error(err);
@@ -75,7 +61,7 @@ export default function Navbar() {
     };
 
     fetchCompany();
-  }, [API_URL, router, companyId]);
+  }, [companyId]);
 
   // Close profile dropdown when clicking outside
   useEffect(() => {

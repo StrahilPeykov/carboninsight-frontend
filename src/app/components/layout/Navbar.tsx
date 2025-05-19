@@ -6,7 +6,6 @@ import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../ui/Button";
-<<<<<<< HEAD
 import {
   ChevronDown,
   SettingsIcon,
@@ -15,9 +14,7 @@ import {
   Boxes,
   BarChart,
 } from "lucide-react";
-=======
 import { companyApi } from "@/lib/api/companyApi";
->>>>>>> main
 
 export default function Navbar() {
   const router = useRouter();

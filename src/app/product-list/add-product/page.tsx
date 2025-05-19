@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 "use client";
 
 import { useState } from "react";
@@ -7,11 +6,7 @@ import Link from "next/link";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import { ArrowLeft } from "lucide-react";
-=======
-// We definitely need this for the register page implementation
-//import Card from "../../components/ui/Card";
-//import Button from "../../components/ui/Button";
->>>>>>> main
+import { productApi } from "@/lib/api/productApi";
 
 export default function AddProductPage() {
   const router = useRouter();

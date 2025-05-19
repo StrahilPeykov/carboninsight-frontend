@@ -2,71 +2,54 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-<<<<<<< HEAD
 import Link from "next/link";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { Info, Plus, ChevronLeft, ChevronRight, Filter, Search } from "lucide-react";
 import ErrorBanner from "../components/ui/ErrorBanner";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
+import { productApi, Product as ApiProduct } from "@/lib/api/productApi";
+import { companyApi } from "@/lib/api/companyApi";
 
-type Product = {
-  id: string;
-  name: string;
-  sku: string;
-  manufacturer: string;
-  description?: string;
-  is_public: boolean;
+// Extended product interface to handle the UI-specific properties
+interface ExtendedProduct extends ApiProduct {
+  name?: string;
+  manufacturer?: string;
   co_2_emissions_override?: number;
-  // Backend fields returned from API
-  supplier: string;
-  // Additional fields used in the rendering (may come from API or be derived)
-  company_name?: string;
-  status?: string;
-  pcf_calculation_method?: string;
-  pcf_value?: string;
-};
-=======
-import Card from "../components/ui/Card";
-import Button from "../components/ui/Button";
-import { Info } from "lucide-react";
-import { productApi, Product } from "@/lib/api/productApi";
->>>>>>> main
+}
 
 export default function ProductListPage() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ExtendedProduct[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<ExtendedProduct[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-<<<<<<< HEAD
   const [rowsPerPage] = useState(15);
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [companyName, setCompanyName] = useState("");
-
-  const router = useRouter();
-
-  // Get the company ID from localStorage
-  const companyId = localStorage.getItem("selected_company_id");
-
-  // API URL from environment variables with fallback
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-
-  const getStatusColor = (product: Product) => {
-    // Determine status based on product data
-    const status = getProductStatus(product);
-
-=======
   const [companyId, setCompanyId] = useState<string | null>(null);
 
-  const rowsPerPage = 15;
   const router = useRouter();
+
+  // Helper function to determine product status
+  const getProductStatus = (product: ExtendedProduct): string => {
+    if (product.status) {
+      return product.status;
+    }
+
+    if (product.co_2_emissions_override && product.co_2_emissions_override > 0) {
+      return "Estimated";
+    }
+
+    // We would need to check if this product has emissions data
+    // For now, default to "Pending" if no override is set
+    return "Pending";
+  };
 
   // Get status color for display
   const getStatusColor = (status: string) => {
->>>>>>> main
     switch (status) {
       case "Imported":
         return "bg-green-100 text-green-700";
@@ -79,126 +62,30 @@ export default function ProductListPage() {
     }
   };
 
-<<<<<<< HEAD
-  // Helper function to determine product status
-  const getProductStatus = (product: Product): string => {
-    if (product.status) {
-      return product.status;
-    }
-
-    if (product.co_2_emissions_override !== undefined && product.co_2_emissions_override > 0) {
-      return "Estimated";
-    }
-
-    // We would need to check if this product has emissions data
-    // For now, default to "Pending" if no override is set
-    return "Pending";
-  };
-
   // Get PCF calculation method
-  const getPCFMethod = (product: Product): string => {
+  const getPCFMethod = (product: ExtendedProduct): string => {
     if (product.pcf_calculation_method) {
       return product.pcf_calculation_method;
     }
 
-    if (product.co_2_emissions_override !== undefined && product.co_2_emissions_override > 0) {
+    if (product.co_2_emissions_override && product.co_2_emissions_override > 0) {
       return "Emission Factor";
     }
     return "Pending";
   };
 
   // Get PCF value as formatted string
-  const getPCFValue = (product: Product): string => {
+  const getPCFValue = (product: ExtendedProduct): string => {
     if (product.pcf_value) {
       return product.pcf_value;
     }
 
-    if (product.co_2_emissions_override !== undefined && product.co_2_emissions_override > 0) {
+    if (product.co_2_emissions_override && product.co_2_emissions_override > 0) {
       return `${product.co_2_emissions_override} kg CO2e`;
     }
     return "Pending";
   };
 
-  // Fetch company data to display the name
-  useEffect(() => {
-    const fetchCompanyData = async () => {
-      if (!companyId) return;
-
-      try {
-        const token = localStorage.getItem("access_token");
-        if (!token) {
-          router.push("/login");
-          return;
-        }
-
-        const response = await fetch(`${API_URL}/companies/${companyId}/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch company data: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setCompanyName(data.name);
-      } catch (err) {
-        console.error("Error fetching company data:", err);
-      }
-    };
-
-    fetchCompanyData();
-  }, [API_URL, companyId, router]);
-
-  useEffect(() => {
-    if (!companyId) {
-      setError("No company selected. Please select a company first.");
-      setLoading(false);
-      return;
-    }
-
-    const fetchProducts = async () => {
-      try {
-        const token = localStorage.getItem("access_token");
-        if (!token) {
-          router.push("/login");
-          return;
-        }
-
-        setLoading(true);
-        const response = await fetch(`${API_URL}/companies/${companyId}/products/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch products: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        // Add derived properties for display if they don't exist
-        const processedData = data.map((product: Product) => ({
-          ...product,
-          status: product.status || getProductStatus(product),
-          pcf_calculation_method: product.pcf_calculation_method || getPCFMethod(product),
-          pcf_value: product.pcf_value || getPCFValue(product),
-          company_name: product.company_name || companyName,
-        }));
-
-        setProducts(processedData);
-        setFilteredProducts(processedData);
-      } catch (err) {
-        console.error("Error fetching products:", err);
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError("An unknown error occurred while fetching products");
-=======
   // Check authentication and get company ID
   useEffect(() => {
     const token = localStorage.getItem("access_token");
@@ -214,21 +101,49 @@ export default function ProductListPage() {
     setCompanyId(id);
   }, [router]);
 
-  // Fetch products when company ID is available
+  // Fetch company data to display the name
   useEffect(() => {
     if (!companyId) return;
+
+    const fetchCompanyData = async () => {
+      try {
+        const data = await companyApi.getCompany(companyId);
+        setCompanyName(data.name);
+      } catch (err) {
+        console.error("Error fetching company data:", err);
+      }
+    };
+
+    fetchCompanyData();
+  }, [companyId]);
+
+  // Fetch products when company ID is available
+  useEffect(() => {
+    if (!companyId) {
+      setError("No company selected. Please select a company first.");
+      setLoading(false);
+      return;
+    }
 
     async function fetchProducts() {
       try {
         setLoading(true);
-        // Using productApi instead of direct fetch - with type safety
+        // Using productApi instead of direct fetch
         if (companyId) {
-          // Explicit null check for TypeScript
           const data = await productApi.listProducts(companyId);
-          setProducts(data);
-          setFilteredProducts(data);
+          
+          // Add derived properties for display if they don't exist
+          const processedData = data.map((product: ApiProduct): ExtendedProduct => ({
+            ...product,
+            status: product.status || getProductStatus(product as ExtendedProduct),
+            pcf_calculation_method: product.pcf_calculation_method || getPCFMethod(product as ExtendedProduct),
+            pcf_value: product.pcf_value || getPCFValue(product as ExtendedProduct),
+            company_name: product.company_name || companyName,
+          }));
+
+          setProducts(processedData);
+          setFilteredProducts(processedData);
           setError("");
->>>>>>> main
         }
       } catch (err) {
         console.error("Error fetching products:", err);
@@ -239,8 +154,7 @@ export default function ProductListPage() {
     };
 
     fetchProducts();
-<<<<<<< HEAD
-  }, [API_URL, companyId, router, companyName]);
+  }, [companyId, companyName]);
 
   // Search and filter products
   useEffect(() => {
@@ -249,10 +163,17 @@ export default function ProductListPage() {
     // Apply search
     if (searchQuery) {
       filtered = filtered.filter(
-        product =>
-          product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          product.manufacturer.toLowerCase().includes(searchQuery.toLowerCase())
+        product => {
+          const productName = product.product_name || product.name || '';
+          const productSku = product.sku || '';
+          const productManufacturer = product.manufacturer || '';
+          const companyName = product.company_name || '';
+          
+          return productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                 productSku.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                 productManufacturer.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                 companyName.toLowerCase().includes(searchQuery.toLowerCase());
+        }
       );
     }
 
@@ -261,44 +182,23 @@ export default function ProductListPage() {
       filtered = filtered.filter(product => getProductStatus(product) === selectedStatusFilter);
     }
 
-=======
-  }, [companyId]);
-
-  // Filter products based on search query
-  useEffect(() => {
-    const filtered = products.filter(
-      product =>
-        product.company_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.product_name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
->>>>>>> main
     setFilteredProducts(filtered);
     setCurrentPage(1);
   }, [searchQuery, products, selectedStatusFilter]);
 
-<<<<<<< HEAD
   // Pagination calculation
   const totalPages = Math.ceil(filteredProducts.length / rowsPerPage);
-=======
-  // Calculate pagination
->>>>>>> main
   const paginatedProducts = filteredProducts.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
 
-<<<<<<< HEAD
   const navigateToProductDetails = (productId: string) => {
     router.push(`/product-list/${productId}`);
-=======
-  const handleAddProduct = () => {
-    router.push("/product-list/add-product");
->>>>>>> main
   };
 
   return (
     <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<<<<<<< HEAD
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold">Products</h1>
@@ -421,11 +321,11 @@ export default function ProductListPage() {
                       onClick={() => navigateToProductDetails(product.id)}
                     >
                       <td className="py-3 px-6">{product.company_name || companyName}</td>
-                      <td className="py-3 px-6">{product.name}</td>
-                      <td className="py-3 px-6">{product.sku}</td>
+                      <td className="py-3 px-6">{product.product_name || product.name || ''}</td>
+                      <td className="py-3 px-6">{product.sku || ''}</td>
                       <td className="py-3 px-6">
                         <span
-                          className={`text-xs font-medium px-2 py-1 rounded ${getStatusColor(product)}`}
+                          className={`text-xs font-medium px-2 py-1 rounded ${getStatusColor(product.status || getProductStatus(product))}`}
                         >
                           {product.status || getProductStatus(product)}
                         </span>
@@ -515,101 +415,6 @@ export default function ProductListPage() {
               </div>
             )}
           </div>
-=======
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-3xl font-bold">Products</h1>
-        <Button
-          onClick={handleAddProduct}
-          className="bg-green-600 hover:bg-green-700 rounded-full px-4 py-2 text-xl"
-        >
-          +
-        </Button>
-      </div>
-
-      {/* Search Bar */}
-      <div className="mb-6">
-        <input
-          type="text"
-          placeholder="Search by company or product name..."
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
-
-      {error && <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md">{error}</div>}
-
-      <Card className="p-4">
-        {loading ? (
-          <p>Loading products...</p>
-        ) : filteredProducts.length === 0 ? (
-          <div className="text-center p-6">
-            <p className="text-gray-500 mb-4">No products found.</p>
-            <Button onClick={handleAddProduct}>Add Your First Product</Button>
-          </div>
-        ) : (
-          <table className="min-w-full table-auto text-xl">
-            <thead>
-              <tr className="text-left border-b">
-                <th className="py-3 px-6 font-medium text-left">Company</th>
-                <th className="py-3 px-6 font-medium text-left">Product name</th>
-                <th className="py-3 px-6 font-medium text-left">SKU</th>
-                <th className="py-3 px-6 font-medium text-left">Status</th>
-                <th className="py-3 px-6 font-medium text-left">PCF calculation method</th>
-                <th className="py-3 px-6 font-medium text-left">PCF</th>
-              </tr>
-            </thead>
-            <tbody className="text-xl">
-              {paginatedProducts.map((product, idx) => (
-                <tr key={idx} className="border-b hover:bg-gray-500 transition-colors duration-200">
-                  <td className="p-2">{product.company_name}</td>
-                  <td className="p-2">{product.product_name}</td>
-                  <td className="p-2">{product.sku}</td>
-                  <td className="p-2">
-                    <span
-                      className={`text-xs font-medium px-2 py-1 rounded ${getStatusColor(product.status)}`}
-                    >
-                      {product.status}
-                    </span>
-                  </td>
-                  <td className="p-2">{product.pcf_calculation_method}</td>
-                  <td className="py-3 px-6 whitespace-nowrap text-left">
-                    {product.pcf_value}
-                    <Info className="w-4 h-4 text-gray-400 ml-1 inline-block" />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-
-        {!loading && filteredProducts.length > rowsPerPage && (
-          <div className="flex justify-between items-center mt-4">
-            <div className="flex items-center gap-2">
-              <Button
-                className="px-2 py-1 rounded hover:bg-gray-100 transition-colors"
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </Button>
-              <span className="text-sm">
-                Page {currentPage} of {Math.ceil(filteredProducts.length / rowsPerPage)}
-              </span>
-              <Button
-                className="px-2 py-1 rounded hover:bg-gray-100 transition-colors"
-                onClick={() =>
-                  setCurrentPage(p =>
-                    Math.min(Math.ceil(filteredProducts.length / rowsPerPage), p + 1)
-                  )
-                }
-                disabled={currentPage * rowsPerPage >= filteredProducts.length}
-              >
-                Next
-              </Button>
-            </div>
-          </div>
->>>>>>> main
         )}
       </Card>
     </div>

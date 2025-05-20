@@ -14,7 +14,7 @@ export interface CompanyCreateData {
 }
 
 export interface AuthenticatedUser {
-  company_id: number;
+  id: number;
   username: string;
   email: string;
   first_name: string;
@@ -50,17 +50,16 @@ export const companyApi = {
 
   // User management within a company
   listUsers: (companyId: string) =>
-    apiRequest<AuthenticatedUser[]>(`/companies/${companyId}/list_users/`),
+    apiRequest<AuthenticatedUser[]>(`/companies/${companyId}/users/`),
 
   addUser: (companyId: string, username: string) =>
-    apiRequest<{ success: boolean }>(`/companies/${companyId}/add_user/`, {
+    apiRequest<{ success: boolean }>(`/companies/${companyId}/users/`, {
       method: "POST",
       body: { username } as unknown as Record<string, unknown>,
     }),
 
-  removeUser: (companyId: string, username: string) =>
-    apiRequest<{ success: boolean }>(`/companies/${companyId}/remove_user/`, {
-      method: "POST",
-      body: { username } as unknown as Record<string, unknown>,
+  removeUser: (companyId: string, userId: number) =>
+    apiRequest(`/companies/${companyId}/users/${userId}/`, {
+      method: "DELETE",
     }),
 };

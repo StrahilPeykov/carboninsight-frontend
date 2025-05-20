@@ -1,22 +1,53 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
-import { Info } from "lucide-react";
-import { productApi, Product } from "@/lib/api/productApi";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ChevronLeft, ChevronRight, Info } from "lucide-react";
+import Link from "next/link";
+
+// Product type
+type Product = {
+  id: string; 
+  supplier: string;
+  emission_total: string; //pcf_value
+  name: string;
+  description: string;
+  manufacturer_name: string;
+  sku: string;
+  is_public: true; 
+  status: "Imported" | "Estimated" | "Pending" | string; //not yet implemented
+  pcf_calculation_method: string; //not yet implemented
+
+
+//   "id": 0,
+// "supplier": 0,
+// "emission_total": 0.1,
+// "name": "string",
+// "description": "string",
+// "manufacturer_name": "string",
+// "manufacturer_country": "AF",
+// "manufacturer_city": "string",
+// "manufacturer_street": "string",
+// "manufacturer_zip_code": "string",
+// "year_of_construction": 1900,
+// "family": "string",
+// "sku": "string",
+// "reference_impact_unit": "A1",
+// "is_public": true
+};
 
 export default function ProductListPage() {
+  const [companyId, setCompanyId] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState("");
-  const [companyId, setCompanyId] = useState<string | null>(null);
-
-  const rowsPerPage = 15;
+  const [rowsPerPage, setRowsPerPage] = useState(15);
+  const [editMode, setEditMode] = useState(false);
   const router = useRouter();
 
   // Get status color for display
@@ -35,83 +66,122 @@ export default function ProductListPage() {
 
   // Check authentication and get company ID
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      router.push("/login");
+    if (typeof window !== "undefined") {
+      const id = localStorage.getItem("selected_company_id");
+      if (!id) {
+        router.push("/list-companies");
+      } else {
+        setCompanyId(id);
+      }
+      setInitializing(false);
     }
-
-    const id = localStorage.getItem("selected_company_id");
-    if (!id) {
-      router.push("/list-companies");
-      return;
-    }
-    setCompanyId(id);
   }, [router]);
 
-  // Fetch products when company ID is available
-  useEffect(() => {
+  const fetchProducts = async (query = "") => {
     if (!companyId) return;
-
-    async function fetchProducts() {
-      try {
-        setLoading(true);
-        // Using productApi instead of direct fetch - with type safety
-        if (companyId) {
-          // Explicit null check for TypeScript
-          const data = await productApi.listProducts(companyId);
-          setProducts(data);
-          setFilteredProducts(data);
-          setError("");
-        }
-      } catch (err) {
-        console.error("Error fetching products:", err);
-        setError(err instanceof Error ? err.message : "Failed to fetch products");
-      } finally {
-        setLoading(false);
+    try {
+      setLoading(true);
+      setError("");
+      const token = localStorage.getItem("access_token");
+      if (!token) {
+        router.push("/login");
+        return;
       }
+      const searchParam = query.length >= 4 ? `?search=${encodeURIComponent(query)}` : "";
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/companies/${companyId}/products${searchParam}`;
+      const res = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!res.ok) throw new Error("Failed to fetch products");
+      const data = await res.json();
+      const transformed: Product[] = data.map((p: Product) => ({
+        manufacturer_name: p.manufacturer_name ?? "Unknown",
+        name: p.name,
+        sku: p.sku,
+        status: p.status,
+        pcf_calculation_method: p.pcf_calculation_method,
+        emission_total: p.emission_total,
+      }));
+      setProducts(transformed);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setLoading(false);
     }
+  };
 
-    fetchProducts();
+  useEffect(() => {
+    if (companyId) fetchProducts();
   }, [companyId]);
 
-  // Filter products based on search query
   useEffect(() => {
-    const filtered = products.filter(
-      product =>
-        product.company_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.product_name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-    setFilteredProducts(filtered);
-    setCurrentPage(1);
-  }, [searchQuery, products]);
+    const delayDebounce = setTimeout(() => {
+      if (!companyId) return;
+      if (searchQuery.length === 0 || searchQuery.length >= 4) {
+        fetchProducts(searchQuery);
+        setCurrentPage(1);
+      } else {
+        setProducts([]);
+      }
+    }, 300);
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery]);
 
-  // Calculate pagination
-  const paginatedProducts = filteredProducts.slice(
+  const paginatedProducts = products.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
 
-  const handleAddProduct = () => {
-    router.push("/product-list/add-product");
+  if (initializing) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-600"></div>
+        <span className="ml-4 text-gray-600">Loading company information...</span>
+      </div>
+    );
+  }
+
+  const handleProductClick = (sku: string) => {
+    if (editMode) {
+      router.push(`/product-list/add-product?sku=${sku}`);
+    }
   };
 
   return (
     <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-3xl font-bold">Products</h1>
-        <Button
-          onClick={handleAddProduct}
-          className="bg-green-600 hover:bg-green-700 rounded-full px-4 py-2 text-xl"
-        >
-          +
-        </Button>
+      <div className="mb-4">
+        <h1 className="text-3xl font-bold mb-2">Products</h1>
+
+        {loading && (
+          <div className="flex items-center text-sm text-gray-500 mb-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-gray-500 mr-2"></div>
+            Loading product data...
+          </div>
+        )}
+
+        <div className="flex justify-between items-center">
+          <div></div>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setEditMode((prev) => !prev)}
+              className={`rounded-full px-4 py-2 text-sm font-medium ${editMode ? "bg-gray-500 text-white" : "bg-gray-200 text-black"}`}
+            >
+              {editMode ? "Cancel" : "Edit"}
+            </Button>
+            <Link href="/product-list/add-product">
+              <Button className="bg-black text-white rounded-full px-4 py-2 text-xl">+</Button>
+            </Link>
+          </div>
+        </div>
       </div>
 
-      {/* Search Bar */}
       <div className="mb-6">
         <input
           type="text"
-          placeholder="Search by company or product name..."
+          placeholder="Search by product, SKU or manufacturer name..."
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -122,12 +192,12 @@ export default function ProductListPage() {
 
       <Card className="p-4">
         {loading ? (
-          <p>Loading products...</p>
-        ) : filteredProducts.length === 0 ? (
-          <div className="text-center p-6">
-            <p className="text-gray-500 mb-4">No products found.</p>
-            <Button onClick={handleAddProduct}>Add Your First Product</Button>
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-gray-400"></div>
+            <span className="ml-3 text-gray-500">Loading products...</span>
           </div>
+        ) : error ? (
+          <p className="text-red-500">{error}</p>
         ) : (
           <table className="min-w-full table-auto text-xl">
             <thead>
@@ -142,9 +212,13 @@ export default function ProductListPage() {
             </thead>
             <tbody className="text-xl">
               {paginatedProducts.map((product, idx) => (
-                <tr key={idx} className="border-b hover:bg-gray-500 transition-colors duration-200">
-                  <td className="p-2">{product.company_name}</td>
-                  <td className="p-2">{product.product_name}</td>
+                <tr
+                  key={idx}
+                  className={`border-b hover:bg-gray-50 cursor-${editMode ? "pointer" : "default"} ${editMode ? "opacity-50 hover:opacity-100" : ""}`}
+                  onClick={() => handleProductClick(product.sku)}
+                >
+                  <td className="p-2">{product.manufacturer_name}</td>
+                  <td className="p-2">{product.name}</td>
                   <td className="p-2">{product.sku}</td>
                   <td className="p-2">
                     <span
@@ -154,17 +228,26 @@ export default function ProductListPage() {
                     </span>
                   </td>
                   <td className="p-2">{product.pcf_calculation_method}</td>
-                  <td className="py-3 px-6 whitespace-nowrap text-left">
-                    {product.pcf_value}
-                    <Info className="w-4 h-4 text-gray-400 ml-1 inline-block" />
+                  <td className="p-2 flex items-center gap-1">
+                    {product.emission_total}
+                    <Info className="w-4 h-4 text-gray-400" />
                   </td>
                 </tr>
               ))}
+              {paginatedProducts.length === 0 && !loading && (
+                <tr>
+                  <td colSpan={6} className="text-center text-gray-500 py-4">
+                    {searchQuery.length < 4 && searchQuery.length > 0
+                      ? "Please enter at least 4 characters to search."
+                      : "No products found."}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         )}
 
-        {!loading && filteredProducts.length > rowsPerPage && (
+        {!loading && products.length > 0 && (
           <div className="flex justify-between items-center mt-4">
             <div className="flex items-center gap-2">
               <Button
@@ -175,19 +258,30 @@ export default function ProductListPage() {
                 Previous
               </Button>
               <span className="text-sm">
-                Page {currentPage} of {Math.ceil(filteredProducts.length / rowsPerPage)}
+                {currentPage} / {Math.ceil(products.length / rowsPerPage)}
               </span>
               <Button
                 className="px-2 py-1 rounded hover:bg-gray-100 transition-colors"
-                onClick={() =>
-                  setCurrentPage(p =>
-                    Math.min(Math.ceil(filteredProducts.length / rowsPerPage), p + 1)
-                  )
-                }
-                disabled={currentPage * rowsPerPage >= filteredProducts.length}
+                onClick={() => setCurrentPage((p) => p + 1)}
+                disabled={currentPage * rowsPerPage >= products.length}
               >
                 Next
               </Button>
+            </div>
+            <div>
+              <label className="text-sm">Rows per page:</label>{" "}
+              <select
+                className="border rounded px-2 py-1 text-sm ml-2"
+                value={rowsPerPage}
+                onChange={(e) => {
+                  setRowsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+              >
+                <option value={15}>15</option>
+                <option value={30}>30</option>
+                <option value={50}>50</option>
+              </select>
             </div>
           </div>
         )}

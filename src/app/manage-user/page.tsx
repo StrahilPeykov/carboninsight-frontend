@@ -23,8 +23,10 @@ export default function ManageUserPage() {
   const [isAddingUser, setIsAddingUser] = useState(false);
   const [addingMessage, setAddingMessage] = useState<string | null>(null);
   const [addingError, setAddingError] = useState<string | null>(null);
+
   const [activeRemovingModal, setRemovingModal] = useState(false);
   const [userToRemove, setUserToRemove] = useState<string>("");
+  const [userIdToRemove, setUserIdToRemove] = useState<number | null>(null);
   const [isRemovingUser, setIsRemovingUser] = useState(false);
   const [removalMessage, setRemovalMessage] = useState<string | null>(null);
   const [removingError, setRemovingError] = useState<string | null>(null);
@@ -90,7 +92,7 @@ export default function ManageUserPage() {
   };
 
   const handleRemovingUser = async () => {
-    if (!userToRemove || !companyId || isRemovingUser) return;
+    if (!userToRemove || !companyId || !userIdToRemove || isRemovingUser) return;
 
     setIsRemovingUser(true);
     setAddingError(null);
@@ -98,10 +100,11 @@ export default function ManageUserPage() {
     setRemovingError(null);
 
     try {
-      await companyApi.removeUser(companyId, userToRemove);
+      await companyApi.removeUser(companyId, userIdToRemove);
       setRemovalMessage(`Successfully removed ${userToRemove} from the company!`);
       setRefreshKey(prev => prev + 1); // Trigger a refresh of the users list
       setUserToRemove("");
+      setUserIdToRemove(null);
     } catch (err) {
       console.error("Error removing user:", err);
       setRemovingError(err instanceof Error ? err.message : "Failed to remove user from company");
@@ -256,6 +259,7 @@ export default function ManageUserPage() {
                         <button
                           className="flex justify-center items-center w-full py-2 text-red-500 hover:text-red-700"
                           onClick={() => {
+                            setUserIdToRemove(user.id);
                             setUserToRemove(user.username);
                             setRemovingModal(true);
                           }}

@@ -6,16 +6,23 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Trash } from "lucide-react";
 import { companyApi, AuthenticatedUser } from "@/lib/api/companyApi";
+import { useAuth } from "../context/AuthContext";
+import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 
 export default function ManageUserPage() {
   const router = useRouter();
+  const { isLoading, requireAuth } = useAuth();
+
+  // Require authentication for this page
+  requireAuth();
+
   const [companyId, setCompanyId] = useState<string | null>(null);
 
   // User management state
   const [users, setUsers] = useState<AuthenticatedUser[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [dataLoading, setDataLoading] = useState(true);
 
   // Modal and form state
   const [activeAddingModal, setAddingModal] = useState(false);
@@ -33,11 +40,6 @@ export default function ManageUserPage() {
 
   // Check authentication and get company ID
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      router.push("/login");
-    }
-
     const id = localStorage.getItem("selected_company_id");
     if (!id) {
       router.push("/list-companies");
@@ -52,7 +54,7 @@ export default function ManageUserPage() {
 
     const fetchUsers = async () => {
       try {
-        setIsLoading(true);
+        setDataLoading(true);
         if (companyId) {
           // Explicit null check for TypeScript
           const userData = await companyApi.listUsers(companyId);
@@ -63,7 +65,7 @@ export default function ManageUserPage() {
         console.error("Error fetching users:", err);
         setLoadingError(err instanceof Error ? err.message : "Failed to load authorized users");
       } finally {
-        setIsLoading(false);
+        setDataLoading(false);
       }
     };
 
@@ -112,6 +114,14 @@ export default function ManageUserPage() {
       setIsRemovingUser(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <LoadingSkeleton count={3} />
+      </div>
+    );
+  }
 
   return (
     <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -232,19 +242,19 @@ export default function ManageUserPage() {
               </thead>
               <tbody className="text-lg">
                 {/* Map all users to an actual div */}
-                {isLoading && (
+                {dataLoading && (
                   <tr>
                     {" "}
-                    <td>Loading users...</td>{" "}
+                    <td className="py-3 px-6">Loading users...</td>{" "}
                   </tr>
                 )}
                 {loadingError && (
                   <tr>
                     {" "}
-                    <td className="text-red-500">Error: {loadingError} </td>{" "}
+                    <td className="py-3 px-6 text-red-500">Error: {loadingError} </td>{" "}
                   </tr>
                 )}
-                {!isLoading &&
+                {!dataLoading &&
                   !loadingError &&
                   users.map(user => (
                     <tr

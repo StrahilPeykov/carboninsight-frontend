@@ -6,6 +6,7 @@ import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
 import { Building2, BoxesIcon, BarChartIcon, FileTextIcon } from "lucide-react";
+import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 
 interface CompanyData {
   id: string;
@@ -20,31 +21,32 @@ interface ActivityItem {
 }
 
 export default function DashboardPage() {
-  const { user, isAuthenticated } = useAuth();
-  const [isLoading, setIsLoading] = useState(true);
+  const { user, isLoading, requireAuth } = useAuth();
+
+  // Require authentication for this page
+  requireAuth();
+
   const [companyCount, setCompanyCount] = useState(0);
   const [productCount, setProductCount] = useState(0);
   const [dppCount] = useState(0);
   const [selectedCompany, setSelectedCompany] = useState<CompanyData | null>(null);
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [dataLoading, setDataLoading] = useState(true);
 
   // API URL from environment variables with fallback
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
   // Load dashboard data
   useEffect(() => {
-    // Only fetch data if the user is authenticated
-    if (!isAuthenticated) return;
-
     const fetchDashboardData = async () => {
       try {
-        setIsLoading(true);
+        setDataLoading(true);
         const token = localStorage.getItem("access_token");
 
         if (!token) {
           setError("No authentication token found");
-          setIsLoading(false);
+          setDataLoading(false);
           return;
         }
 
@@ -125,17 +127,19 @@ export default function DashboardPage() {
         console.error("Error fetching dashboard data:", err);
         setError(err instanceof Error ? err.message : "Failed to load dashboard data");
       } finally {
-        setIsLoading(false);
+        setDataLoading(false);
       }
     };
 
-    fetchDashboardData();
-  }, [API_URL, isAuthenticated]);
+    if (!isLoading) {
+      fetchDashboardData();
+    }
+  }, [API_URL, isLoading]);
 
-  if (isLoading) {
+  if (isLoading || dataLoading) {
     return (
-      <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
-        <p className="text-gray-500 dark:text-gray-400">Loading dashboard...</p>
+      <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <LoadingSkeleton count={3} />
       </div>
     );
   }

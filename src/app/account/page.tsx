@@ -7,13 +7,17 @@ import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
 import Modal from "../components/ui/PopupModal";
 import { userApi } from "@/lib/api/userApi";
+import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 
 export default function AccountPage() {
   const router = useRouter();
-  const { user, isAuthenticated, logout } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const { user, logout, isLoading, requireAuth } = useAuth();
 
+  // Require authentication for this page
+  requireAuth();
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Password state
@@ -126,7 +130,7 @@ export default function AccountPage() {
   };
 
   const confirmDeleteAccount = async () => {
-    setIsLoading(true);
+    setIsDeleting(true);
     setError(null);
 
     try {
@@ -138,21 +142,15 @@ export default function AccountPage() {
       console.error("Error deleting account:", error);
       setError(error instanceof Error ? error.message : "An unknown error occurred");
     } finally {
-      setIsLoading(false);
+      setIsDeleting(false);
       setShowDeleteConfirm(false);
     }
   };
 
-  useEffect(() => {
-    if (!isAuthenticated && !isLoading) {
-      router.push("/login");
-    }
-  }, [isAuthenticated, isLoading, router]);
-
   if (isLoading) {
     return (
-      <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
-        <p className="text-gray-500 dark:text-gray-400">Loading...</p>
+      <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <LoadingSkeleton count={3} />
       </div>
     );
   }
@@ -356,10 +354,10 @@ export default function AccountPage() {
                 type="button"
                 variant="secondary"
                 onClick={handleDeleteAccount}
-                disabled={isLoading}
+                disabled={isDeleting}
                 className="bg-red-600 text-white hover:bg-red-700 focus:ring-red-500"
               >
-                {isLoading ? "Processing..." : "Delete Account"}
+                {isDeleting ? "Processing..." : "Delete Account"}
               </Button>
             </div>
           </div>
@@ -374,10 +372,10 @@ export default function AccountPage() {
               </Button>
               <Button
                 onClick={confirmDeleteAccount}
-                disabled={isLoading}
+                disabled={isDeleting}
                 className="bg-red-600 text-white hover:bg-red-700 focus:ring-red-500"
               >
-                {isLoading ? "Processing..." : "Delete"}
+                {isDeleting ? "Processing..." : "Delete"}
               </Button>
             </div>
           </Modal>

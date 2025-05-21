@@ -6,17 +6,19 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "../context/AuthContext";
+import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 
 // Product type
 type Product = {
-  id: string; 
+  id: string;
   supplier: string;
   emission_total: string; //pcf_value
   name: string;
   description: string;
   manufacturer_name: string;
   sku: string;
-  is_public: true; 
+  is_public: true;
   status: "Imported" | "Estimated" | "Pending" | string; //not yet implemented
   pcf_calculation_method: string; //not yet implemented
 
@@ -39,16 +41,21 @@ type Product = {
 };
 
 export default function ProductListPage() {
+  const router = useRouter();
+  const { isLoading, requireAuth } = useAuth();
+
+  // Require authentication for this page
+  requireAuth();
+
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [dataLoading, setDataLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [editMode, setEditMode] = useState(false);
-  const router = useRouter();
 
   // Get status color for display
   const getStatusColor = (status: string) => {
@@ -80,7 +87,7 @@ export default function ProductListPage() {
   const fetchProducts = async (query = "") => {
     if (!companyId) return;
     try {
-      setLoading(true);
+      setDataLoading(true);
       setError("");
       const token = localStorage.getItem("access_token");
       if (!token) {
@@ -109,7 +116,7 @@ export default function ProductListPage() {
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
-      setLoading(false);
+      setDataLoading(false);
     }
   };
 
@@ -135,6 +142,14 @@ export default function ProductListPage() {
     currentPage * rowsPerPage
   );
 
+  if (isLoading) {
+    return (
+      <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <LoadingSkeleton count={3} />
+      </div>
+    );
+  }
+
   if (initializing) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -155,7 +170,7 @@ export default function ProductListPage() {
       <div className="mb-4">
         <h1 className="text-3xl font-bold mb-2">Products</h1>
 
-        {loading && (
+        {dataLoading && (
           <div className="flex items-center text-sm text-gray-500 mb-2">
             <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-gray-500 mr-2"></div>
             Loading product data...
@@ -166,7 +181,7 @@ export default function ProductListPage() {
           <div></div>
           <div className="flex gap-2">
             <Button
-              onClick={() => setEditMode((prev) => !prev)}
+              onClick={() => setEditMode(prev => !prev)}
               className={`rounded-full px-4 py-2 text-sm font-medium ${editMode ? "bg-gray-500 text-white" : "bg-gray-200 text-black"}`}
             >
               {editMode ? "Cancel" : "Edit"}
@@ -191,7 +206,7 @@ export default function ProductListPage() {
       {error && <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md">{error}</div>}
 
       <Card className="p-4">
-        {loading ? (
+        {dataLoading ? (
           <div className="flex justify-center items-center py-8">
             <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-gray-400"></div>
             <span className="ml-3 text-gray-500">Loading products...</span>
@@ -234,7 +249,7 @@ export default function ProductListPage() {
                   </td>
                 </tr>
               ))}
-              {paginatedProducts.length === 0 && !loading && (
+              {paginatedProducts.length === 0 && !dataLoading && (
                 <tr>
                   <td colSpan={6} className="text-center text-gray-500 py-4">
                     {searchQuery.length < 4 && searchQuery.length > 0
@@ -247,7 +262,7 @@ export default function ProductListPage() {
           </table>
         )}
 
-        {!loading && products.length > 0 && (
+        {!dataLoading && products.length > 0 && (
           <div className="flex justify-between items-center mt-4">
             <div className="flex items-center gap-2">
               <Button
@@ -262,7 +277,7 @@ export default function ProductListPage() {
               </span>
               <Button
                 className="px-2 py-1 rounded hover:bg-gray-100 transition-colors"
-                onClick={() => setCurrentPage((p) => p + 1)}
+                onClick={() => setCurrentPage(p => p + 1)}
                 disabled={currentPage * rowsPerPage >= products.length}
               >
                 Next
@@ -273,7 +288,7 @@ export default function ProductListPage() {
               <select
                 className="border rounded px-2 py-1 text-sm ml-2"
                 value={rowsPerPage}
-                onChange={(e) => {
+                onChange={e => {
                   setRowsPerPage(Number(e.target.value));
                   setCurrentPage(1);
                 }}

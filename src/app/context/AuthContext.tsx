@@ -207,10 +207,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+// useAuth hook with requireAuth method
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
-  return context;
+
+  // Extend the context with requireAuth method
+  return {
+    ...context,
+    // Method to require authentication and redirect if not authenticated
+    requireAuth: () => {
+      const router = useRouter();
+
+      useEffect(() => {
+        if (!context.isLoading && !context.isAuthenticated) {
+          router.push("/login");
+        }
+      }, [context.isLoading, context.isAuthenticated, router]);
+    },
+  };
 }

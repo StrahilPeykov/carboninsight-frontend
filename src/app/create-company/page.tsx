@@ -4,18 +4,25 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
+import { useAuth } from "../context/AuthContext";
 import { companyApi, CompanyCreateData } from "@/lib/api/companyApi";
 import { ApiError } from "@/lib/api/apiClient";
+import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 
 export default function CreateCompanyPage() {
   const router = useRouter();
+  const { isLoading, requireAuth } = useAuth();
+
+  // Require authentication for this page
+  requireAuth();
+
   const [formData, setFormData] = useState<CompanyCreateData>({
     name: "",
     vat_number: "",
     business_registration_number: "",
   });
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string[] }>({});
 
@@ -29,7 +36,7 @@ export default function CreateCompanyPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsSubmitting(true);
     setError("");
     setFieldErrors({});
     setSuccessMessage("");
@@ -58,11 +65,19 @@ export default function CreateCompanyPage() {
         setError(err instanceof Error ? err.message : "An unexpected error occurred.");
       }
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  const isDisabled = isLoading || !!successMessage;
+  const isDisabled = isSubmitting || !!successMessage;
+
+  if (isLoading) {
+    return (
+      <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <LoadingSkeleton count={3} />
+      </div>
+    );
+  }
 
   return (
     <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -154,7 +169,7 @@ export default function CreateCompanyPage() {
           </div>
 
           <Button type="submit" disabled={isDisabled} className="w-full">
-            {isLoading ? "Creating company..." : "Submit"}
+            {isSubmitting ? "Creating company..." : "Submit"}
           </Button>
         </form>
       </Card>

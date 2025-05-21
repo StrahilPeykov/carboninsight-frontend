@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { Check, Trash } from "lucide-react";
 import { productApi, ProductSharingRequest } from "@/lib/api/productApi";
 import { companyApi } from "@/lib/api/companyApi";
+import { useAuth } from "../context/AuthContext";
+import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 
 interface DataSharingRequestDisplay {
   id: number;
@@ -18,11 +20,16 @@ interface DataSharingRequestDisplay {
 
 export default function ProductDataSharing() {
   const router = useRouter();
+  const { isLoading, requireAuth } = useAuth();
+
+  // Require authentication for this page
+  requireAuth();
+
   const [companyId, setCompanyId] = useState<string | null>(null);
 
   // Requests state
   const [requests, setRequests] = useState<DataSharingRequestDisplay[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [dataLoading, setDataLoading] = useState(true);
   const [loadingError, setLoadingError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -39,13 +46,8 @@ export default function ProductDataSharing() {
   const [denyMessage, setDenyMessage] = useState<string | null>(null);
   const [denyError, setDenyError] = useState<string | null>(null);
 
-  // Check authentication and get company ID
+  // Get company ID
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token) {
-      router.push("/login");
-    }
-
     const id = localStorage.getItem("selected_company_id");
     if (!id) {
       router.push("/list-companies");
@@ -60,7 +62,7 @@ export default function ProductDataSharing() {
 
     const fetchRequests = async () => {
       try {
-        setIsLoading(true);
+        setDataLoading(true);
         // Using productApi instead of direct fetch
         if (companyId) {
           // Explicit null check for TypeScript
@@ -96,7 +98,7 @@ export default function ProductDataSharing() {
         console.error("Error fetching sharing requests:", err);
         setLoadingError(err instanceof Error ? err.message : "Failed to load sharing requests");
       } finally {
-        setIsLoading(false);
+        setDataLoading(false);
       }
     };
 
@@ -156,6 +158,14 @@ export default function ProductDataSharing() {
       setIsDenyingRequest(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <LoadingSkeleton count={3} />
+      </div>
+    );
+  }
 
   return (
     <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -245,7 +255,7 @@ export default function ProductDataSharing() {
                 </tr>
               </thead>
               <tbody className="text-lg">
-                {isLoading && (
+                {dataLoading && (
                   <tr>
                     <td colSpan={5} className="py-3 px-6 text-center">
                       Loading requests...
@@ -259,14 +269,14 @@ export default function ProductDataSharing() {
                     </td>
                   </tr>
                 )}
-                {!isLoading && !loadingError && requests.length === 0 && (
+                {!dataLoading && !loadingError && requests.length === 0 && (
                   <tr>
                     <td colSpan={5} className="py-5 text-center">
                       This company currently has no data sharing requests.
                     </td>
                   </tr>
                 )}
-                {!isLoading &&
+                {!dataLoading &&
                   !loadingError &&
                   requests.map(request => (
                     <tr key={request.id} className="border-b hover:bg-gray-500 transition">

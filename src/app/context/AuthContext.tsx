@@ -4,7 +4,7 @@ import { createContext, useState, useContext, useEffect, ReactNode } from "react
 import { useRouter } from "next/navigation";
 import { authApi, LoginCredentials, RegisterData } from "@/lib/api/authApi";
 import { userApi, User } from "@/lib/api/userApi";
-import { ApiError } from "@/lib/api/apiClient";
+import { ApiError, isTokenExpired } from "@/lib/api/apiClient";
 
 interface AuthContextType {
   user: User | null;
@@ -25,6 +25,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check if user is authenticated on initial load
   useEffect(() => {
+    // Skip auth check on the server side
+    if (typeof window === "undefined") {
+      return;
+    }
+
     const checkAuth = async () => {
       try {
         const token = localStorage.getItem("access_token");
@@ -34,17 +39,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
+        // Check if token is expired before making API calls
+        if (isTokenExpired(token)) {
+          const refreshed = await refreshToken();
+          if (!refreshed) {
+            console.error("Token refresh failed, logging out");
+            clearTokens();
+            setUser(null);
+            setIsLoading(false);
+            return;
+          }
+          // If refresh succeeds, continue with the new token
+        }
+
         // Get user profile
         try {
           const userData = await userApi.getProfile();
           setUser(userData);
         } catch (error) {
+          console.error("Failed to get user profile:", error);
           // Token might be invalid - try to refresh it
           const refreshed = await refreshToken();
           if (!refreshed) {
             // If refresh fails, clear tokens and log out
-            localStorage.removeItem("access_token");
-            localStorage.removeItem("refresh_token");
+            console.error("Token refresh failed, logging out");
+            clearTokens();
             setUser(null);
           } else {
             // If refresh succeeds, try to get user profile again
@@ -53,14 +72,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setUser(userData);
             } catch (retryError) {
               // If it still fails, clear tokens
-              localStorage.removeItem("access_token");
-              localStorage.removeItem("refresh_token");
+              console.error("Still failed to get profile after token refresh:", retryError);
+              clearTokens();
               setUser(null);
             }
           }
         }
       } catch (error) {
         console.error("Auth check failed:", error);
+        clearTokens();
         setUser(null);
       } finally {
         setIsLoading(false);
@@ -70,8 +90,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, []);
 
+  // Helper function to clear tokens
+  const clearTokens = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+  };
+
   // Set up token refresh interval
   useEffect(() => {
+    // Skip on the server side
+    if (typeof window === "undefined") {
+      return;
+    }
+
     // Refresh token every 45 minutes (assuming token expires in 60 minutes)
     const refreshInterval = setInterval(
       () => {
@@ -79,7 +110,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           refreshToken().catch(console.error);
         }
       },
-      45 * 60 * 1000
+      45 * 60 * 1000 // 45 minutes
     );
 
     return () => clearInterval(refreshInterval);
@@ -97,6 +128,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(userData);
     } catch (error) {
       console.error("Login failed:", error);
+      clearTokens();
       throw error instanceof ApiError
         ? new Error(error.message)
         : new Error("Login failed. Please try again.");
@@ -141,6 +173,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const refreshToken = localStorage.getItem("refresh_token");
       if (!refreshToken) {
+        console.error("No refresh token available");
         return false;
       }
 
@@ -154,8 +187,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
+    clearTokens();
     setUser(null);
     router.push("/login");
   };

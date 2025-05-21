@@ -154,7 +154,7 @@ export default function ListCompaniesPage() {
                       size="sm"
                       onClick={() => {
                         localStorage.setItem("selected_company_id", company.id);
-                        router.push("/manage-sharing");
+                        router.push("/product-data-sharing");
                       }}
                       className="flex items-center justify-center gap-1"
                     >

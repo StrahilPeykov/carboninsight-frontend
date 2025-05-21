@@ -27,6 +27,14 @@ export interface RequestOptions<T = Record<string, unknown>> {
   requiresAuth?: boolean;
 }
 
+// Function to safely get token from localStorage (browser-safe)
+function getAuthToken(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  return localStorage.getItem("access_token");
+}
+
 // Core API client function
 export async function apiRequest<R, T = Record<string, unknown>>(
   endpoint: string,
@@ -34,8 +42,8 @@ export async function apiRequest<R, T = Record<string, unknown>>(
 ): Promise<R> {
   const { method = "GET", body, headers = {}, requiresAuth = true } = options;
 
-  // Get authentication token if required
-  const token = requiresAuth ? localStorage.getItem("access_token") : null;
+  // Get authentication token if required (safely)
+  const token = requiresAuth ? getAuthToken() : null;
 
   // If auth is required but no token is present, throw an error
   if (requiresAuth && !token) {
@@ -57,6 +65,7 @@ export async function apiRequest<R, T = Record<string, unknown>>(
   const requestOptions: RequestInit = {
     method,
     headers: requestHeaders,
+    credentials: "include", // Include cookies if your backend uses them
   };
 
   // Add body for non-GET requests
@@ -84,6 +93,7 @@ export async function apiRequest<R, T = Record<string, unknown>>(
           ? String(data.detail)
           : `API Error: ${response.status}`;
 
+      console.error(`API Error (${response.status}):`, errorMessage, data);
       throw new ApiError(response.status, errorMessage, data);
     }
 
@@ -91,9 +101,34 @@ export async function apiRequest<R, T = Record<string, unknown>>(
   } catch (error) {
     // Catch network errors or JSON parsing errors
     if (!(error instanceof ApiError)) {
+      console.error("Request failed:", error);
       throw new ApiError(0, error instanceof Error ? error.message : "Network error", null);
     }
     throw error;
+  }
+}
+
+// Function to check if a token is expired
+export function isTokenExpired(token: string): boolean {
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map(c => {
+          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join("")
+    );
+
+    const { exp } = JSON.parse(jsonPayload);
+    // Check if expiration timestamp is past current time
+    return exp < Date.now() / 1000;
+  } catch (error) {
+    console.error("Error checking token expiration:", error);
+    // If we can't decode the token, assume it's expired to be safe
+    return true;
   }
 }
 

@@ -42,7 +42,7 @@ export async function apiRequest<R, T = Record<string, unknown>>(
 ): Promise<R> {
   const { method = "GET", body, headers = {}, requiresAuth = true } = options;
 
-  // Get authentication token if required (safely)
+  // Get authentication token if required
   const token = requiresAuth ? getAuthToken() : null;
 
   // If auth is required but no token is present, throw an error
@@ -65,7 +65,6 @@ export async function apiRequest<R, T = Record<string, unknown>>(
   const requestOptions: RequestInit = {
     method,
     headers: requestHeaders,
-    credentials: "include", // Include cookies if your backend uses them
   };
 
   // Add body for non-GET requests

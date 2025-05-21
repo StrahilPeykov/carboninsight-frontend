@@ -92,6 +92,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Helper function to clear tokens
   const clearTokens = () => {
+    if (typeof window === "undefined") return;
+
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
   };

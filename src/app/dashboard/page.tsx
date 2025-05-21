@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
@@ -21,7 +20,6 @@ interface ActivityItem {
 }
 
 export default function DashboardPage() {
-  const router = useRouter();
   const { user, isAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [companyCount, setCompanyCount] = useState(0);
@@ -29,26 +27,28 @@ export default function DashboardPage() {
   const [dppCount] = useState(0);
   const [selectedCompany, setSelectedCompany] = useState<CompanyData | null>(null);
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   // API URL from environment variables with fallback
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
+  // Load dashboard data
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push("/login");
-      return;
-    }
+    // Only fetch data if the user is authenticated
+    if (!isAuthenticated) return;
 
-    // Function to fetch dashboard data
     const fetchDashboardData = async () => {
       try {
+        setIsLoading(true);
         const token = localStorage.getItem("access_token");
+
         if (!token) {
-          router.push("/login");
+          setError("No authentication token found");
+          setIsLoading(false);
           return;
         }
 
-        // Fetch companies count
+        // Fetch companies
         const companiesResponse = await fetch(`${API_URL}/companies/my/`, {
           method: "GET",
           headers: {
@@ -57,78 +57,95 @@ export default function DashboardPage() {
           },
         });
 
-        if (companiesResponse.ok) {
-          const companiesData = await companiesResponse.json();
-          setCompanyCount(companiesData.length);
+        if (!companiesResponse.ok) {
+          throw new Error(`Error fetching companies: ${companiesResponse.status}`);
+        }
 
-          // Get the selected company ID
-          const selectedCompanyId = localStorage.getItem("selected_company_id");
+        const companiesData = await companiesResponse.json();
+        setCompanyCount(companiesData.length);
 
-          if (selectedCompanyId) {
-            // Fetch selected company details
-            const companyResponse = await fetch(`${API_URL}/companies/${selectedCompanyId}/`, {
+        // Get the selected company ID
+        const selectedCompanyId = localStorage.getItem("selected_company_id");
+
+        if (selectedCompanyId) {
+          // Fetch selected company details
+          const companyResponse = await fetch(`${API_URL}/companies/${selectedCompanyId}/`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!companyResponse.ok) {
+            throw new Error(`Error fetching company details: ${companyResponse.status}`);
+          }
+
+          const companyData = await companyResponse.json();
+          setSelectedCompany(companyData);
+
+          // Fetch products for the selected company
+          const productsResponse = await fetch(
+            `${API_URL}/companies/${selectedCompanyId}/products/`,
+            {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
-            });
-
-            if (companyResponse.ok) {
-              const companyData = await companyResponse.json();
-              setSelectedCompany(companyData);
-
-              // Fetch products for the selected company
-              const productsResponse = await fetch(
-                `${API_URL}/companies/${selectedCompanyId}/products/`,
-                {
-                  headers: {
-                    Authorization: `Bearer ${token}`,
-                  },
-                }
-              );
-
-              if (productsResponse.ok) {
-                const productsData = await productsResponse.json();
-                setProductCount(productsData.length);
-
-                // Generate recent activity based on products
-                const recentActivities: ActivityItem[] = [];
-
-                // Add company creation activity
-                recentActivities.push({
-                  date: new Date().toISOString().split("T")[0],
-                  action: `Selected company: ${companyData.name}`,
-                });
-
-                // Add recent product activities (up to 3 most recent products)
-                const sortedProducts = [...productsData].sort((a, b) => b.id - a.id).slice(0, 3);
-                sortedProducts.forEach(product => {
-                  recentActivities.push({
-                    date: new Date(Date.now() - Math.random() * 5 * 86400000)
-                      .toISOString()
-                      .split("T")[0],
-                    action: `Added product: ${product.name}`,
-                  });
-                });
-
-                setRecentActivity(recentActivities);
-              }
             }
+          );
+
+          if (!productsResponse.ok) {
+            throw new Error(`Error fetching products: ${productsResponse.status}`);
           }
+
+          const productsData = await productsResponse.json();
+          setProductCount(productsData.length);
+
+          // Generate recent activity based on products
+          const recentActivities: ActivityItem[] = [];
+
+          // Add company selection activity
+          recentActivities.push({
+            date: new Date().toISOString().split("T")[0],
+            action: `Selected company: ${companyData.name}`,
+          });
+
+          // Add recent product activities (up to 3 most recent products)
+          const sortedProducts = [...productsData].sort((a, b) => b.id - a.id).slice(0, 3);
+          sortedProducts.forEach(product => {
+            recentActivities.push({
+              date: new Date(Date.now() - Math.random() * 5 * 86400000).toISOString().split("T")[0],
+              action: `Added product: ${product.name}`,
+            });
+          });
+
+          setRecentActivity(recentActivities);
         }
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
+
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching dashboard data:", err);
+        setError(err instanceof Error ? err.message : "Failed to load dashboard data");
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchDashboardData();
-  }, [API_URL, isAuthenticated, router]);
+  }, [API_URL, isAuthenticated]);
 
   if (isLoading) {
     return (
       <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
         <p className="text-gray-500 dark:text-gray-400">Loading dashboard...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-red-50 border border-red-200 p-4 rounded-md">
+          <p className="text-red-700">{error}</p>
+        </div>
       </div>
     );
   }

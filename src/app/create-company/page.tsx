@@ -7,6 +7,7 @@ import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
 import { companyApi, CompanyCreateData } from "@/lib/api/companyApi";
 import { ApiError } from "@/lib/api/apiClient";
+import { setLocalStorageItem } from "@/lib/api/apiClient";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 
 export default function CreateCompanyPage() {
@@ -47,8 +48,8 @@ export default function CreateCompanyPage() {
 
       setSuccessMessage("Company successfully created!");
 
-      // Store the new company ID in localStorage
-      localStorage.setItem("selected_company_id", newCompany.id);
+      // Store the new company ID in localStorage using the helper function
+      setLocalStorageItem("selected_company_id", newCompany.id);
 
       // Redirect after a short delay to show the success message
       setTimeout(() => {

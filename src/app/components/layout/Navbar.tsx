@@ -46,9 +46,45 @@ export default function Navbar() {
     router.push("/");
   };
 
+  // Get companyId from localStorage and listen for changes
+  useEffect(() => {
+    // Initial load
+    const id = localStorage.getItem("selected_company_id");
+    setCompanyId(id);
+
+    // Listen for storage changes (when localStorage is updated from other tabs/components)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "selected_company_id") {
+        setCompanyId(e.newValue);
+      }
+    };
+
+    // Listen for custom events (for same-tab updates)
+    const handleCompanyChange = () => {
+      const id = localStorage.getItem("selected_company_id");
+      setCompanyId(id);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("companyChanged", handleCompanyChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("companyChanged", handleCompanyChange);
+    };
+  }, []);
+
   // Only fetch company data when authentication is confirmed and companyId is available
   useEffect(() => {
     if (!isAuthenticated || !companyId || isLoading) {
+      // Clear company data if no company is selected
+      if (!companyId) {
+        setCompanyData({
+          name: "",
+          vat_number: "",
+          business_registration_number: "",
+        });
+      }
       return;
     }
 
@@ -68,12 +104,6 @@ export default function Navbar() {
 
     fetchCompany();
   }, [companyId, isAuthenticated, isLoading]);
-
-  // Get companyId from localStorage after component mounts
-  useEffect(() => {
-    const id = localStorage.getItem("selected_company_id");
-    setCompanyId(id);
-  }, []);
 
   // Close profile dropdown when clicking outside
   useEffect(() => {

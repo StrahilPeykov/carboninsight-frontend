@@ -179,32 +179,3 @@ export function useApi() {
       request<R>(endpoint, { ...options, method: "DELETE" }),
   };
 }
-
-// localStorage helper functions
-
-// Sets an item in localStorage and dispatches a custom event to notify other components
-export function setLocalStorageItem(key: string, value: string): void {
-  if (typeof window === "undefined") return;
-
-  localStorage.setItem(key, value);
-
-  // Dispatch custom event for same-tab updates
-  window.dispatchEvent(new CustomEvent("companyChanged", { detail: { key, value } }));
-}
-
-// Removes an item from localStorage and dispatches a custom event
-export function removeLocalStorageItem(key: string): void {
-  if (typeof window === "undefined") return;
-
-  localStorage.removeItem(key);
-
-  // Dispatch custom event for same-tab updates
-  window.dispatchEvent(new CustomEvent("companyChanged", { detail: { key, value: null } }));
-}
-
-// Gets an item from localStorage
-export function getLocalStorageItem(key: string): string | null {
-  if (typeof window === "undefined") return null;
-
-  return localStorage.getItem(key);
-}

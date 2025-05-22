@@ -4,10 +4,11 @@ import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Info } from "lucide-react";
+import { ChevronLeft, ChevronRight, Info, FileDown, Download } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "../context/AuthContext";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
+import ExportModal from "../components/ui/ExportModal";
 
 // Product type
 type Product = {
@@ -56,6 +57,9 @@ export default function ProductListPage() {
   const [error, setError] = useState("");
   const [rowsPerPage, setRowsPerPage] = useState(15);
   const [editMode, setEditMode] = useState(false);
+  const [exportingIds, setExportingIds] = useState<Set<string>>(new Set());
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [selectedProductForExport, setSelectedProductForExport] = useState<Product | null>(null);
 
   // Get status color for display
   const getStatusColor = (status: string) => {
@@ -105,12 +109,16 @@ export default function ProductListPage() {
       if (!res.ok) throw new Error("Failed to fetch products");
       const data = await res.json();
       const transformed: Product[] = data.map((p: Product) => ({
+        id: p.id,
+        supplier: p.supplier,
         manufacturer_name: p.manufacturer_name ?? "Unknown",
         name: p.name,
         sku: p.sku,
+        description: p.description,
         status: p.status,
         pcf_calculation_method: p.pcf_calculation_method,
         emission_total: p.emission_total,
+        is_public: p.is_public,
       }));
       setProducts(transformed);
     } catch (err: unknown) {
@@ -136,6 +144,16 @@ export default function ProductListPage() {
     }, 300);
     return () => clearTimeout(delayDebounce);
   }, [searchQuery]);
+
+  const handleExportClick = (product: Product) => {
+    setSelectedProductForExport(product);
+    setShowExportModal(true);
+  };
+
+  const handleExportModalClose = () => {
+    setShowExportModal(false);
+    setSelectedProductForExport(null);
+  };
 
   const paginatedProducts = products.slice(
     (currentPage - 1) * rowsPerPage,
@@ -223,6 +241,7 @@ export default function ProductListPage() {
                 <th className="py-3 px-6 font-medium text-left">Status</th>
                 <th className="py-3 px-6 font-medium text-left">PCF calculation method</th>
                 <th className="py-3 px-6 font-medium text-left">PCF</th>
+                <th className="py-3 px-6 font-medium text-left">Actions</th>
               </tr>
             </thead>
             <tbody className="text-xl">
@@ -247,11 +266,27 @@ export default function ProductListPage() {
                     {product.emission_total}
                     <Info className="w-4 h-4 text-gray-400" />
                   </td>
+                  <td className="p-2">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleExportClick(product);
+                        }}
+                        className="flex items-center gap-1 text-xs"
+                      >
+                        <FileDown className="w-3 h-3" />
+                        <span>Export</span>
+                      </Button>
+                    </div>
+                  </td>
                 </tr>
               ))}
               {paginatedProducts.length === 0 && !dataLoading && (
                 <tr>
-                  <td colSpan={6} className="text-center text-gray-500 py-4">
+                  <td colSpan={7} className="text-center text-gray-500 py-4">
                     {searchQuery.length < 4 && searchQuery.length > 0
                       ? "Please enter at least 4 characters to search."
                       : "No products found."}
@@ -301,6 +336,16 @@ export default function ProductListPage() {
           </div>
         )}
       </Card>
+
+      {/* Export Modal */}
+      {showExportModal && selectedProductForExport && companyId && (
+        <ExportModal
+          isOpen={showExportModal}
+          onClose={handleExportModalClose}
+          product={selectedProductForExport}
+          companyId={companyId}
+        />
+      )}
     </div>
   );
 }

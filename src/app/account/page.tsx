@@ -134,25 +134,14 @@ export default function AccountPage() {
     setError(null);
 
     try {
-      // Delete the account via API
+      // Using userApi.deleteAccount instead of direct fetch
       await userApi.deleteAccount();
-
-      // Show success message briefly before logout
-      setSuccess("Account successfully deleted. Redirecting to login...");
-
-      // Clear all user-related localStorage data
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("selected_company_id");
-        localStorage.removeItem("currentAssessmentId"); // For future PCF calculation data
-      }
-
-      // Brief delay to show success message
-      setTimeout(() => {
-        logout(); // This handles token cleanup and redirect to /login
-      }, 1500);
+      logout();
+      router.push("/");
     } catch (error) {
       console.error("Error deleting account:", error);
       setError(error instanceof Error ? error.message : "An unknown error occurred");
+    } finally {
       setIsDeleting(false);
       setShowDeleteConfirm(false);
     }
@@ -358,8 +347,7 @@ export default function AccountPage() {
           <div className="bg-red-50 border border-red-200 rounded-md p-4 dark:bg-red-900/20 dark:border-red-900">
             <h3 className="text-lg font-medium text-red-800 dark:text-red-300">Delete Account</h3>
             <p className="mt-1 text-sm text-red-700 dark:text-red-200">
-              Once you delete your account, there is no going back. This action cannot be undone and
-              all your data will be permanently removed.
+              Once you delete your account, there is no going back. This action cannot be undone.
             </p>
             <div className="mt-4">
               <Button
@@ -377,26 +365,9 @@ export default function AccountPage() {
 
         {showDeleteConfirm && (
           <Modal title="Confirm Delete Account" onClose={() => setShowDeleteConfirm(false)}>
-            <div className="space-y-4">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Are you sure you want to delete your account? This action will:
-              </p>
-              <ul className="list-disc list-inside text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                <li>Permanently delete your account and profile</li>
-                <li>Remove you from all companies you have access to</li>
-                <li>Delete all your personal data and calculation history</li>
-                <li>Log you out and redirect to the login page</li>
-              </ul>
-              <p className="text-sm font-medium text-red-600 dark:text-red-400">
-                This action cannot be undone.
-              </p>
-            </div>
-            <div className="mt-6 flex justify-end space-x-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={isDeleting}
-              >
+            <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+            <div className="mt-4 flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
                 Cancel
               </Button>
               <Button
@@ -404,7 +375,7 @@ export default function AccountPage() {
                 disabled={isDeleting}
                 className="bg-red-600 text-white hover:bg-red-700 focus:ring-red-500"
               >
-                {isDeleting ? "Deleting..." : "Delete My Account"}
+                {isDeleting ? "Processing..." : "Delete"}
               </Button>
             </div>
           </Modal>

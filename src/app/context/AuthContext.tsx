@@ -58,6 +58,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(userData);
         } catch (error) {
           console.error("Failed to get user profile:", error);
+
+          // Check if this is a blocked account error during profile fetch
+          if (error instanceof ApiError) {
+            if (error.status === 403 || error.status === 423) {
+              // Account is blocked/locked, clear tokens and don't auto-retry
+              console.warn("Account appears to be blocked during profile fetch");
+              clearTokens();
+              setUser(null);
+              setIsLoading(false);
+              return;
+            }
+          }
+
           // Token might be invalid - try to refresh it
           const refreshed = await refreshToken();
           if (!refreshed) {
@@ -90,12 +103,63 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, []);
 
-  // Helper function to clear tokens
+  // Helper function to clear tokens and all user-related data
   const clearTokens = () => {
     if (typeof window === "undefined") return;
 
+    // Clear authentication tokens
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
+
+    // Clear all user-related application data
+    localStorage.removeItem("selected_company_id");
+    localStorage.removeItem("currentAssessmentId"); // For future PCF calculation data
+
+    // Clear any other user-specific data that might be cached
+    // Add more items here as needed when you implement additional features
+  };
+
+  // Helper function to detect blocked account errors
+  const isBlockedAccountError = (error: unknown): boolean => {
+    if (error instanceof ApiError) {
+      // Check HTTP status codes that typically indicate blocked accounts
+      if (error.status === 403 || error.status === 423 || error.status === 401) {
+        const errorData = error.data;
+        const errorMessage = error.message.toLowerCase();
+
+        // Check for common blocked account error messages
+        const blockedKeywords = [
+          "account blocked",
+          "account suspended",
+          "account disabled",
+          "account locked",
+          "account deactivated",
+          "access denied",
+          "account restricted",
+          "user is inactive",
+          "user is blocked",
+        ];
+
+        return blockedKeywords.some(
+          keyword =>
+            errorMessage.includes(keyword) ||
+            (typeof errorData === "string" && errorData.toLowerCase().includes(keyword))
+        );
+      }
+    }
+
+    if (error instanceof Error) {
+      const errorMessage = error.message.toLowerCase();
+      return [
+        "account blocked",
+        "account suspended",
+        "account disabled",
+        "account locked",
+        "account deactivated",
+      ].some(keyword => errorMessage.includes(keyword));
+    }
+
+    return false;
   };
 
   // Set up token refresh interval
@@ -131,9 +195,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("Login failed:", error);
       clearTokens();
-      throw error instanceof ApiError
-        ? new Error(error.message)
-        : new Error("Login failed. Please try again.");
+
+      // Check if this is a blocked account error and re-throw with appropriate message
+      if (isBlockedAccountError(error)) {
+        throw new Error("Account blocked or suspended. Please contact support for assistance.");
+      }
+
+      // Handle other API errors
+      if (error instanceof ApiError) {
+        if (error.status === 401) {
+          throw new Error("Invalid credentials. Please check your email and password.");
+        } else if (error.status === 429) {
+          throw new Error("Too many login attempts. Please wait a few minutes and try again.");
+        } else if (error.status >= 500) {
+          throw new Error("Server error. Please try again later.");
+        }
+        throw new Error(error.message);
+      }
+
+      throw new Error("Login failed. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -184,13 +264,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return true;
     } catch (error) {
       console.error("Token refresh failed:", error);
+
+      // If refresh token is also expired or invalid, clear everything
+      if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+        clearTokens();
+      }
+
       return false;
     }
   };
 
   const logout = () => {
+    // Clear all tokens and user data
     clearTokens();
+
+    // Clear user state
     setUser(null);
+
+    // Redirect to login page
     router.push("/login");
   };
 

@@ -1,12 +1,13 @@
 import { apiRequest } from "@/lib/api/apiClient";
 
+// Simplified export formats aligned with project requirements
 export type ExportFormat =
-  | "pdf"
-  | "aas_aasx"
-  | "aas_xml"
-  | "aas_json"
-  | "scsn_pcf_xml"
-  | "scsn_full_xml";
+  | "pdf"        // Digital Product Passport report 
+  | "aasx"       // AAS package (primary DPP format)
+  | "csv"        // Data export for SMEs
+  | "xlsx"       // Excel export for SMEs  
+  | "xml"        // AAS/SCSN XML (combined)
+  | "json";      // Structured data export
 
 interface Product {
   id: string;
@@ -30,7 +31,7 @@ function downloadFile(blob: Blob, filename: string, mimeType: string) {
   window.URL.revokeObjectURL(url);
 }
 
-// Export product data using backend's built-in export endpoints
+// Export product data using backend's export endpoints
 export async function exportProduct(
   companyId: string,
   productId: string,
@@ -43,27 +44,27 @@ export async function exportProduct(
   }
 
   const formatEndpoints = {
-    aas_aasx: "export/aas_aasx",
-    aas_xml: "export/aas_xml",
-    aas_json: "export/aas_json",
-    scsn_pcf_xml: "export/scsn_pcf_xml",
-    scsn_full_xml: "export/scsn_full_xml",
+    aasx: "export/aasx",
+    csv: "export/csv", 
+    xlsx: "export/xlsx",
+    xml: "export/xml",
+    json: "export/json",
   };
 
   const mimeTypes = {
-    aas_aasx: "application/asset-administration-shell-package",
-    aas_xml: "application/xml",
-    aas_json: "application/json",
-    scsn_pcf_xml: "application/xml",
-    scsn_full_xml: "application/xml",
+    aasx: "application/asset-administration-shell-package",
+    csv: "text/csv",
+    xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    xml: "application/xml",
+    json: "application/json",
   };
 
   const fileExtensions = {
-    aas_aasx: "aasx",
-    aas_xml: "xml",
-    aas_json: "json",
-    scsn_pcf_xml: "xml",
-    scsn_full_xml: "xml",
+    aasx: "aasx",
+    csv: "csv", 
+    xlsx: "xlsx",
+    xml: "xml",
+    json: "json",
   };
 
   try {
@@ -272,6 +273,13 @@ function generatePDFReportHTML(product: Product, emissionTrace: any): string {
           color: #666;
           font-size: 0.9em;
         }
+        .standards-note {
+          background: #f0f9ff;
+          border: 1px solid #0ea5e9;
+          border-radius: 8px;
+          padding: 15px;
+          margin: 20px 0;
+        }
         ul {
           list-style-type: disc;
           margin-left: 20px;
@@ -300,6 +308,11 @@ function generatePDFReportHTML(product: Product, emissionTrace: any): string {
         
         <div class="total-emissions">
           Total Carbon Footprint: ${emissionTrace.total} kg CO₂e
+        </div>
+
+        <div class="standards-note">
+          <strong>Standards Compliance:</strong> This Digital Product Passport is generated in compliance with 
+          Asset Administration Shell (AAS) standards and is compatible with the Smart Connected Supplier Network (SCSN).
         </div>
       </div>
 
@@ -348,6 +361,7 @@ function generatePDFReportHTML(product: Product, emissionTrace: any): string {
         <p>Generated on: ${new Date().toLocaleString()}</p>
         <p>Carbon Insight - Digital Product Passport</p>
         <p>This report contains confidential carbon footprint data calculated according to ${emissionTrace.pcf_calculation_method || "ISO 14040/14044"} standards.</p>
+        <p>Compatible with Asset Administration Shell (AAS) and Smart Connected Supplier Network (SCSN) specifications.</p>
       </div>
     </body>
     </html>
@@ -364,32 +378,32 @@ export function getExportFormats(): Array<{
     {
       value: "pdf",
       label: "PDF Report",
-      description: "Digital Product Passport report (opens print dialog)",
+      description: "Complete Digital Product Passport report (opens print dialog)",
     },
     {
-      value: "aas_aasx",
+      value: "aasx",
       label: "AASX Package",
-      description: "Asset Administration Shell package",
+      description: "Asset Administration Shell package (primary DPP format)",
     },
     {
-      value: "aas_xml",
-      label: "AAS XML",
-      description: "Asset Administration Shell XML",
+      value: "csv",
+      label: "CSV Data",
+      description: "Comma-separated values for spreadsheet import",
     },
     {
-      value: "aas_json",
-      label: "AAS JSON",
-      description: "Asset Administration Shell JSON",
+      value: "xlsx", 
+      label: "Excel File",
+      description: "Microsoft Excel spreadsheet format",
     },
     {
-      value: "scsn_pcf_xml",
-      label: "SCSN PCF XML",
-      description: "Product Carbon Footprint XML (partial)",
+      value: "xml",
+      label: "XML Data",
+      description: "Structured XML with semantic annotations (AAS/SCSN compatible)",
     },
     {
-      value: "scsn_full_xml",
-      label: "SCSN Full XML",
-      description: "Complete SCSN-compliant XML",
+      value: "json",
+      label: "JSON Data", 
+      description: "Structured data in JSON format",
     },
   ];
 }

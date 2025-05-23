@@ -176,9 +176,9 @@ export default function ProductListPage() {
     );
   }
 
-  const handleProductClick = (sku: string) => {
+  const handleProductClick = (id: string) => {
     if (editMode) {
-      router.push(`/product-list/add-product?sku=${sku}`);
+      router.push(`/product-list/emissions-tree?id=${id}`);
     }
   };
 
@@ -248,7 +248,7 @@ export default function ProductListPage() {
                 <tr
                   key={idx}
                   className={`border-b hover:bg-gray-50 cursor-${editMode ? "pointer" : "default"} ${editMode ? "opacity-50 hover:opacity-100" : ""}`}
-                  onClick={() => handleProductClick(product.sku)}
+                  onClick={() => handleProductClick(product.id)}
                 >
                   <td className="p-2">{product.manufacturer_name}</td>
                   <td className="p-2">{product.name}</td>

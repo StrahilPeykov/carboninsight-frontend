@@ -13,6 +13,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isAccountBlocked, setIsAccountBlocked] = useState(false);
   const [formData, setFormData] = useState<LoginCredentials>({
     username: "",
     password: "",
@@ -30,16 +31,23 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    setIsAccountBlocked(false);
 
     try {
-      // Use the login method from AuthContext with the credentials object
       await login(formData);
-
-      // Redirect to self-assessment page on success
-      router.push("/self-assessment");
+      router.push("/dashboard");
     } catch (err) {
-      setError("Login failed. Please check your credentials.");
-      console.error(err);
+      console.error("Login error:", err);
+
+      if (err instanceof Error) {
+        // Check if this is our custom AuthError with blocking info
+        const isBlocked = (err as any).isAccountBlocked === true;
+
+        setIsAccountBlocked(isBlocked);
+        setError(err.message);
+      } else {
+        setError("Login failed. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -57,7 +65,46 @@ export default function LoginPage() {
       </div>
 
       <Card className="max-w-md mx-auto">
-        {error && <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md">{error}</div>}
+        {/* Regular Error Message */}
+        {error && !isAccountBlocked && (
+          <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md dark:bg-red-900/20 dark:text-red-300">
+            {error}
+          </div>
+        )}
+
+        {/* Blocked Account Message - Enhanced styling and information */}
+        {isAccountBlocked && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md dark:bg-red-900/20 dark:border-red-900">
+            <h3 className="text-lg font-medium text-red-800 dark:text-red-300 mb-2">
+              Account Temporarily Blocked
+            </h3>
+            <p className="text-sm text-red-700 dark:text-red-200 mb-4">{error}</p>
+            <div className="space-y-2">
+              <p className="text-sm text-red-700 dark:text-red-200">
+                <strong>What you can do:</strong>
+              </p>
+              <ul className="text-sm text-red-700 dark:text-red-200 list-disc list-inside space-y-1">
+                <li>Wait a few minutes and try again</li>
+                <li>Ensure you're using the correct email and password</li>
+                <li>Contact support if the issue persists</li>
+              </ul>
+              <div className="mt-3 pt-3 border-t border-red-200 dark:border-red-800">
+                <p className="text-sm text-red-700 dark:text-red-200">
+                  <strong>Support:</strong>{" "}
+                  <a
+                    href="mailto:support@carboninsight.win.tue.nl?subject=Account Unlock Request"
+                    className="underline hover:no-underline"
+                  >
+                    support@carboninsight.win.tue.nl
+                  </a>
+                </p>
+                <p className="text-xs text-red-600 dark:text-red-400 mt-1">
+                  Response time: 24-48 hours
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -75,7 +122,8 @@ export default function LoginPage() {
               required
               value={formData.username}
               onChange={handleChange}
-              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600"
+              disabled={isLoading}
+              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="your@email.com"
             />
           </div>
@@ -95,11 +143,12 @@ export default function LoginPage() {
               required
               value={formData.password}
               onChange={handleChange}
-              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600"
+              disabled={isLoading}
+              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
             />
           </div>
 
-          <div className="flex items-center">
+          <div className="flex items-center justify-between">
             <div className="text-sm">
               <Link
                 href="/register"
@@ -108,12 +157,35 @@ export default function LoginPage() {
                 Need an account? Register
               </Link>
             </div>
+            <div className="text-sm">
+              <Link
+                href="/support"
+                className="font-medium text-red hover:text-red-700 dark:text-red-400"
+              >
+                Need help?
+              </Link>
+            </div>
           </div>
 
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Logging in..." : "Login"}
           </Button>
         </form>
+
+        {/* Additional Support Information */}
+        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="text-center">
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Having trouble accessing your account?
+            </p>
+            <Link
+              href="/support"
+              className="text-xs text-red hover:text-red-700 dark:text-red-400 underline"
+            >
+              Contact Support
+            </Link>
+          </div>
+        </div>
       </Card>
     </div>
   );

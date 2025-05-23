@@ -1,13 +1,15 @@
 import { apiRequest } from "@/lib/api/apiClient";
 
-// Simplified export formats aligned with project requirements
+// Export formats
 export type ExportFormat =
-  | "pdf"        // Digital Product Passport report 
-  | "aasx"       // AAS package (primary DPP format)
-  | "csv"        // Data export for SMEs
-  | "xlsx"       // Excel export for SMEs  
-  | "xml"        // AAS/SCSN XML (combined)
-  | "json";      // Structured data export
+  | "pdf" // Digital Product Passport report (frontend generated)
+  | "aasx" // AAS package (primary DPP format)
+  | "aas_xml" // AAS XML format
+  | "aas_json" // AAS JSON format
+  | "scsn_pcf_xml" // SCSN PCF XML (partial)
+  | "scsn_full_xml" // SCSN full XML (complete)
+  | "csv" // CSV export for spreadsheet import
+  | "xlsx"; // Excel export
 
 interface Product {
   id: string;
@@ -43,28 +45,35 @@ export async function exportProduct(
     throw new Error("No authentication token available");
   }
 
+  // Map frontend format names to actual backend endpoint paths
   const formatEndpoints = {
-    aasx: "export/aasx",
-    csv: "export/csv", 
+    aasx: "export/aas_aasx",
+    aas_xml: "export/aas_xml",
+    aas_json: "export/aas_json",
+    scsn_pcf_xml: "export/scsn_pcf_xml",
+    scsn_full_xml: "export/scsn_full_xml",
+    csv: "export/csv",
     xlsx: "export/xlsx",
-    xml: "export/xml",
-    json: "export/json",
   };
 
   const mimeTypes = {
     aasx: "application/asset-administration-shell-package",
+    aas_xml: "application/xml",
+    aas_json: "application/json",
+    scsn_pcf_xml: "application/xml",
+    scsn_full_xml: "application/xml",
     csv: "text/csv",
     xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    xml: "application/xml",
-    json: "application/json",
   };
 
   const fileExtensions = {
     aasx: "aasx",
-    csv: "csv", 
+    aas_xml: "xml",
+    aas_json: "json",
+    scsn_pcf_xml: "xml",
+    scsn_full_xml: "xml",
+    csv: "csv",
     xlsx: "xlsx",
-    xml: "xml",
-    json: "json",
   };
 
   try {
@@ -77,12 +86,15 @@ export async function exportProduct(
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Export failed: ${response.status} ${response.statusText}`, errorText);
       throw new Error(`Export failed: ${response.status} ${response.statusText}`);
     }
 
     const blob = await response.blob();
     const cleanProductName = productName.replace(/[^a-zA-Z0-9]/g, "_");
-    const filename = `${cleanProductName}_${format}_${new Date().toISOString().split("T")[0]}.${fileExtensions[format]}`;
+    const formatSuffix = format.replace("_", "_");
+    const filename = `${cleanProductName}_${formatSuffix}_${new Date().toISOString().split("T")[0]}.${fileExtensions[format]}`;
 
     downloadFile(blob, filename, mimeTypes[format]);
   } catch (error) {
@@ -391,19 +403,29 @@ export function getExportFormats(): Array<{
       description: "Comma-separated values for spreadsheet import",
     },
     {
-      value: "xlsx", 
+      value: "xlsx",
       label: "Excel File",
-      description: "Microsoft Excel spreadsheet format",
+      description: "Microsoft Excel spreadsheet with multiple worksheets",
     },
     {
-      value: "xml",
-      label: "XML Data",
-      description: "Structured XML with semantic annotations (AAS/SCSN compatible)",
+      value: "aas_xml",
+      label: "AAS XML",
+      description: "Asset Administration Shell XML format with Digital Nameplate",
     },
     {
-      value: "json",
-      label: "JSON Data", 
-      description: "Structured data in JSON format",
+      value: "aas_json",
+      label: "AAS JSON",
+      description: "Asset Administration Shell JSON format",
+    },
+    {
+      value: "scsn_pcf_xml",
+      label: "SCSN PCF XML",
+      description: "Smart Connected Supplier Network PCF data only (partial)",
+    },
+    {
+      value: "scsn_full_xml",
+      label: "SCSN Full XML",
+      description: "Complete SCSN XML with placeholders for missing fields",
     },
   ];
 }

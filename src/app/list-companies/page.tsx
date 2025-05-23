@@ -7,6 +7,7 @@ import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Link from "next/link";
 import { companyApi, Company } from "@/lib/api/companyApi";
+import { setLocalStorageItem } from "@/lib/api/apiClient";
 
 export default function ListCompaniesPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -34,12 +35,12 @@ export default function ListCompaniesPage() {
   }, []);
 
   const handleSelectCompany = (companyId: string) => {
-    localStorage.setItem("selected_company_id", companyId);
+    setLocalStorageItem("selected_company_id", companyId);
     router.push(`/get-started`);
   };
 
   const selectCompany = (companyId: string) => {
-    localStorage.setItem("selected_company_id", companyId);
+    setLocalStorageItem("selected_company_id", companyId);
     router.push("/dashboard");
   };
 
@@ -111,7 +112,7 @@ export default function ListCompaniesPage() {
                     <Button
                       variant="outline"
                       onClick={() => {
-                        localStorage.setItem("selected_company_id", company.id);
+                        setLocalStorageItem("selected_company_id", company.id);
                         router.push("/company-details");
                       }}
                       className="flex items-center justify-center gap-2"
@@ -127,7 +128,7 @@ export default function ListCompaniesPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        localStorage.setItem("selected_company_id", company.id);
+                        setLocalStorageItem("selected_company_id", company.id);
                         router.push("/manage-user");
                       }}
                       className="flex items-center justify-center gap-1"
@@ -140,7 +141,7 @@ export default function ListCompaniesPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        localStorage.setItem("selected_company_id", company.id);
+                        setLocalStorageItem("selected_company_id", company.id);
                         router.push("/product-list");
                       }}
                       className="flex items-center justify-center gap-1"
@@ -153,7 +154,7 @@ export default function ListCompaniesPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        localStorage.setItem("selected_company_id", company.id);
+                        setLocalStorageItem("selected_company_id", company.id);
                         router.push("/product-data-sharing");
                       }}
                       className="flex items-center justify-center gap-1"

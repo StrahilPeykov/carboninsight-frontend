@@ -33,25 +33,25 @@ export const productApi = {
   listProducts: (companyId: string) => apiRequest<Product[]>(`/companies/${companyId}/products/`),
 
   // Get a specific product
-  getProduct: (productId: string) => apiRequest<Product>(`/products/${productId}/`),
+  getProduct: (companyId: string, productId: string) => apiRequest<Product>(`/companies/${companyId}/products/${productId}/`),
 
   // Create a new product
-  createProduct: (data: ProductCreateData) =>
-    apiRequest<Product>("/products/", {
+  createProduct: (companyId: string, data: ProductCreateData) =>
+    apiRequest<Product>(`companies/${companyId}/products/`, {
       method: "POST",
       body: data as unknown as Record<string, unknown>,
     }),
 
   // Update a product
-  updateProduct: (productId: string, data: Partial<ProductCreateData>) =>
-    apiRequest<Product>(`/products/${productId}/`, {
+  updateProduct: (productId: string, companyId: string, data: Partial<ProductCreateData>) =>
+    apiRequest<Product>(`companies/${companyId}/products/${productId}/`, {
       method: "PUT",
       body: data as unknown as Record<string, unknown>,
     }),
 
   // Delete a product
-  deleteProduct: (productId: string) =>
-    apiRequest(`/products/${productId}/`, {
+  deleteProduct: (companyId: string, productId: string) =>
+    apiRequest(`companies/${companyId}/products/${productId}/`, {
       method: "DELETE",
     }),
 

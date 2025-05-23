@@ -13,6 +13,7 @@ import {
   LayoutDashboardIcon,
   Boxes,
   BarChart,
+  HelpCircle,
 } from "lucide-react";
 import { companyApi } from "@/lib/api/companyApi";
 
@@ -46,9 +47,45 @@ export default function Navbar() {
     router.push("/");
   };
 
+  // Get companyId from localStorage and listen for changes
+  useEffect(() => {
+    // Initial load
+    const id = localStorage.getItem("selected_company_id");
+    setCompanyId(id);
+
+    // Listen for storage changes (when localStorage is updated from other tabs/components)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "selected_company_id") {
+        setCompanyId(e.newValue);
+      }
+    };
+
+    // Listen for custom events (for same-tab updates)
+    const handleCompanyChange = () => {
+      const id = localStorage.getItem("selected_company_id");
+      setCompanyId(id);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("companyChanged", handleCompanyChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("companyChanged", handleCompanyChange);
+    };
+  }, []);
+
   // Only fetch company data when authentication is confirmed and companyId is available
   useEffect(() => {
     if (!isAuthenticated || !companyId || isLoading) {
+      // Clear company data if no company is selected
+      if (!companyId) {
+        setCompanyData({
+          name: "",
+          vat_number: "",
+          business_registration_number: "",
+        });
+      }
       return;
     }
 
@@ -68,12 +105,6 @@ export default function Navbar() {
 
     fetchCompany();
   }, [companyId, isAuthenticated, isLoading]);
-
-  // Get companyId from localStorage after component mounts
-  useEffect(() => {
-    const id = localStorage.getItem("selected_company_id");
-    setCompanyId(id);
-  }, []);
 
   // Close profile dropdown when clicking outside
   useEffect(() => {
@@ -280,6 +311,13 @@ export default function Navbar() {
                             Company Details
                           </Link>
                         )}
+                        <Link
+                          href="/support"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                        >
+                          Support & Help
+                        </Link>
                       </div>
                       <Link
                         href="/list-companies"
@@ -395,6 +433,13 @@ export default function Navbar() {
                   Company details
                 </Link>
               )}
+              <Link
+                href="/support"
+                className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+              >
+                <HelpCircle size={16} className="mr-2" />
+                Support & Help
+              </Link>
               <Link
                 href="/list-companies"
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"

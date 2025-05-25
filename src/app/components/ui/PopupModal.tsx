@@ -1,38 +1,43 @@
 "use client";
 
-import { ReactNode, useEffect } from "react";
+import {ReactNode, useEffect} from "react";
 import ReactDOM from "react-dom";
 import Button from "./Button";
 
 interface ModalProps {
-  title: string;
-  children: ReactNode;
-  onClose: () => void;
+    title: string;
+    children: ReactNode;
+    onClose: () => void;
 }
 
-export default function Modal({ title, children, onClose }: ModalProps) {
-  // Lock background scroll while modal is open
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, []);
+export default function Modal({title, children, onClose}: ModalProps) {
+    // Lock background scroll while modal is open
+    useEffect(() => {
+        document.body.style.overflow = "hidden";
+        return () => {
+            document.body.style.overflow = "";
+        };
+    }, []);
 
-  // Render modal into document.body via a portal
-  return ReactDOM.createPortal(
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-gray-800 rounded-lg w-full max-w-md p-6 transform">
-        <header className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">{title}</h2>
-          {/* Icon button to close */}
-          <Button variant="icon" onClick={onClose} aria-label="Close">
-            ×
-          </Button>
-        </header>
-        <div>{children}</div>
-      </div>
-    </div>,
-    document.body
-  );
+    // Render modal into document.body via a portal
+    return ReactDOM.createPortal(
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg w-full max-w-md p-6 transform">
+                <header className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-semibold">{title}</h2>
+                    {/* Icon button to close */}
+                    <Button variant="icon" onClick={onClose} aria-label="Close">
+                        ×
+                    </Button>
+                </header>
+
+                <div
+                    className="prose prose-sm max-w-none text-gray-900 dark:text-gray-100 [&_*]:text-gray-900 dark:[&_*]:text-gray-100">
+                    {children}
+                </div>
+            </div>
+        </div>,
+        document.body
+    );
 }

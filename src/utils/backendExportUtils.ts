@@ -46,14 +46,15 @@ export async function exportProduct(
   }
 
   // Map frontend format names to actual backend endpoint paths
+  // Note: CSV and XLSX are company-level exports, others are product-level
   const formatEndpoints = {
-    aasx: "export/aas_aasx",
-    aas_xml: "export/aas_xml",
-    aas_json: "export/aas_json",
-    scsn_pcf_xml: "export/scsn_pcf_xml",
-    scsn_full_xml: "export/scsn_full_xml",
-    csv: "export/csv",
-    xlsx: "export/xlsx",
+    aasx: `products/${productId}/export/aas_aasx`,
+    aas_xml: `products/${productId}/export/aas_xml`,
+    aas_json: `products/${productId}/export/aas_json`,
+    scsn_pcf_xml: `products/${productId}/export/scsn_pcf_xml`,
+    scsn_full_xml: `products/${productId}/export/scsn_full_xml`,
+    csv: "products/export/csv", // Company-level export
+    xlsx: "products/export/xlsx", // Company-level export
   };
 
   const mimeTypes = {
@@ -77,7 +78,7 @@ export async function exportProduct(
   };
 
   try {
-    const endpoint = `/companies/${companyId}/products/${productId}/${formatEndpoints[format]}/`;
+    const endpoint = `/companies/${companyId}/${formatEndpoints[format]}/`;
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
       method: "GET",
       headers: {
@@ -94,7 +95,14 @@ export async function exportProduct(
     const blob = await response.blob();
     const cleanProductName = productName.replace(/[^a-zA-Z0-9]/g, "_");
     const formatSuffix = format.replace("_", "_");
-    const filename = `${cleanProductName}_${formatSuffix}_${new Date().toISOString().split("T")[0]}.${fileExtensions[format]}`;
+    
+    // For company-level exports, use company name instead of product name
+    let filename: string;
+    if (format === "csv" || format === "xlsx") {
+      filename = `company_products_${formatSuffix}_${new Date().toISOString().split("T")[0]}.${fileExtensions[format]}`;
+    } else {
+      filename = `${cleanProductName}_${formatSuffix}_${new Date().toISOString().split("T")[0]}.${fileExtensions[format]}`;
+    }
 
     downloadFile(blob, filename, mimeTypes[format]);
   } catch (error) {
@@ -400,12 +408,12 @@ export function getExportFormats(): Array<{
     {
       value: "csv",
       label: "CSV Data",
-      description: "Comma-separated values for spreadsheet import",
+      description: "All company products in comma-separated format",
     },
     {
       value: "xlsx",
       label: "Excel File",
-      description: "Microsoft Excel spreadsheet with multiple worksheets",
+      description: "All company products in Microsoft Excel format",
     },
     {
       value: "aas_xml",

@@ -100,7 +100,13 @@ function EmissionsTreePageContent() {
           return;
         }
 
-        const companyId = localStorage.getItem("selected_company_id");
+        // const companyId = localStorage.getItem("selected_company_id");
+
+        let companyId = searchParams.get("cid");
+
+        if (!companyId) {
+          companyId = localStorage.getItem("selected_company_id");
+        }
 
         const emissionTraceResponse = await fetch(
           `${API_URL}/companies/${companyId}/products/${productId}/emission_traces/`,

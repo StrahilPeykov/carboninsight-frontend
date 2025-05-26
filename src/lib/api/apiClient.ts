@@ -1,4 +1,3 @@
-// src/lib/api/apiClient.ts
 import { useRouter } from "next/navigation";
 
 // Base configuration

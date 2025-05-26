@@ -1,5 +1,4 @@
 import { apiRequest } from "./apiClient";
-import { LineItem } from "./bomApi";
 import { OverrideFactor } from "./materialEmissionApi";
 
 export interface ProductionEnergyEmission {
@@ -7,7 +6,7 @@ export interface ProductionEnergyEmission {
   energy_consumption: number;
   reference: number;
   override_factors: OverrideFactor[];
-  line_items: LineItem[];
+  line_items: number[];
 }
 
 export interface CreateProductionEnergyEmission {

@@ -1,5 +1,4 @@
 import { apiRequest } from "./apiClient";
-import { LineItem } from "./bomApi";
 import { OverrideFactor } from "./materialEmissionApi";
 
 export interface TransportEmission {
@@ -8,7 +7,7 @@ export interface TransportEmission {
   weight: number;
   reference: number;
   override_factors: OverrideFactor[];
-  line_items: LineItem[];
+  line_items: number[];
 }
 
 export interface CreateTransportEmission {

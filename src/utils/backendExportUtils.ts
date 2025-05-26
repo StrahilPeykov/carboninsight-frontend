@@ -95,7 +95,7 @@ export async function exportProduct(
     const blob = await response.blob();
     const cleanProductName = productName.replace(/[^a-zA-Z0-9]/g, "_");
     const formatSuffix = format.replace("_", "_");
-    
+
     // For company-level exports, use company name instead of product name
     let filename: string;
     if (format === "csv" || format === "xlsx") {

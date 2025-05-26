@@ -3,8 +3,8 @@ import { apiRequest } from "./apiClient";
 export interface Company {
   id: string;
   name: string;
-  vat_number: string;
   business_registration_number: string;
+  vat_number: string;
 }
 
 export interface CompanyCreateData {
@@ -22,6 +22,10 @@ export interface AuthenticatedUser {
 }
 
 export const companyApi = {
+  // Search all companies
+  searchAllCompanies: (searchTerm: string) =>
+    apiRequest<Company[]>(searchTerm ? `/companies/${searchTerm}` : `/companies/`),
+
   // List all companies a user has access to
   listCompanies: () => apiRequest<Company[]>("/companies/my/"),
 

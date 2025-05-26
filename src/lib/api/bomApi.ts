@@ -1,12 +1,11 @@
 import { apiRequest } from "./apiClient";
-import { Product } from "./productApi";
 
 type EmissionType =
   | "TransportEmission"
   | "MaterialEmission"
   | "UserEnergyEmission"
   | "ProductionEnergyEmission";
-type Status = "Pending" | "Accepted" | "Rejected";
+type Status = "Pending" | "Accepted" | "Rejected" | "Not requested";
 
 interface Emission {
   id: number;
@@ -15,13 +14,24 @@ interface Emission {
   url: string | null;
 }
 
+interface Product {
+  id: number;
+  supplier: number;
+  emmision_total: number;
+  name: string;
+  description: string;
+  manufacturer: string;
+  sku: string;
+  is_public: boolean;
+}
+
 export interface LineItem {
   id: number;
   quantity: number;
   line_item_product: Product;
   parent_product: number;
+  calculate_emissions?: Emission[];
   product_sharing_request_status: Status;
-  emissions: Emission[];
 }
 
 export interface CreateLineItemData {
@@ -57,7 +67,7 @@ export const bomApi = {
     line_item_id: number,
     data: UpdateLineItemData
   ) => {
-    if (data.line_item_product_id !== undefined && data.quantity !== undefined) {
+    if (data.line_item_product_id != null && data.quantity != null) {
       return apiRequest(`/companies/${company_id}/products/${product_id}/bom/${line_item_id}/`, {
         method: "PUT",
         body: data as unknown as Record<string, unknown>,

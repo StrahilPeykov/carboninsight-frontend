@@ -1,5 +1,4 @@
 import { apiRequest } from "./apiClient";
-import { LineItem } from "./bomApi";
 
 export type LifecycleStage =
   | "A1"
@@ -37,7 +36,7 @@ export interface MaterialEmission {
   weight: number;
   reference: number;
   override_factors: OverrideFactor[];
-  line_items: LineItem[];
+  line_items: number[];
 }
 
 export interface CreateMaterialEmission {

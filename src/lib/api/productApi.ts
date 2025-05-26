@@ -1,13 +1,14 @@
 import { apiRequest } from "./apiClient";
+import { Company } from "@/lib/api/companyApi";
 
 export interface Product {
   id: string;
   company_name: string;
-  product_name: string;
+  name: string;
   sku: string;
   status: string;
   pcf_calculation_method: string;
-  pcf_value: string;
+  emission_total: number;
 }
 
 export interface ProductCreateData {
@@ -32,8 +33,17 @@ export const productApi = {
   // List products for a company
   listProducts: (companyId: string) => apiRequest<Product[]>(`/companies/${companyId}/products/`),
 
+  // Search products by name for a company
+  searchProducts: (companyId: string, searchTerm: string) =>
+    apiRequest<Product[]>(
+      searchTerm
+        ? `/companies/${companyId}/products${searchTerm}`
+        : `/companies/${companyId}/products/`
+    ),
+
   // Get a specific product
-  getProduct: (companyId: string, productId: string) => apiRequest<Product>(`/companies/${companyId}/products/${productId}/`),
+  getProduct: (companyId: string, productId: string) =>
+    apiRequest<Product>(`/companies/${companyId}/products/${productId}/`),
 
   // Create a new product
   createProduct: (companyId: string, data: ProductCreateData) =>
@@ -77,9 +87,16 @@ export const productApi = {
       }
     ),
 
-  requestProductSharing: (companyId: string, productId: string) =>
-    apiRequest<{ id: string }>(`/companies/${companyId}/request_product_sharing/`, {
-      method: "POST",
-      body: { product_id: productId } as unknown as Record<string, unknown>,
-    }),
+  requestProductSharing: (
+    providerCompanyId: number,
+    requesterCompanyId: number,
+    productId: number
+  ) =>
+    apiRequest<{ id: string }>(
+      `/companies/${providerCompanyId}/products/${productId}/request_access/`,
+      {
+        method: "POST",
+        body: { requester: requesterCompanyId } as unknown as Record<string, unknown>,
+      }
+    ),
 };

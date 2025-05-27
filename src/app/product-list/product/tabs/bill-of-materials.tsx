@@ -9,6 +9,8 @@ import { DataPassedToTabs, TabHandle } from "../page";
 import { bomApi, LineItem } from "@/lib/api/bomApi";
 import { companyApi, Company } from "@/lib/api/companyApi";
 import { productApi, Product } from "@/lib/api/productApi";
+import { Mode } from "../enums";
+import { on } from "events";
 
 export type Material = {
   id: number;
@@ -22,10 +24,7 @@ export type Material = {
 };
 
 const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
-  (
-    { productId: productId_string, setProductId, onFieldChange, onTabSaved, onTabSaveError },
-    ref
-  ) => {
+  ({ productId: productId_string, tabKey, mode, setProductId, onFieldChange }, ref) => {
     const [materials, setMaterials] = useState<Material[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
@@ -61,11 +60,14 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
       return id;
     };
 
-    useImperativeHandle(ref, () => ({ saveTab }));
+    useImperativeHandle(ref, () => ({ saveTab, updateTab }));
 
-    const saveTab = async (): Promise<boolean> => {
-      onTabSaved();
-      return true;
+    const saveTab = async (): Promise<string> => {
+      return "";
+    };
+
+    const updateTab = async (): Promise<string> => {
+      return "";
     };
 
     // Fetch companies
@@ -128,6 +130,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
 
         const updatedMaterials = materials.filter(material => material.id !== id);
         setMaterials(updatedMaterials);
+        onFieldChange();
       } catch (error) {
         console.error("Error deleting material:", error);
       }
@@ -181,6 +184,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
         setMaterials(updatedMaterials);
         setIsEditModalOpen(false);
         setEditingMaterial(null);
+        onFieldChange();
       } catch (error) {
         console.error("Error updating material:", error);
       }
@@ -233,6 +237,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
           const updatedMaterials = [...materials, newMaterial];
           setMaterials(updatedMaterials);
           setIsModalOpen(false);
+          onFieldChange();
         } catch (error) {
           console.error("Error adding material:", error);
         }
@@ -241,11 +246,10 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
 
     // Fetch all BoM data
     useEffect(() => {
-      // Only fetch when we have a valid product ID, and we're viewing the BoM tab
-      if (productId_string) {
+      if (mode == Mode.EDIT) {
         fetchBOMItems();
       }
-    }, [productId_string]);
+    }, [mode]);
 
     const fetchBOMItems = async () => {
       try {

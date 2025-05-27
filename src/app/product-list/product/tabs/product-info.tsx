@@ -8,11 +8,11 @@ import { Fieldset, Legend } from "@headlessui/react";
 import DropdownField from "./components/DropdownField";
 import TextareaField from "./components/TextareaField";
 
-let _fetchedProductInfo = false;
-
 const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
-  ({ productId, setProductId, onFieldChange, onTabSaved, onTabSaveError }, ref) => {
-    useImperativeHandle(ref, () => ({ saveTab }));
+  ({ productId, tabKey, mode, setProductId, onFieldChange }, ref) => {
+    useImperativeHandle(ref, () => ({ saveTab, updateTab }));
+
+    console.log("mode", mode);
 
     const company_pk = localStorage.getItem("selected_company_id") ?? ("" as string);
     const access_token = localStorage.getItem("access_token");
@@ -56,7 +56,7 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
       sku: "",
       reference_impact_unit: "",
       pcf_calculation_method: "",
-      is_public: true,
+      is_public: false,
     });
 
     // Errors from server: fieldName → error message
@@ -161,13 +161,8 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
     };
 
     useEffect(() => {
-      // only fetch once ever (module var survives StrictMode remount)
-      if (!productId || _fetchedProductInfo) return;
-      _fetchedProductInfo = true;
-
       fetchProductData(productId).then(responseOk => {
         if (responseOk) {
-          onTabSaved();
           console.log("Product data fetched successfully", productId);
         }
       });
@@ -187,7 +182,7 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
           setFieldValues(data);
           return true;
         } else {
-          console.error("Failed to fetch product data", res.status);
+          console.log("Failed to fetch product data", res.status);
           return false;
         }
       } catch (err) {
@@ -211,16 +206,8 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
       onFieldChange();
     };
 
-    const handleNext = async () => {
-      if (await saveTab()) {
-        onTabSaved();
-      } else {
-        onTabSaveError("Failed to save the current tab. Please try again.");
-      }
-    };
-
     // POST to server, handle 200 vs 400 responses
-    const saveTab = async (): Promise<boolean> => {
+    const saveTab = async (): Promise<string> => {
       try {
         const res = await fetch(API_URL + `/companies/${company_pk}/products/`, {
           method: "POST",
@@ -236,9 +223,7 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
 
           setProductId(data.id.toString());
 
-          onTabSaved();
-
-          return true;
+          return "";
         }
         if (res.status === 400) {
           // new payload shape: { type, errors: [ { attr, detail, … }, … ] }
@@ -253,13 +238,52 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
           });
 
           setFieldErrors(prev => ({ ...prev, ...flat }));
-          return false;
+          return "Please fix the errors in the form.";
         }
         console.error("Unexpected status", res.status);
-        return false;
+        return "An unexpected error occurred. Please try again.";
       } catch (err) {
         console.error("Network error", err);
-        return false;
+        return "A network error occurred. Please try again.";
+      }
+    };
+
+    const updateTab = async (): Promise<string> => {
+      try {
+        const res = await fetch(API_URL + `/companies/${company_pk}/products/${productId}/`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${access_token}`,
+          },
+          body: JSON.stringify(fieldValues),
+        });
+        if (res.ok) {
+          // save the product id for the next tab
+          const data = await res.json();
+
+          return "";
+        }
+        if (res.status === 400) {
+          // new payload shape: { type, errors: [ { attr, detail, … }, … ] }
+          const payload: {
+            type: string;
+            errors: Array<{ attr: string; detail: string }>;
+          } = await res.json();
+
+          const flat: Partial<FieldErrors> = {};
+          payload.errors.forEach(({ attr, detail }) => {
+            flat[attr as FieldKey] = detail;
+          });
+
+          setFieldErrors(prev => ({ ...prev, ...flat }));
+          return "Please fix the errors in the form.";
+        }
+        console.error("Unexpected status", res.status);
+        return "An unexpected error occurred. Please try again.";
+      } catch (err) {
+        console.error("Network error", err);
+        return "A network error occurred. Please try again.";
       }
     };
 

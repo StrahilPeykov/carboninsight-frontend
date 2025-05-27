@@ -102,11 +102,8 @@ export default function Navbar() {
       try {
         const data = await companyApi.getCompany(companyId);
         setCompanyData(data);
-      } catch (err: any) {
-        // Only log non-404 errors (404 just means the company doesn't exist)
-        if (err.status !== 404) {
-          console.error("Error fetching company data:", err);
-        }
+      } catch (err) {
+        console.error("Error fetching company data:", err);
         setCompanyError(err instanceof Error ? err.message : "Failed to load company data");
         // Clear the invalid company ID
         if (typeof window !== "undefined") {
@@ -261,7 +258,7 @@ export default function Navbar() {
                     href="/product-list"
                     className={`flex items-center px-2 lg:px-3 py-2 rounded-md text-sm font-medium 
                       ${
-                        isActive("/product-list") || isActive("/get-started")
+                        isActive("/product-list")
                           ? "bg-red text-white"
                           : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
                       }`}
@@ -419,7 +416,7 @@ export default function Navbar() {
                   href="/product-list"
                   className={`flex items-center px-3 py-2 rounded-md text-base font-medium 
                     ${
-                      isActive("/product-list") || isActive("/get-started")
+                      isActive("/product-list")
                         ? "bg-red text-white"
                         : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
                     }`}

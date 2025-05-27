@@ -1,19 +1,30 @@
 "use client";
 
-import React, { forwardRef, useImperativeHandle, useState } from "react";
+import React, { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import { DataPassedToTabs, TabHandle } from "../page";
+import { Mode } from "../enums";
 
 const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
-  ({ productId, setProductId, onFieldChange, onTabSaved, onTabSaveError }, ref) => {
+  ({ productId, tabKey, mode, setProductId, onFieldChange }, ref) => {
     const company_pk = localStorage.getItem("selected_company_id");
     const access_token = localStorage.getItem("access_token");
 
-    useImperativeHandle(ref, () => ({ saveTab }));
+    useImperativeHandle(ref, () => ({ saveTab, updateTab }));
 
-    const saveTab = async (): Promise<boolean> => {
-      onTabSaved();
-      return true;
+    const saveTab = async (): Promise<string> => {
+      return "";
     };
+
+    const updateTab = async (): Promise<string> => {
+      return "";
+    };
+
+    // Fetch all BoM data
+    useEffect(() => {
+      if (mode == Mode.EDIT) {
+        // TODO: fetch data here if needed
+      }
+    }, [mode]);
 
     // Example JSX return, adjust as needed for your UI
     return <div>Production Energy Tab for product {productId}</div>;

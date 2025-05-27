@@ -23,6 +23,7 @@ const Transportation = dynamic(() => import("./tabs/transportation"), { ssr: fal
 import Card from "@/app/components/ui/Card";
 import Button from "@/app/components/ui/Button";
 import { useRouter } from "next/navigation";
+import { Mode } from "./enums";
 
 // API URL from environment variables with fallback
 const URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
@@ -30,15 +31,16 @@ console.log("API URL:", URL);
 
 export interface TabHandle {
   /** called by parent when Save & Next is clicked */
-  saveTab(): Promise<boolean>;
+  saveTab(): Promise<string>;
+  updateTab(): Promise<string>;
 }
 
 export type DataPassedToTabs = {
   productId: string;
+  tabKey: string;
+  mode: Mode;
   setProductId: (id: string) => void;
   onFieldChange: () => void;
-  onTabSaved: () => void;
-  onTabSaveError: (errorBannerText: string) => void;
 };
 
 export default function ProductClientPage() {
@@ -46,8 +48,22 @@ export default function ProductClientPage() {
   const [productId, setProductId] = useState<string>("");
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    setProductId(params.get("product_id") ?? "");
+    const id = params.get("product_id") ?? "";
+    setProductId(id);
+    console.log("Product ID from URL:", id);
+    setMode(id ? Mode.EDIT : Mode.ADD);
   }, []);
+
+  const [mode, setMode] = useState<Mode>(Mode.ADD);
+
+  useEffect(() => {
+    if (mode === Mode.EDIT) {
+      // set all tabs to saved
+      setTabConfig(cfg =>
+        cfg.map(tab => ({ ...tab, saved: true, disabled: false, errorBannerText: "" }))
+      );
+    }
+  }, [mode]);
 
   const router = useRouter();
 
@@ -134,20 +150,18 @@ export default function ProductClientPage() {
     router.push("/product-list");
   };
 
-  const onTabSaved = async () => {
+  const onTabSaved = async (tabKey: string) => {
     // Clear the error banner for the current tab
     setTabConfig(cfg => cfg.map((t, i) => (i == activeTab ? { ...t, errorBannerText: "" } : t)));
 
     // If it is the first tab, enable all tabs
-    if (activeTab === 0) {
+    if (tabKey === "productInfo") {
       setTabConfig(config => config.map(tab => ({ ...tab, disabled: false })));
     }
 
     // set the tab to saved
-    setTabConfig(cfg => cfg.map((t, i) => (i == activeTab ? { ...t, saved: true } : t)));
+    setTabConfig(cfg => cfg.map((t, i) => (t.key == tabKey ? { ...t, saved: true } : t)));
 
-    // change the active tab to the next one
-    setActiveTab(i => Math.min(i + 1, tabConfig.length - 1));
     return;
   };
 
@@ -158,23 +172,48 @@ export default function ProductClientPage() {
   };
 
   const onNext = async () => {
+    let errorMessage: string = "Failed to save. Please try again.";
     // deligate to the tab component
     switch (tabConfig[activeTab].key) {
       case "productInfo":
-        await productInfoRef.current?.saveTab();
+        errorMessage =
+          (await (mode == Mode.ADD
+            ? productInfoRef.current?.saveTab()
+            : productInfoRef.current?.updateTab())) ?? "Failed to save. Please try again.";
         break;
       case "billOfMaterials":
-        await billOfMaterialsRef.current?.saveTab();
+        errorMessage =
+          (await (mode == Mode.ADD
+            ? billOfMaterialsRef.current?.saveTab()
+            : billOfMaterialsRef.current?.updateTab())) ?? "Failed to save. Please try again.";
         break;
       case "productionEnergy":
-        await productionEnergyRef.current?.saveTab();
+        errorMessage =
+          (await (mode == Mode.ADD
+            ? productionEnergyRef.current?.saveTab()
+            : productionEnergyRef.current?.updateTab())) ?? "Failed to save. Please try again.";
         break;
       case "userEnergy":
-        await userEnergyRef.current?.saveTab();
+        errorMessage =
+          (await (mode == Mode.ADD
+            ? userEnergyRef.current?.saveTab()
+            : userEnergyRef.current?.updateTab())) ?? "Failed to save. Please try again.";
         break;
       case "transportation":
-        await transportationRef.current?.saveTab();
+        errorMessage =
+          (await (mode == Mode.ADD
+            ? transportationRef.current?.saveTab()
+            : transportationRef.current?.updateTab())) ?? "Failed to save. Please try again.";
         break;
+    }
+
+    if (!errorMessage) {
+      // Record the tab as saved and move to the next tab
+      onTabSaved(tabConfig[activeTab].key);
+      setActiveTab(i => Math.min(i + 1, tabConfig.length - 1));
+    } else {
+      // If saving was unsuccessful, show an error banner
+      onTabSaveError(errorMessage);
     }
   };
 
@@ -228,14 +267,14 @@ export default function ProductClientPage() {
                   <t.Comp
                     ref={t.ref}
                     productId={productId}
+                    tabKey={t.key}
+                    mode={mode}
                     setProductId={setProductId}
                     onFieldChange={() =>
                       setTabConfig(cfg =>
                         cfg.map((tab, i) => (i === activeTab ? { ...tab, saved: false } : tab))
                       )
                     }
-                    onTabSaved={onTabSaved}
-                    onTabSaveError={onTabSaveError}
                   />
                 </TabPanel>
               ))}
@@ -259,7 +298,7 @@ export default function ProductClientPage() {
               disabled={!tabConfig.every(tab => tab.saved)}
               variant={!tabConfig.every(tab => tab.saved) ? "outline" : "primary"}
             >
-              Add Product
+              {mode == Mode.ADD ? "Add Product" : "Update Product"}
             </Button>
           </div>
         </Card>

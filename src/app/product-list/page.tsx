@@ -4,7 +4,7 @@ import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Edit, Info, Trash, FileDown } from "lucide-react";
+import { Edit, Info, Trash, FileDown, Boxes } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "../context/AuthContext";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
@@ -43,6 +43,7 @@ export default function ProductListPage() {
   const [dataLoading, setDataLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState("");
+  const [mounted, setMounted] = useState(false);
 
   // UI modes
   const [editMode, setEditMode] = useState(false); // AI-selection toggle
@@ -56,6 +57,11 @@ export default function ProductListPage() {
   const [pendingProductName, setPendingProductName] = useState<string>("");
   const [aiModalStep, setAiModalStep] = useState<"confirm" | "loading" | "result" | null>(null);
   const [aiAdvice, setAiAdvice] = useState<string | null>(null);
+
+  // Ensure component is mounted
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Helpers
   const getStatusColor = (status: string) => {
@@ -73,7 +79,7 @@ export default function ProductListPage() {
 
   // Init
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || !mounted) return;
 
     const id = localStorage.getItem("selected_company_id");
     if (!id) {
@@ -82,7 +88,7 @@ export default function ProductListPage() {
       setCompanyId(id);
     }
     setInitializing(false);
-  }, [router]);
+  }, [router, mounted]);
 
   // Data fetch
   const fetchProducts = async (query = "") => {
@@ -92,7 +98,7 @@ export default function ProductListPage() {
       setDataLoading(true);
       setError("");
 
-      const token = localStorage.getItem("access_token");
+      const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
       if (!token) {
         router.push("/login");
         return;
@@ -120,11 +126,13 @@ export default function ProductListPage() {
   };
 
   useEffect(() => {
-    if (companyId) fetchProducts();
-  }, [companyId]);
+    if (companyId && mounted) fetchProducts();
+  }, [companyId, mounted]);
 
   // Debounced search
   useEffect(() => {
+    if (!mounted) return;
+
     const t = setTimeout(() => {
       if (!companyId) return;
 
@@ -137,13 +145,14 @@ export default function ProductListPage() {
     }, 300);
 
     return () => clearTimeout(t);
-  }, [searchQuery]);
+  }, [searchQuery, companyId, mounted]);
 
   // CRUD actions
   const handleDelete = async (id: string) => {
     try {
-      const token = localStorage.getItem("access_token");
-      const company_pk = localStorage.getItem("selected_company_id");
+      const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+      const company_pk =
+        typeof window !== "undefined" ? localStorage.getItem("selected_company_id") : null;
 
       if (!token || !company_pk) {
         router.push("/login");
@@ -181,8 +190,9 @@ export default function ProductListPage() {
   //AI advice workflow
   const handleRequestProductAdvice = async (productId: string) => {
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
-    const token = localStorage.getItem("access_token");
-    const company = localStorage.getItem("selected_company_id");
+    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+    const company =
+      typeof window !== "undefined" ? localStorage.getItem("selected_company_id") : null;
 
     if (!API_URL || !token || !company) return;
 
@@ -232,7 +242,7 @@ export default function ProductListPage() {
   );
 
   // Early UI states
-  if (isLoading) {
+  if (isLoading || !mounted) {
     return (
       <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <LoadingSkeleton count={3} />
@@ -264,7 +274,9 @@ export default function ProductListPage() {
         )}
 
         <div className="flex justify-between items-center">
-          <div />
+          <p className="text-gray-500 dark:text-gray-400">
+            Manage your products and calculate their carbon footprint
+          </p>
           <div className="flex gap-2">
             {/* AI toggle */}
             <Button
@@ -390,10 +402,30 @@ export default function ProductListPage() {
                   {/* Empty state */}
                   {paginatedProducts.length === 0 && !dataLoading && (
                     <tr>
-                      <td colSpan={7} className="text-center text-gray-500 py-4">
-                        {searchQuery.length > 0 && searchQuery.length < 4
-                          ? "Please enter at least 4 characters to search."
-                          : "No products found."}
+                      <td colSpan={7} className="text-center py-8">
+                        {searchQuery.length > 0 && searchQuery.length < 4 ? (
+                          <div className="text-gray-500">
+                            Please enter at least 4 characters to search.
+                          </div>
+                        ) : searchQuery.length >= 4 ? (
+                          <div className="text-gray-500">
+                            No products found matching "{searchQuery}".
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            <Boxes className="mx-auto h-12 w-12 text-gray-400" />
+                            <div className="text-gray-500">
+                              <p className="text-lg font-medium">No products yet</p>
+                              <p className="text-sm mt-1">
+                                Start by adding your first product to calculate its carbon
+                                footprint.
+                              </p>
+                            </div>
+                            <Link href="/product-list/product">
+                              <Button className="mt-4">Add Your First Product</Button>
+                            </Link>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   )}
@@ -476,11 +508,26 @@ export default function ProductListPage() {
 
               {/* Mobile empty-state */}
               {paginatedProducts.length === 0 && !dataLoading && (
-                <p className="text-center text-gray-500">
-                  {searchQuery.length > 0 && searchQuery.length < 4
-                    ? "Please enter at least 4 characters to search."
-                    : "No products found."}
-                </p>
+                <div className="text-center py-8">
+                  {searchQuery.length > 0 && searchQuery.length < 4 ? (
+                    <p className="text-gray-500">Please enter at least 4 characters to search.</p>
+                  ) : searchQuery.length >= 4 ? (
+                    <p className="text-gray-500">No products found matching "{searchQuery}".</p>
+                  ) : (
+                    <div className="space-y-4">
+                      <Boxes className="mx-auto h-12 w-12 text-gray-400" />
+                      <div className="text-gray-500">
+                        <p className="text-lg font-medium">No products yet</p>
+                        <p className="text-sm mt-1">
+                          Start by adding your first product to calculate its carbon footprint.
+                        </p>
+                      </div>
+                      <Link href="/product-list/product">
+                        <Button className="mt-4">Add Your First Product</Button>
+                      </Link>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 

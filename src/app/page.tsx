@@ -1,12 +1,81 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Button from "./components/ui/Button";
 import Card from "./components/ui/Card";
 import { useAuth } from "./context/AuthContext";
+import { companyApi } from "@/lib/api/companyApi";
 
 export default function Home() {
   const { isAuthenticated } = useAuth();
+  const [hasCompanies, setHasCompanies] = useState(false);
+  const [checkingCompanies, setCheckingCompanies] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure component is mounted before checking companies
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Check if user has companies when authenticated
+  useEffect(() => {
+    if (!mounted) return;
+
+    async function checkCompanies() {
+      if (!isAuthenticated) {
+        setHasCompanies(false);
+        return;
+      }
+
+      setCheckingCompanies(true);
+      try {
+        const companies = await companyApi.listCompanies();
+        setHasCompanies(companies.length > 0);
+      } catch (err) {
+        console.error("Error checking companies:", err);
+        setHasCompanies(false);
+      } finally {
+        setCheckingCompanies(false);
+      }
+    }
+
+    checkCompanies();
+  }, [isAuthenticated, mounted]);
+
+  // Determine the right CTA based on user state
+  const getCtaButton = () => {
+    if (!mounted || !isAuthenticated) {
+      return (
+        <Link href="/login">
+          <Button size="lg">Login to Get Started</Button>
+        </Link>
+      );
+    }
+
+    if (checkingCompanies) {
+      return (
+        <Button size="lg" disabled>
+          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
+          Loading...
+        </Button>
+      );
+    }
+
+    if (!hasCompanies) {
+      return (
+        <Link href="/create-company">
+          <Button size="lg">Create Your First Company</Button>
+        </Link>
+      );
+    }
+
+    return (
+      <Link href="/list-companies">
+        <Button size="lg">Go to Companies</Button>
+      </Link>
+    );
+  };
 
   return (
     <div className="py-12 sm:py-16">
@@ -22,13 +91,7 @@ export default function Home() {
             our easy-to-use tool. No technical knowledge required.
           </p>
           <div className="mt-10 flex justify-center">
-            <div className="mr-4">
-              <Link href={isAuthenticated ? "/get-started" : "/login"}>
-                <Button size="lg">
-                  {isAuthenticated ? "Get Started" : "Login to Get Started"}
-                </Button>
-              </Link>
-            </div>
+            <div className="mr-4">{getCtaButton()}</div>
             <Link href="#how-it-works">
               <Button variant="outline" size="lg">
                 Learn More
@@ -54,9 +117,9 @@ export default function Home() {
             <div className="h-12 w-12 rounded-md bg-red flex items-center justify-center text-white text-xl font-bold mb-4">
               1
             </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Self-Assessment</h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Create Company</h3>
             <p className="mt-2 text-base text-gray-500 dark:text-gray-400">
-              Complete a simple self-assessment about your organization and operations
+              Register your company and set up your organization profile
             </p>
           </Card>
 
@@ -64,11 +127,9 @@ export default function Home() {
             <div className="h-12 w-12 rounded-md bg-red flex items-center justify-center text-white text-xl font-bold mb-4">
               2
             </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-              Manufacturing Data
-            </h3>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Add Products</h3>
             <p className="mt-2 text-base text-gray-500 dark:text-gray-400">
-              Input your manufacturing process data to enhance accuracy
+              Input your product information and manufacturing details
             </p>
           </Card>
 

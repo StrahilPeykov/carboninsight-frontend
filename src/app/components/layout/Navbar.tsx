@@ -12,7 +12,6 @@ import {
   BuildingIcon,
   LayoutDashboardIcon,
   Boxes,
-  BarChart,
   HelpCircle,
 } from "lucide-react";
 import { companyApi } from "@/lib/api/companyApi";
@@ -33,6 +32,12 @@ export default function Navbar() {
   });
   const [companyDataLoading, setCompanyDataLoading] = useState(false);
   const [companyError, setCompanyError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  // Ensure component is mounted before accessing localStorage
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -49,8 +54,10 @@ export default function Navbar() {
 
   // Get companyId from localStorage and listen for changes
   useEffect(() => {
+    if (!mounted) return;
+
     // Initial load
-    const id = localStorage.getItem("selected_company_id");
+    const id = typeof window !== "undefined" ? localStorage.getItem("selected_company_id") : null;
     setCompanyId(id);
 
     // Listen for storage changes (when localStorage is updated from other tabs/components)
@@ -73,11 +80,11 @@ export default function Navbar() {
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener("companyChanged", handleCompanyChange);
     };
-  }, []);
+  }, [mounted]);
 
   // Only fetch company data when authentication is confirmed and companyId is available
   useEffect(() => {
-    if (!isAuthenticated || !companyId || isLoading) {
+    if (!mounted || !isAuthenticated || !companyId || isLoading) {
       // Clear company data if no company is selected
       if (!companyId) {
         setCompanyData({
@@ -95,16 +102,24 @@ export default function Navbar() {
       try {
         const data = await companyApi.getCompany(companyId);
         setCompanyData(data);
-      } catch (err) {
-        console.error("Error fetching company data:", err);
+      } catch (err: any) {
+        // Only log non-404 errors (404 just means the company doesn't exist)
+        if (err.status !== 404) {
+          console.error("Error fetching company data:", err);
+        }
         setCompanyError(err instanceof Error ? err.message : "Failed to load company data");
+        // Clear the invalid company ID
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("selected_company_id");
+        }
+        setCompanyId(null);
       } finally {
         setCompanyDataLoading(false);
       }
     };
 
     fetchCompany();
-  }, [companyId, isAuthenticated, isLoading]);
+  }, [companyId, isAuthenticated, isLoading, mounted]);
 
   // Close profile dropdown when clicking outside
   useEffect(() => {
@@ -135,6 +150,9 @@ export default function Navbar() {
   const isActive = (path: string) => {
     return pathname === path || pathname?.startsWith(path + "/");
   };
+
+  // Determine what navigation items to show based on auth and company selection state
+  const showCompanySpecificItems = mounted && isAuthenticated && companyId && !companyError;
 
   return (
     <nav className="sticky top-0 z-50 h-16 bg-white shadow-sm dark:bg-gray-900">
@@ -202,28 +220,33 @@ export default function Navbar() {
 
           {/* Desktop menu - Fixed spacing issues */}
           <div className="hidden sm:flex sm:items-center sm:space-x-1 lg:space-x-4">
-            {isAuthenticated ? (
+            {isAuthenticated && mounted ? (
               <>
-                <Link
-                  href="/dashboard"
-                  className={`flex items-center px-2 lg:px-3 py-2 rounded-md text-sm font-medium 
-                    ${
-                      isActive("/dashboard")
-                        ? "bg-red text-white"
-                        : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
-                    }`}
-                >
-                  <LayoutDashboardIcon size={16} className="mr-1" />
-                  Dashboard
-                </Link>
+                {/* Dashboard - Only show when company is selected */}
+                {showCompanySpecificItems && (
+                  <Link
+                    href="/dashboard"
+                    className={`flex items-center px-2 lg:px-3 py-2 rounded-md text-sm font-medium 
+                      ${
+                        isActive("/dashboard")
+                          ? "bg-red text-white"
+                          : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                      }`}
+                  >
+                    <LayoutDashboardIcon size={16} className="mr-1" />
+                    Dashboard
+                  </Link>
+                )}
 
+                {/* Companies - Always show for authenticated users */}
                 <Link
                   href="/list-companies"
                   className={`flex items-center px-2 lg:px-3 py-2 rounded-md text-sm font-medium 
                     ${
                       isActive("/list-companies") ||
                       isActive("/company-details") ||
-                      isActive("/manage-user")
+                      isActive("/manage-user") ||
+                      isActive("/product-data-sharing")
                         ? "bg-red text-white"
                         : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
                     }`}
@@ -232,35 +255,21 @@ export default function Navbar() {
                   Companies
                 </Link>
 
-                <Link
-                  href="/product-list"
-                  className={`flex items-center px-2 lg:px-3 py-2 rounded-md text-sm font-medium 
-                    ${
-                      isActive("/product-list")
-                        ? "bg-red text-white"
-                        : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
-                    }`}
-                >
-                  <Boxes size={16} className="mr-1" />
-                  Products
-                </Link>
-
-                <Link
-                  href="/get-started"
-                  className={`flex items-center px-2 lg:px-3 py-2 rounded-md text-sm font-medium 
-                    ${
-                      isActive("/get-started") ||
-                      isActive("/self-assessment") ||
-                      isActive("/manufacturing-data") ||
-                      isActive("/supply-chain-data") ||
-                      isActive("/results")
-                        ? "bg-red text-white"
-                        : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
-                    }`}
-                >
-                  <BarChart size={16} className="mr-1" />
-                  Calculate PCF
-                </Link>
+                {/* Products - Only show when company is selected */}
+                {showCompanySpecificItems && (
+                  <Link
+                    href="/product-list"
+                    className={`flex items-center px-2 lg:px-3 py-2 rounded-md text-sm font-medium 
+                      ${
+                        isActive("/product-list") || isActive("/get-started")
+                          ? "bg-red text-white"
+                          : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                      }`}
+                  >
+                    <Boxes size={16} className="mr-1" />
+                    Products
+                  </Link>
+                )}
 
                 <div className="relative ml-3" ref={profileMenuRef}>
                   <div>
@@ -285,12 +294,14 @@ export default function Navbar() {
                         {companyDataLoading ? (
                           <p className="text-gray-500 dark:text-gray-400">Loading company...</p>
                         ) : companyError ? (
-                          <p className="text-red-500 truncate">Error loading company</p>
+                          <p className="text-red-500 truncate">Select a company</p>
                         ) : companyData.name ? (
                           <p className="text-gray-500 dark:text-gray-400 truncate">
                             {companyData.name}
                           </p>
-                        ) : null}
+                        ) : (
+                          <p className="text-gray-500 dark:text-gray-400">No company selected</p>
+                        )}
                         <p className="font-medium">{user?.username}</p>
                         <p className="text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
                       </div>
@@ -302,7 +313,7 @@ export default function Navbar() {
                         >
                           Account Settings
                         </Link>
-                        {companyId && (
+                        {companyId && !companyError && (
                           <Link
                             href="/company-details"
                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
@@ -322,9 +333,16 @@ export default function Navbar() {
                       <Link
                         href="/list-companies"
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
-                        onClick={() => setIsProfileMenuOpen(false)}
+                        onClick={() => {
+                          setIsProfileMenuOpen(false);
+                          // Clear the selected company when switching
+                          if (typeof window !== "undefined") {
+                            localStorage.removeItem("selected_company_id");
+                            window.dispatchEvent(new CustomEvent("companyChanged"));
+                          }
+                        }}
                       >
-                        Switch company
+                        {companyId && !companyError ? "Switch company" : "Select company"}
                       </Link>
                       <button
                         onClick={() => {
@@ -358,77 +376,73 @@ export default function Navbar() {
         className={`${isMenuOpen ? "block" : "hidden"} sm:hidden bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700`}
       >
         <div className="pt-2 pb-3 space-y-1">
-          {isAuthenticated ? (
+          {isAuthenticated && mounted ? (
             <>
-              <Link
-                href="/dashboard"
-                className={`flex items-center px-3 py-2 rounded-md text-base font-medium 
-                  ${
-                    isActive("/dashboard")
-                      ? "bg-red text-white"
-                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
-                  }`}
-              >
-                <LayoutDashboardIcon size={16} className="mr-2" />
-                Dashboard
-              </Link>
+              {/* Dashboard - Only show when company is selected */}
+              {showCompanySpecificItems && (
+                <Link
+                  href="/dashboard"
+                  className={`flex items-center px-3 py-2 rounded-md text-base font-medium 
+                    ${
+                      isActive("/dashboard")
+                        ? "bg-red text-white"
+                        : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                    }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <LayoutDashboardIcon size={16} className="mr-2" />
+                  Dashboard
+                </Link>
+              )}
 
+              {/* Companies - Always show for authenticated users */}
               <Link
                 href="/list-companies"
                 className={`flex items-center px-3 py-2 rounded-md text-base font-medium 
                   ${
                     isActive("/list-companies") ||
                     isActive("/company-details") ||
-                    isActive("/manage-user")
+                    isActive("/manage-user") ||
+                    isActive("/product-data-sharing")
                       ? "bg-red text-white"
                       : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
                   }`}
+                onClick={() => setIsMenuOpen(false)}
               >
                 <BuildingIcon size={16} className="mr-2" />
                 Companies
               </Link>
 
-              <Link
-                href="/product-list"
-                className={`flex items-center px-3 py-2 rounded-md text-base font-medium 
-                  ${
-                    isActive("/product-list")
-                      ? "bg-red text-white"
-                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
-                  }`}
-              >
-                <Boxes size={16} className="mr-2" />
-                Products
-              </Link>
-
-              <Link
-                href="/get-started"
-                className={`flex items-center px-3 py-2 rounded-md text-base font-medium 
-                  ${
-                    isActive("/get-started") ||
-                    isActive("/self-assessment") ||
-                    isActive("/manufacturing-data") ||
-                    isActive("/supply-chain-data") ||
-                    isActive("/results")
-                      ? "bg-red text-white"
-                      : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
-                  }`}
-              >
-                <BarChart size={16} className="mr-2" />
-                Calculate PCF
-              </Link>
+              {/* Products - Only show when company is selected */}
+              {showCompanySpecificItems && (
+                <Link
+                  href="/product-list"
+                  className={`flex items-center px-3 py-2 rounded-md text-base font-medium 
+                    ${
+                      isActive("/product-list") || isActive("/get-started")
+                        ? "bg-red text-white"
+                        : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                    }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <Boxes size={16} className="mr-2" />
+                  Products
+                </Link>
+              )}
 
               <Link
                 href="/account"
                 className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                onClick={() => setIsMenuOpen(false)}
               >
                 <SettingsIcon size={16} className="mr-2" />
                 Account Settings
               </Link>
-              {companyId && (
+              {companyId && !companyError && (
                 <Link
                   href="/company-details"
                   className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   Company details
                 </Link>
@@ -436,6 +450,7 @@ export default function Navbar() {
               <Link
                 href="/support"
                 className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                onClick={() => setIsMenuOpen(false)}
               >
                 <HelpCircle size={16} className="mr-2" />
                 Support & Help
@@ -443,9 +458,17 @@ export default function Navbar() {
               <Link
                 href="/list-companies"
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
-                onClick={() => setIsProfileMenuOpen(false)}
+                onClick={() => {
+                  setIsProfileMenuOpen(false);
+                  setIsMenuOpen(false);
+                  // Clear the selected company when switching
+                  if (typeof window !== "undefined") {
+                    localStorage.removeItem("selected_company_id");
+                    window.dispatchEvent(new CustomEvent("companyChanged"));
+                  }
+                }}
               >
-                Switch company
+                {companyId && !companyError ? "Switch company" : "Select company"}
               </Link>
               <button
                 onClick={handleLogout}
@@ -459,12 +482,14 @@ export default function Navbar() {
               <Link
                 href="/login"
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                onClick={() => setIsMenuOpen(false)}
               >
                 Log in
               </Link>
               <Link
                 href="/register"
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                onClick={() => setIsMenuOpen(false)}
               >
                 Register
               </Link>

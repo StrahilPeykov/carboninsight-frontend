@@ -7,6 +7,7 @@ import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
 import { Building2, BoxesIcon, BarChartIcon, FileTextIcon } from "lucide-react";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
+import { useRouter } from "next/navigation";
 
 interface CompanyData {
   id: string;
@@ -22,6 +23,7 @@ interface ActivityItem {
 
 export default function DashboardPage() {
   const { user, isLoading, requireAuth } = useAuth();
+  const router = useRouter();
 
   // Require authentication for this page
   requireAuth();
@@ -33,16 +35,36 @@ export default function DashboardPage() {
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   // API URL from environment variables with fallback
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
+  // Ensure component is mounted before accessing localStorage
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Check if company is selected
+  useEffect(() => {
+    if (
+      !isLoading &&
+      mounted &&
+      typeof window !== "undefined" &&
+      !localStorage.getItem("selected_company_id")
+    ) {
+      router.push("/list-companies");
+    }
+  }, [isLoading, router, mounted]);
+
   // Load dashboard data
   useEffect(() => {
+    if (!mounted) return;
+
     const fetchDashboardData = async () => {
       try {
         setDataLoading(true);
-        const token = localStorage.getItem("access_token");
+        const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
 
         if (!token) {
           setError("No authentication token found");
@@ -67,7 +89,8 @@ export default function DashboardPage() {
         setCompanyCount(companiesData.length);
 
         // Get the selected company ID
-        const selectedCompanyId = localStorage.getItem("selected_company_id");
+        const selectedCompanyId =
+          typeof window !== "undefined" ? localStorage.getItem("selected_company_id") : null;
 
         if (selectedCompanyId) {
           // Fetch selected company details
@@ -131,12 +154,12 @@ export default function DashboardPage() {
       }
     };
 
-    if (!isLoading) {
+    if (!isLoading && mounted) {
       fetchDashboardData();
     }
-  }, [API_URL, isLoading]);
+  }, [API_URL, isLoading, mounted]);
 
-  if (isLoading || dataLoading) {
+  if (isLoading || dataLoading || !mounted) {
     return (
       <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <LoadingSkeleton count={3} />
@@ -229,21 +252,21 @@ export default function DashboardPage() {
         </Card>
 
         <Card>
-          <h2 className="text-xl font-semibold mb-4">Calculate Product Carbon Footprint</h2>
+          <h2 className="text-xl font-semibold mb-4">Manage Products</h2>
           <p className="text-gray-500 dark:text-gray-400 mb-4">
-            Start the step-by-step process to calculate your product carbon footprint and generate a
-            Digital Product Passport.
+            Add products and calculate their carbon footprint using our step-by-step process to
+            generate Digital Product Passports.
           </p>
           <div className="space-y-3">
-            <Link href="/get-started" className="block">
+            <Link href="/product-list" className="block">
               <Button className="w-full flex justify-between items-center">
-                <span>Start PCF Calculation</span>
-                <BarChartIcon className="h-4 w-4" />
+                <span>View Products</span>
+                <BoxesIcon className="h-4 w-4" />
               </Button>
             </Link>
-            <Link href="/product-list" className="block">
+            <Link href="/product-list/product" className="block">
               <Button variant="outline" className="w-full">
-                Manage Products
+                Add New Product
               </Button>
             </Link>
           </div>

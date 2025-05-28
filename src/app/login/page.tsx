@@ -67,14 +67,22 @@ export default function LoginPage() {
       <Card className="max-w-md mx-auto">
         {/* Regular Error Message */}
         {error && !isAccountBlocked && (
-          <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md dark:bg-red-900/20 dark:text-red-300">
+          <div
+            role="alert"
+            aria-live="assertive"
+            className="mb-4 p-3 bg-red-100 text-red-800 rounded-md dark:bg-red-900/20 dark:text-red-300"
+          >
             {error}
           </div>
         )}
 
         {/* Blocked Account Message - Enhanced styling and information */}
         {isAccountBlocked && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md dark:bg-red-900/20 dark:border-red-900">
+          <div
+            role="alert"
+            aria-live="assertive"
+            className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md dark:bg-red-900/20 dark:border-red-900"
+          >
             <h3 className="text-lg font-medium text-red-800 dark:text-red-300 mb-2">
               Account Temporarily Blocked
             </h3>
@@ -112,7 +120,10 @@ export default function LoginPage() {
               htmlFor="username"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
-              Email
+              Email{" "}
+              <span className="text-red-500" aria-label="required">
+                *
+              </span>
             </label>
             <input
               id="username"
@@ -120,12 +131,18 @@ export default function LoginPage() {
               type="email"
               autoComplete="email"
               required
+              aria-required="true"
+              aria-invalid={!!error}
+              aria-describedby={error ? "login-error" : "email-hint"}
               value={formData.username}
               onChange={handleChange}
               disabled={isLoading}
               className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="your@email.com"
             />
+            <span id="email-hint" className="sr-only">
+              Enter your registered email address
+            </span>
           </div>
 
           <div>
@@ -133,7 +150,10 @@ export default function LoginPage() {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
-              Password
+              Password{" "}
+              <span className="text-red-500" aria-label="required">
+                *
+              </span>
             </label>
             <input
               id="password"
@@ -141,11 +161,19 @@ export default function LoginPage() {
               type="password"
               autoComplete="current-password"
               required
+              aria-required="true"
+              aria-invalid={!!error}
+              aria-describedby={error ? "login-error" : undefined}
               value={formData.password}
               onChange={handleChange}
               disabled={isLoading}
               className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
             />
+            {error && (
+              <span id="login-error" className="sr-only">
+                {error}
+              </span>
+            )}
           </div>
 
           <div className="flex items-center justify-between">
@@ -167,8 +195,15 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "Logging in..." : "Login"}
+          <Button type="submit" className="w-full" disabled={isLoading} aria-busy={isLoading}>
+            {isLoading ? (
+              <>
+                <span className="sr-only">Logging in, please wait</span>
+                <span aria-hidden="true">Logging in...</span>
+              </>
+            ) : (
+              "Login"
+            )}
           </Button>
         </form>
 

@@ -52,6 +52,21 @@ export default function Navbar() {
     router.push("/");
   };
 
+  // Keyboard navigation for dropdown
+  useEffect(() => {
+    if (!isProfileMenuOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsProfileMenuOpen(false);
+        profileButtonRef.current?.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isProfileMenuOpen]);
+
   // Get companyId from localStorage and listen for changes
   useEffect(() => {
     if (!mounted) return;
@@ -152,7 +167,11 @@ export default function Navbar() {
   const showCompanySpecificItems = mounted && isAuthenticated && companyId && !companyError;
 
   return (
-    <nav className="sticky top-0 z-50 h-16 bg-white shadow-sm dark:bg-gray-900">
+    <nav
+      className="sticky top-0 z-50 h-16 bg-white shadow-sm dark:bg-gray-900"
+      role="navigation"
+      aria-label="Main navigation"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo and brand */}
@@ -181,8 +200,10 @@ export default function Navbar() {
             <button
               onClick={toggleMenu}
               className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500"
+              aria-expanded={isMenuOpen}
+              aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
             >
-              <span className="sr-only">Open main menu</span>
+              <span className="sr-only">{isMenuOpen ? "Close main menu" : "Open main menu"}</span>
               {/* Icon for menu open/close */}
               <svg
                 className={`${isMenuOpen ? "hidden" : "block"} h-6 w-6`}
@@ -190,6 +211,7 @@ export default function Navbar() {
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -204,6 +226,7 @@ export default function Navbar() {
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -229,8 +252,9 @@ export default function Navbar() {
                           ? "bg-red text-white"
                           : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
                       }`}
+                    aria-current={isActive("/dashboard") ? "page" : undefined}
                   >
-                    <LayoutDashboardIcon size={16} className="mr-1" />
+                    <LayoutDashboardIcon size={16} className="mr-1" aria-hidden="true" />
                     Dashboard
                   </Link>
                 )}
@@ -247,8 +271,9 @@ export default function Navbar() {
                         ? "bg-red text-white"
                         : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
                     }`}
+                  aria-current={isActive("/list-companies") ? "page" : undefined}
                 >
-                  <BuildingIcon size={16} className="mr-1" />
+                  <BuildingIcon size={16} className="mr-1" aria-hidden="true" />
                   Companies
                 </Link>
 
@@ -262,8 +287,9 @@ export default function Navbar() {
                           ? "bg-red text-white"
                           : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
                       }`}
+                    aria-current={isActive("/product-list") ? "page" : undefined}
                   >
-                    <Boxes size={16} className="mr-1" />
+                    <Boxes size={16} className="mr-1" aria-hidden="true" />
                     Products
                   </Link>
                 )}
@@ -274,22 +300,33 @@ export default function Navbar() {
                       ref={profileButtonRef}
                       onClick={toggleProfileMenu}
                       className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                      id="user-menu"
-                      aria-expanded="false"
+                      id="user-menu-button"
+                      aria-expanded={isProfileMenuOpen}
                       aria-haspopup="true"
+                      aria-label="User account menu"
                     >
                       <span className="sr-only">Open user menu</span>
                       <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700">
-                        {user?.username?.charAt(0)?.toUpperCase() || "U"}
+                        <span aria-hidden="true">
+                          {user?.username?.charAt(0)?.toUpperCase() || "U"}
+                        </span>
                       </div>
-                      <ChevronDown size={16} className="ml-1" />
+                      <ChevronDown size={16} className="ml-1" aria-hidden="true" />
                     </button>
                   </div>
                   {isProfileMenuOpen && (
-                    <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 dark:ring-gray-700">
+                    <div
+                      className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 dark:ring-gray-700"
+                      role="menu"
+                      aria-orientation="vertical"
+                      aria-labelledby="user-menu-button"
+                    >
                       <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
                         {companyDataLoading ? (
-                          <p className="text-gray-500 dark:text-gray-400">Loading company...</p>
+                          <p className="text-gray-500 dark:text-gray-400">
+                            <span className="sr-only">Loading company information</span>
+                            Loading company...
+                          </p>
                         ) : companyError ? (
                           <p className="text-red-500 truncate">Select a company</p>
                         ) : companyData.name ? (
@@ -307,6 +344,7 @@ export default function Navbar() {
                           href="/account"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
                           onClick={() => setIsProfileMenuOpen(false)}
+                          role="menuitem"
                         >
                           Account Settings
                         </Link>
@@ -315,6 +353,7 @@ export default function Navbar() {
                             href="/company-details"
                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
                             onClick={() => setIsProfileMenuOpen(false)}
+                            role="menuitem"
                           >
                             Company Details
                           </Link>
@@ -323,6 +362,7 @@ export default function Navbar() {
                           href="/support"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
                           onClick={() => setIsProfileMenuOpen(false)}
+                          role="menuitem"
                         >
                           Support & Help
                         </Link>
@@ -338,6 +378,7 @@ export default function Navbar() {
                             window.dispatchEvent(new CustomEvent("companyChanged"));
                           }
                         }}
+                        role="menuitem"
                       >
                         {companyId && !companyError ? "Switch company" : "Select company"}
                       </Link>
@@ -347,6 +388,7 @@ export default function Navbar() {
                           handleLogout();
                         }}
                         className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                        role="menuitem"
                       >
                         Sign out
                       </button>
@@ -371,6 +413,8 @@ export default function Navbar() {
       {/* Mobile menu, show/hide based on state */}
       <div
         className={`${isMenuOpen ? "block" : "hidden"} sm:hidden bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700`}
+        role="navigation"
+        aria-label="Mobile navigation"
       >
         <div className="pt-2 pb-3 space-y-1">
           {isAuthenticated && mounted ? (
@@ -386,8 +430,9 @@ export default function Navbar() {
                         : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
                     }`}
                   onClick={() => setIsMenuOpen(false)}
+                  aria-current={isActive("/dashboard") ? "page" : undefined}
                 >
-                  <LayoutDashboardIcon size={16} className="mr-2" />
+                  <LayoutDashboardIcon size={16} className="mr-2" aria-hidden="true" />
                   Dashboard
                 </Link>
               )}
@@ -405,8 +450,9 @@ export default function Navbar() {
                       : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
                   }`}
                 onClick={() => setIsMenuOpen(false)}
+                aria-current={isActive("/list-companies") ? "page" : undefined}
               >
-                <BuildingIcon size={16} className="mr-2" />
+                <BuildingIcon size={16} className="mr-2" aria-hidden="true" />
                 Companies
               </Link>
 
@@ -421,8 +467,9 @@ export default function Navbar() {
                         : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
                     }`}
                   onClick={() => setIsMenuOpen(false)}
+                  aria-current={isActive("/product-list") ? "page" : undefined}
                 >
-                  <Boxes size={16} className="mr-2" />
+                  <Boxes size={16} className="mr-2" aria-hidden="true" />
                   Products
                 </Link>
               )}
@@ -432,7 +479,7 @@ export default function Navbar() {
                 className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <SettingsIcon size={16} className="mr-2" />
+                <SettingsIcon size={16} className="mr-2" aria-hidden="true" />
                 Account Settings
               </Link>
               {companyId && !companyError && (
@@ -449,7 +496,7 @@ export default function Navbar() {
                 className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
                 onClick={() => setIsMenuOpen(false)}
               >
-                <HelpCircle size={16} className="mr-2" />
+                <HelpCircle size={16} className="mr-2" aria-hidden="true" />
                 Support & Help
               </Link>
               <Link

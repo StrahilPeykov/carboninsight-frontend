@@ -17,9 +17,17 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`antialiased flex flex-col min-h-screen`} suppressHydrationWarning>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-white dark:bg-gray-900 text-gray-900 dark:text-white p-3 rounded-md shadow-lg z-50 underline"
+        >
+          Skip to main content
+        </a>
         <AuthProvider>
           <Navbar />
-          <main className="flex-grow">{children}</main>
+          <main id="main-content" className="flex-grow" tabIndex={-1}>
+            {children}
+          </main>
           <Footer />
         </AuthProvider>
       </body>

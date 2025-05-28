@@ -76,9 +76,13 @@ export default function RegisterPage() {
       </div>
 
       <Card className="max-w-md mx-auto">
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6" noValidate>
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-700 dark:bg-red-900/20 dark:border-red-900 dark:text-red-300">
+            <div
+              className="p-3 bg-red-50 border border-red-200 rounded-md text-red-700 dark:bg-red-900/20 dark:border-red-900 dark:text-red-300"
+              role="alert"
+              aria-live="assertive"
+            >
               {error}
             </div>
           )}
@@ -89,17 +93,27 @@ export default function RegisterPage() {
                 htmlFor="first_name"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >
-                First Name
+                First Name{" "}
+                <span className="text-red-500" aria-label="required">
+                  *
+                </span>
               </label>
               <input
                 id="first_name"
                 name="first_name"
                 type="text"
                 required
+                aria-required="true"
+                aria-invalid={!!error}
+                aria-describedby="first-name-hint"
                 value={formData.first_name}
                 onChange={handleChange}
-                className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600"
+                disabled={isLoading}
+                className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
               />
+              <span id="first-name-hint" className="sr-only">
+                Enter your first name
+              </span>
             </div>
 
             <div>
@@ -107,17 +121,27 @@ export default function RegisterPage() {
                 htmlFor="last_name"
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300"
               >
-                Last Name
+                Last Name{" "}
+                <span className="text-red-500" aria-label="required">
+                  *
+                </span>
               </label>
               <input
                 id="last_name"
                 name="last_name"
                 type="text"
                 required
+                aria-required="true"
+                aria-invalid={!!error}
+                aria-describedby="last-name-hint"
                 value={formData.last_name}
                 onChange={handleChange}
-                className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600"
+                disabled={isLoading}
+                className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
               />
+              <span id="last-name-hint" className="sr-only">
+                Enter your last name
+              </span>
             </div>
           </div>
 
@@ -126,7 +150,10 @@ export default function RegisterPage() {
               htmlFor="email"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
-              Email
+              Email{" "}
+              <span className="text-red-500" aria-label="required">
+                *
+              </span>
             </label>
             <input
               id="email"
@@ -134,11 +161,18 @@ export default function RegisterPage() {
               type="email"
               autoComplete="email"
               required
+              aria-required="true"
+              aria-invalid={!!error}
+              aria-describedby="email-hint"
               value={formData.email}
               onChange={handleChange}
-              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600"
+              disabled={isLoading}
+              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="your@email.com"
             />
+            <span id="email-hint" className="sr-only">
+              Enter your email address
+            </span>
           </div>
 
           <div>
@@ -146,18 +180,25 @@ export default function RegisterPage() {
               htmlFor="password"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
-              Password
+              Password{" "}
+              <span className="text-red-500" aria-label="required">
+                *
+              </span>
             </label>
             <input
               id="password"
               name="password"
               type="password"
               required
+              aria-required="true"
+              aria-invalid={!!error}
+              aria-describedby="password-requirements"
               value={formData.password}
               onChange={handleChange}
-              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600"
+              disabled={isLoading}
+              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
             />
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            <p id="password-requirements" className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               Password must be at least 8 characters long and contain at least one letter and one
               number.
             </p>
@@ -168,24 +209,47 @@ export default function RegisterPage() {
               htmlFor="confirm_password"
               className="block text-sm font-medium text-gray-700 dark:text-gray-300"
             >
-              Confirm Password
+              Confirm Password{" "}
+              <span className="text-red-500" aria-label="required">
+                *
+              </span>
             </label>
             <input
               id="confirm_password"
               name="confirm_password"
               type="password"
               required
+              aria-required="true"
+              aria-invalid={!!error || formData.password !== formData.confirm_password}
+              aria-describedby={
+                formData.password !== formData.confirm_password
+                  ? "password-mismatch"
+                  : "confirm-password-hint"
+              }
               value={formData.confirm_password}
               onChange={handleChange}
-              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600"
+              disabled={isLoading}
+              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
             />
+            <span id="confirm-password-hint" className="sr-only">
+              Re-enter your password
+            </span>
+            {formData.password !== formData.confirm_password && formData.confirm_password && (
+              <p
+                id="password-mismatch"
+                className="mt-1 text-xs text-red-600 dark:text-red-400"
+                role="alert"
+              >
+                Passwords do not match
+              </p>
+            )}
           </div>
 
           <div className="flex items-center">
             <div className="text-sm">
               <Link
                 href="/login"
-                className="font-medium text-red hover:text-red-700 dark:text-red-400"
+                className="font-medium text-red hover:text-red-700 dark:text-red-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 rounded"
               >
                 Already have an account? Sign in
               </Link>
@@ -193,8 +257,15 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Creating account..." : "Register"}
+            <Button type="submit" className="w-full" disabled={isLoading} aria-busy={isLoading}>
+              {isLoading ? (
+                <>
+                  <span className="sr-only">Creating account, please wait</span>
+                  <span aria-hidden="true">Creating account...</span>
+                </>
+              ) : (
+                "Register"
+              )}
             </Button>
           </div>
         </form>

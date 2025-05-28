@@ -59,3 +59,66 @@ body {
   color: var(--foreground);
   font-family: "Kievit", Arial, Helvetica, sans-serif;
 }
+
+/* Enhanced focus styles for all interactive elements */
+*:focus-visible {
+  outline: 3px solid var(--color-red);
+  outline-offset: 2px;
+}
+
+/* Remove outline for mouse users */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Ensure links are distinguishable
+a:not(.button) {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}*/
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-red: #c20016;
+  }
+
+  .dark {
+    --color-red: #ff6b6b;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Screen reader only utility class */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.sr-only-focusable:focus {
+  position: absolute;
+  width: auto;
+  height: auto;
+  padding: 0.5rem;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}

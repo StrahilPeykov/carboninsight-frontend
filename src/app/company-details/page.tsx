@@ -43,14 +43,14 @@ export default function CompanyDetailsPage() {
     setIsLoading(true);
     companyApi
       .getCompany(companyId)
-      .then((data) => setFormData(data))
+      .then(data => setFormData(data))
       .catch(() => setError("Could not load company data."))
       .finally(() => setIsLoading(false));
   }, [companyId]);
 
   // Handlers for form fields
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((p) => ({ ...p, [e.target.name]: e.target.value }));
+    setFormData(p => ({ ...p, [e.target.name]: e.target.value }));
   };
 
   // Save edits
@@ -120,7 +120,9 @@ export default function CompanyDetailsPage() {
   return (
     <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
       {error && <div className="p-4 bg-red-50 text-red-800 rounded">{error}</div>}
-      {successMessage && <div className="p-4 bg-green-50 text-green-800 rounded">{successMessage}</div>}
+      {successMessage && (
+        <div className="p-4 bg-green-50 text-green-800 rounded">{successMessage}</div>
+      )}
 
       {/* Edit Company Form */}
       <Card className="max-w-md mx-auto">
@@ -138,9 +140,7 @@ export default function CompanyDetailsPage() {
               required
               className="mt-1 p-2 w-full border rounded focus:ring focus:ring-green-300"
             />
-            {fieldErrors.name && (
-              <p className="mt-1 text-sm text-red-600">{fieldErrors.name[0]}</p>
-            )}
+            {fieldErrors.name && <p className="mt-1 text-sm text-red-600">{fieldErrors.name[0]}</p>}
           </div>
           <div>
             <label htmlFor="vat_number" className="block text-sm font-medium">
@@ -158,10 +158,7 @@ export default function CompanyDetailsPage() {
             )}
           </div>
           <div>
-            <label
-              htmlFor="business_registration_number"
-              className="block text-sm font-medium"
-            >
+            <label htmlFor="business_registration_number" className="block text-sm font-medium">
               Registration #
             </label>
             <input
@@ -189,9 +186,7 @@ export default function CompanyDetailsPage() {
       <Card className="max-w-md mx-auto mt-8">
         <h2 className="text-xl font-semibold mb-4">Delete Company</h2>
         <div className="bg-red-50 border border-red-200 rounded-md p-4 dark:bg-red-900/20 dark:border-red-900">
-          <h3 className="text-lg font-medium text-red-800 dark:text-red-300">
-            Delete Company
-          </h3>
+          <h3 className="text-lg font-medium text-red-800 dark:text-red-300">Delete Company</h3>
           <p className="mt-1 text-sm text-red-700 dark:text-red-200">
             Permanently delete <strong>{formData.name}</strong>. This cannot be undone.
           </p>
@@ -225,8 +220,8 @@ export default function CompanyDetailsPage() {
             </p>
             <ul className="list-disc list-inside text-sm text-gray-600 dark:text-gray-400 space-y-1">
               <li>
-                Permanently delete the company <strong>{formData.name}</strong> and all
-                associated data.
+                Permanently delete the company <strong>{formData.name}</strong> and all associated
+                data.
               </li>
             </ul>
             <p className="text-sm font-medium text-red-600 dark:text-red-400">

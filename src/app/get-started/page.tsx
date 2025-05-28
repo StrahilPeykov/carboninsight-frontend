@@ -17,7 +17,12 @@ export default function GetStartedPage() {
       const fileName = file.name;
       const fileExtension = fileName.split(".").pop()?.toLowerCase();
 
-      if (fileExtension == "json" || fileExtension == "csv" || fileExtension == "xlsx" || fileExtension == "aasx") {
+      if (
+        fileExtension == "json" ||
+        fileExtension == "csv" ||
+        fileExtension == "xlsx" ||
+        fileExtension == "aasx"
+      ) {
         setSelectedFile(file);
         setFileError(null);
       } else {

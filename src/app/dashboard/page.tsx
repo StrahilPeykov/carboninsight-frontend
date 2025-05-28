@@ -181,7 +181,9 @@ export default function DashboardPage() {
     <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="mb-8">
         <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-          Welcome, {user?.first_name || user?.username}
+          Welcome, {user?.first_name && user?.last_name 
+            ? `${user.first_name} ${user.last_name}` 
+            : user?.first_name || user?.username}
         </h1>
         <p className="mt-2 text-lg text-gray-500 dark:text-gray-400">
           {selectedCompany
@@ -204,17 +206,19 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        <Card className="bg-gradient-to-r from-blue-50 to-white dark:from-blue-900/20 dark:to-gray-800">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-800">
-              <BoxesIcon className="h-6 w-6 text-blue-600 dark:text-blue-200" />
+        <Link href="/product-list" className="block transition-transform hover:scale-105">
+          <Card className="bg-gradient-to-r from-blue-50 to-white dark:from-blue-900/20 dark:to-gray-800 cursor-pointer hover:shadow-lg">
+            <div className="flex items-center">
+              <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-800">
+                <BoxesIcon className="h-6 w-6 text-blue-600 dark:text-blue-200" />
+              </div>
+              <div className="ml-4">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Products</h3>
+                <p className="text-2xl font-semibold">{productCount}</p>
+              </div>
             </div>
-            <div className="ml-4">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Products</h3>
-              <p className="text-2xl font-semibold">{productCount}</p>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        </Link>
 
         <Card className="bg-gradient-to-r from-green-50 to-white dark:from-green-900/20 dark:to-gray-800">
           <div className="flex items-center">

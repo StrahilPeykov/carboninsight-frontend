@@ -1,3 +1,4 @@
+// src/app/product-list/page.tsx
 "use client";
 
 import Card from "../components/ui/Card";
@@ -11,6 +12,11 @@ import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 import Modal from "../components/ui/PopupModal";
 import ReactMarkdown from "react-markdown";
 import ExportModal from "../components/ui/ExportModal";
+
+// Set page title
+if (typeof document !== 'undefined') {
+  document.title = "Products - Carbon Insight";
+}
 
 // Types
 type Product = {
@@ -26,7 +32,7 @@ type Product = {
   pcf_calculation_method: string;
 };
 
-// - Component -
+// Component
 export default function ProductListPage() {
   const router = useRouter();
   const { isLoading, requireAuth } = useAuth();
@@ -46,7 +52,7 @@ export default function ProductListPage() {
   const [mounted, setMounted] = useState(false);
 
   // UI modes
-  const [editMode, setEditMode] = useState(false); // AI-selection toggle
+  const [editMode, setEditMode] = useState(false);
 
   // Export
   const [showExportModal, setShowExportModal] = useState(false);
@@ -96,13 +102,19 @@ export default function ProductListPage() {
     setInitializing(false);
   }, [router, mounted]);
 
-  // Data fetch
+  // Data fetch with loading announcement
   const fetchProducts = async (query = "") => {
     if (!companyId) return;
 
     try {
       setDataLoading(true);
       setError("");
+      
+      // Announce loading to screen readers
+      const liveRegion = document.getElementById("live-announcements");
+      if (liveRegion) {
+        liveRegion.textContent = "Loading products...";
+      }
 
       const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
       if (!token) {
@@ -124,8 +136,19 @@ export default function ProductListPage() {
 
       const data = await res.json();
       setProducts(data);
+      
+      // Announce completion
+      if (liveRegion) {
+        liveRegion.textContent = `${data.length} products loaded`;
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
+      
+      // Announce error
+      const urgentRegion = document.getElementById("live-urgent");
+      if (urgentRegion) {
+        urgentRegion.textContent = "Error loading products";
+      }
     } finally {
       setDataLoading(false);
     }
@@ -154,22 +177,18 @@ export default function ProductListPage() {
   }, [searchQuery, companyId, mounted]);
 
   // CRUD actions
-
-  // Opens the "type-to-confirm" modal
   const handleDelete = (id: string) => {
     const prod = products.find(p => p.id === id) ?? null;
     setToDeleteProduct(prod);
     setConfirmInput("");
   };
 
-  // Actually calls DELETE once confirmed
   const confirmDelete = async () => {
     if (!toDeleteProduct) return;
     setIsDeleting(true);
     try {
       const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-      const company_pk =
-        typeof window !== "undefined" ? localStorage.getItem("selected_company_id") : null;
+      const company_pk = typeof window !== "undefined" ? localStorage.getItem("selected_company_id") : null;
       if (!token || !company_pk) {
         router.push("/login");
         return;
@@ -183,6 +202,12 @@ export default function ProductListPage() {
         throw new Error(errData?.detail || "Failed to delete product");
       }
       setProducts(prev => prev.filter(p => p.id !== toDeleteProduct.id));
+      
+      // Announce deletion
+      const liveRegion = document.getElementById("live-announcements");
+      if (liveRegion) {
+        liveRegion.textContent = `Product ${toDeleteProduct.name} deleted`;
+      }
     } catch (e) {
       console.error("Error deleting product:", e);
     } finally {
@@ -196,7 +221,7 @@ export default function ProductListPage() {
     router.push(`/product-list/product?product_id=${id}`);
   };
 
-  // Export workflow
+  // Export workflow with announcement
   const handleExportClick = (product: Product, e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectedProductForExport(product);
@@ -212,8 +237,7 @@ export default function ProductListPage() {
   const handleRequestProductAdvice = async (productId: string, prompt: string) => {
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-    const company =
-      typeof window !== "undefined" ? localStorage.getItem("selected_company_id") : null;
+    const company = typeof window !== "undefined" ? localStorage.getItem("selected_company_id") : null;
 
     if (!API_URL || !token || !company) return;
 
@@ -282,12 +306,12 @@ export default function ProductListPage() {
   // Render
   return (
     <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Header  */}
+      {/* Header */}
       <div className="mb-4">
         <h1 className="text-3xl font-bold mb-2">Products</h1>
 
         {dataLoading && (
-          <div className="flex items-center text-sm text-gray-500 mb-2">
+          <div className="flex items-center text-sm text-gray-500 mb-2" role="status">
             <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-gray-500 mr-2"></div>
             Loading product data...
           </div>
@@ -332,31 +356,45 @@ export default function ProductListPage() {
         />
       </div>
 
-      {error && <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md">{error}</div>}
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md" role="alert">
+          {error}
+        </div>
+      )}
 
       {/* Table card */}
       <Card className="p-4">
         {dataLoading ? (
-          <div className="flex justify-center items-center py-8">
+          <div className="flex justify-center items-center py-8" role="status">
             <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-gray-400"></div>
             <span className="ml-3 text-gray-500">Loading products...</span>
           </div>
         ) : error ? (
-          <p className="text-red-500">{error}</p>
+          <p className="text-red-500" role="alert">{error}</p>
         ) : (
           <>
             {/* Desktop and tablet table */}
             <div className="hidden sm:block overflow-x-auto">
               <table className="min-w-full table-auto text-base">
+                <caption className="sr-only">
+                  Products table showing manufacturer, product name, SKU, status, PCF calculation method, and carbon footprint
+                </caption>
                 <thead>
                   <tr className="text-left border-b">
-                    <th className="p-2">Manufacturer</th>
-                    <th className="p-2">Product name</th>
-                    <th className="p-2">SKU</th>
-                    <th className="p-2">Status</th>
-                    <th className="p-2">PCF calculation method</th>
-                    <th className="p-2">PCF</th>
-                    <th className="p-2">Actions</th>
+                    <th scope="col" className="p-2">Manufacturer</th>
+                    <th scope="col" className="p-2">Product name</th>
+                    <th scope="col" className="p-2">
+                      <abbr title="Stock Keeping Unit">SKU</abbr>
+                    </th>
+                    <th scope="col" className="p-2">Status</th>
+                    <th scope="col" className="p-2">
+                      <abbr title="Product Carbon Footprint">PCF</abbr> calculation method
+                    </th>
+                    <th scope="col" className="p-2">
+                      <abbr title="Product Carbon Footprint">PCF</abbr>
+                      <span className="sr-only"> in kilograms CO2 equivalent</span>
+                    </th>
+                    <th scope="col" className="p-2">Actions</th>
                   </tr>
                 </thead>
 
@@ -383,8 +421,10 @@ export default function ProductListPage() {
                       </td>
                       <td className="p-2">{product.pcf_calculation_method}</td>
                       <td className="p-2 flex items-center gap-1">
-                        {product.emission_total}
-                        <Info className="w-4 h-4 text-gray-400" />
+                        <span aria-label={`${product.emission_total} kilograms CO2 equivalent`}>
+                          {product.emission_total}
+                        </span>
+                        <Info className="w-4 h-4 text-gray-400" aria-hidden="true" />
                       </td>
                       <td className="p-2">
                         <div className="flex items-center gap-2">
@@ -406,6 +446,7 @@ export default function ProductListPage() {
                               handleEdit(product.id);
                             }}
                             className="p-1 hover:bg-gray-100 rounded-full"
+                            aria-label={`Edit ${product.name}`}
                           >
                             <Edit className="w-4 h-4 text-blue-500" />
                           </button>
@@ -418,6 +459,7 @@ export default function ProductListPage() {
                             }}
                             disabled={isDeleting}
                             className="p-1 hover:bg-gray-100 rounded-full"
+                            aria-label={`Delete ${product.name}`}
                           >
                             <Trash className="w-4 h-4 text-red-500" />
                           </button>
@@ -480,11 +522,14 @@ export default function ProductListPage() {
                   </div>
                   <div className="text-sm text-gray-600 space-y-1">
                     <p>Manufacturer: {product.manufacturer_name}</p>
-                    <p>SKU: {product.sku}</p>
+                    <p><abbr title="Stock Keeping Unit">SKU</abbr>: {product.sku}</p>
                     <p>Method: {product.pcf_calculation_method}</p>
                     <p className="flex items-center gap-1">
-                      PCF: {product.emission_total}
-                      <Info className="w-3 h-3 text-gray-400" />
+                      <abbr title="Product Carbon Footprint">PCF</abbr>: 
+                      <span aria-label={`${product.emission_total} kilograms CO2 equivalent`}>
+                        {product.emission_total}
+                      </span>
+                      <Info className="w-3 h-3 text-gray-400" aria-hidden="true" />
                     </p>
                   </div>
                   <div className="flex justify-end gap-2 mt-3">
@@ -503,6 +548,7 @@ export default function ProductListPage() {
                         handleEdit(product.id);
                       }}
                       className="p-1 hover:bg-gray-100 rounded-full"
+                      aria-label={`Edit ${product.name}`}
                     >
                       <Edit className="w-4 h-4 text-blue-500" />
                     </button>
@@ -513,6 +559,7 @@ export default function ProductListPage() {
                       }}
                       disabled={isDeleting}
                       className="p-1 hover:bg-gray-100 rounded-full"
+                      aria-label={`Delete ${product.name}`}
                     >
                       <Trash className="w-4 h-4 text-red-500" />
                     </button>
@@ -547,7 +594,7 @@ export default function ProductListPage() {
 
             {/* Pagination */}
             {products.length > 0 && (
-              <div className="flex justify-between items-center mt-4">
+              <nav className="flex justify-between items-center mt-4" aria-label="Pagination">
                 <div className="flex items-center gap-2">
                   <Button
                     className="px-2 py-1 rounded hover:bg-gray-100 transition-colors"
@@ -556,8 +603,8 @@ export default function ProductListPage() {
                   >
                     Previous
                   </Button>
-                  <span className="text-sm">
-                    {currentPage} / {Math.ceil(products.length / rowsPerPage)}
+                  <span className="text-sm" aria-current="page">
+                    Page {currentPage} of {Math.ceil(products.length / rowsPerPage)}
                   </span>
                   <Button
                     className="px-2 py-1 rounded hover:bg-gray-100 transition-colors"
@@ -568,8 +615,11 @@ export default function ProductListPage() {
                   </Button>
                 </div>
                 <div>
-                  <label className="text-sm">Rows per page:</label>{" "}
+                  <label htmlFor="rows-per-page" className="text-sm">
+                    Rows per page:
+                  </label>
                   <select
+                    id="rows-per-page"
                     className="border rounded px-2 py-1 text-sm ml-2"
                     value={rowsPerPage}
                     onChange={e => {
@@ -582,7 +632,7 @@ export default function ProductListPage() {
                     <option value={50}>50</option>
                   </select>
                 </div>
-              </div>
+              </nav>
             )}
           </>
         )}
@@ -598,7 +648,7 @@ export default function ProductListPage() {
         />
       )}
 
-      {/* AI modal (confirm → loading → result) */}
+      {/* AI modal */}
       {aiModalStep && (
         <Modal
           title={
@@ -649,7 +699,7 @@ export default function ProductListPage() {
           )}
 
           {aiModalStep === "loading" && (
-            <div className="flex flex-col items-center justify-center py-8">
+            <div className="flex flex-col items-center justify-center py-8" role="status">
               <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mb-4" />
               <p className="text-sm text-gray-600">AI is thinking, please wait...</p>
             </div>

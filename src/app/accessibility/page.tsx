@@ -1,11 +1,18 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Card from "../components/ui/Card";
 import Link from "next/link";
 
 export default function AccessibilityStatementPage() {
+  // Fix hydration error by only rendering date on client
+  const [mounted, setMounted] = useState(false);
   const lastUpdated = "November 2024";
-  const contactEmail = "support@carboninsight.win.tue.nl";
+  const contactEmail = "accessibility@carboninsight.win.tue.nl";
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <div className="py-12 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -13,29 +20,33 @@ export default function AccessibilityStatementPage() {
         <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
           Accessibility Statement
         </h1>
-        <p className="mt-4 text-lg text-gray-500 dark:text-gray-400">Last updated: {lastUpdated}</p>
+        <p className="mt-4 text-xl text-gray-500 dark:text-gray-400">
+          Our commitment to digital accessibility for all users
+        </p>
+        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+          Last updated: {lastUpdated}
+        </p>
       </div>
 
       <div className="space-y-8">
-        <Card as="section" title="Our Commitment">
-          <p className="text-gray-700 dark:text-gray-300 mb-4">
+        {/* Commitment Section */}
+        <Card className="mb-8">
+          <h2 className="text-2xl font-semibold mb-6">Our Accessibility Commitment</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
             Carbon Insight is committed to ensuring digital accessibility for people with
             disabilities. We are continually improving the user experience for everyone and applying
             the relevant accessibility standards.
           </p>
-          <p className="text-gray-700 dark:text-gray-300">
+          <p className="text-gray-600 dark:text-gray-400">
             We aim to meet the Web Content Accessibility Guidelines (WCAG) 2.1 Level AA standards to
             ensure our platform is accessible to all users, regardless of their abilities.
           </p>
         </Card>
 
-        <Card as="section" title="Conformance Status">
-          <p className="text-gray-700 dark:text-gray-300 mb-4">
-            The Web Content Accessibility Guidelines (WCAG) defines requirements for designers and
-            developers to improve accessibility for people with disabilities. It defines three
-            levels of conformance: Level A, Level AA, and Level AAA.
-          </p>
-          <p className="text-gray-700 dark:text-gray-300 mb-4">
+        {/* Conformance Status */}
+        <Card className="mb-8">
+          <h2 className="text-2xl font-semibold mb-6">Conformance Status</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
             <strong>Carbon Insight is partially conformant with WCAG 2.1 level AA.</strong>{" "}
             Partially conformant means that some parts of the content do not fully conform to the
             accessibility standard.
@@ -48,67 +59,89 @@ export default function AccessibilityStatementPage() {
           </div>
         </Card>
 
-        <Card as="section" title="Accessibility Features">
-          <p className="text-gray-700 dark:text-gray-300 mb-4">
-            We've implemented the following accessibility features:
-          </p>
-          <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
-            <li>Keyboard navigation support throughout the application</li>
-            <li>Screen reader compatibility with proper ARIA labels and descriptions</li>
-            <li>Color contrast that meets WCAG AA standards (4.5:1 for normal text)</li>
-            <li>Focus indicators on all interactive elements</li>
-            <li>Skip navigation links for easier navigation</li>
-            <li>Semantic HTML structure with proper heading hierarchy</li>
-            <li>Form labels and error messages associated with form controls</li>
-            <li>Alternative text for informative images</li>
-            <li>Support for browser zoom up to 200% without horizontal scrolling</li>
-            <li>Reduced motion support for users with vestibular disorders</li>
-          </ul>
+        {/* Accessibility Features */}
+        <Card className="mb-8">
+          <h2 className="text-2xl font-semibold mb-6">Accessibility Features</h2>
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-medium mb-2">Visual Accessibility</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Our platform provides full screen reader support with proper ARIA labels, semantic
+                HTML structure, and keyboard navigation. We maintain WCAG AA compliant color contrast
+                ratios (minimum 4.5:1 for normal text, 3:1 for large text) and support browser zoom
+                up to 200% without horizontal scrolling. All images include descriptive alternative
+                text, and we offer a dark mode option to reduce eye strain.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-medium mb-2">Navigation and Interaction</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Every feature is accessible via keyboard with visible focus indicators throughout.
+                We provide skip navigation links for easy content access and maintain consistent
+                navigation patterns across all pages. All interactive elements meet the minimum
+                44x44 pixel touch target size for easier interaction on mobile devices.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-medium mb-2">Content and Forms</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                All form fields include descriptive labels and clear error messages linked directly
+                to the relevant fields. We provide helpful instructions and validation feedback, with
+                no time limits on form completion. Status messages and important updates are
+                automatically announced to screen readers.
+              </p>
+            </div>
+          </div>
         </Card>
 
-        <Card as="section" title="Known Limitations">
-          <p className="text-gray-700 dark:text-gray-300 mb-4">
-            Despite our best efforts, some areas may have accessibility limitations:
-          </p>
-          <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
-            <li>
-              <strong>Data visualizations:</strong> Some complex charts may not have complete text
-              alternatives yet. We're working on providing data tables as alternatives.
-            </li>
-            <li>
-              <strong>PDF exports:</strong> Generated PDF reports may not be fully accessible. We
-              recommend using the web interface for the best accessibility experience.
-            </li>
-            <li>
-              <strong>Third-party content:</strong> Some external content or tools integrated into
-              our platform may not meet our accessibility standards.
-            </li>
-          </ul>
+        {/* Guidelines for Visually Impaired Users */}
+        <Card className="mb-8">
+          <h2 className="text-2xl font-semibold mb-6">Guidelines for Users with Visual Impairments</h2>
+          <div className="space-y-4">
+            <p className="text-gray-600 dark:text-gray-400">
+              Carbon Insight is designed to work seamlessly with assistive technologies:
+            </p>
+
+            <div>
+              <h3 className="text-lg font-medium mb-2">Screen Reader Compatibility</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Our platform is fully compatible with popular screen readers including NVDA (Windows),
+                JAWS (Windows), VoiceOver (macOS/iOS), and TalkBack (Android). We use semantic HTML
+                and ARIA labels to ensure all content and functionality is properly announced.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-medium mb-2">Magnification and Zoom</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                The interface remains fully functional when using browser zoom or screen magnification
+                software. Text reflows properly at higher zoom levels, and all functionality remains
+                accessible without horizontal scrolling at 200% zoom.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-medium mb-2">High Contrast Support</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Our color scheme works well with high contrast modes, and we provide a built-in dark
+                mode option. All information conveyed through color is also available through text or
+                other visual indicators.
+              </p>
+            </div>
+          </div>
         </Card>
 
-        <Card as="section" title="Browser Compatibility">
-          <p className="text-gray-700 dark:text-gray-300 mb-4">
-            Carbon Insight is designed to work with the following assistive technologies:
-          </p>
-          <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300 mb-4">
-            <li>NVDA (Windows) with Firefox or Chrome</li>
-            <li>JAWS (Windows) with Chrome or Edge</li>
-            <li>VoiceOver (macOS) with Safari</li>
-            <li>VoiceOver (iOS) with Safari</li>
-            <li>TalkBack (Android) with Chrome</li>
-          </ul>
-          <p className="text-gray-700 dark:text-gray-300">
-            The platform is optimized for the latest versions of Chrome, Firefox, Safari, and Edge
-            browsers.
-          </p>
-        </Card>
-
-        <Card as="section" title="Keyboard Navigation">
-          <p className="text-gray-700 dark:text-gray-300 mb-4">
-            You can navigate Carbon Insight using the following keyboard shortcuts:
+        {/* Keyboard Navigation */}
+        <Card className="mb-8">
+          <h2 className="text-2xl font-semibold mb-6">Keyboard Navigation</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            You can navigate Carbon Insight entirely using your keyboard:
           </p>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <caption className="sr-only">Keyboard shortcuts for navigation</caption>
               <thead className="bg-gray-50 dark:bg-gray-800">
                 <tr>
                   <th
@@ -167,83 +200,87 @@ export default function AccessibilityStatementPage() {
           </div>
         </Card>
 
-        <Card as="section" title="Feedback">
-          <p className="text-gray-700 dark:text-gray-300 mb-4">
+        {/* Known Limitations */}
+        <Card className="mb-8">
+          <h2 className="text-2xl font-semibold mb-6">Known Limitations</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            Despite our best efforts to ensure accessibility, some areas may have limitations:
+          </p>
+          <div className="space-y-3">
+            <div>
+              <h3 className="font-medium text-gray-900 dark:text-white">
+                Data Visualizations
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Some complex charts may not have complete text alternatives yet. We're working on
+                providing accessible data tables as alternatives.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-medium text-gray-900 dark:text-white">PDF Exports</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Generated PDF reports may not be fully accessible. We recommend using the web
+                interface for the best accessibility experience.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-medium text-gray-900 dark:text-white">Third-party Content</h3>
+              <p className="text-gray-600 dark:text-gray-400">
+                Some external content or tools integrated into our platform may not meet our
+                accessibility standards.
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Feedback */}
+        <Card className="mb-8">
+          <h2 className="text-2xl font-semibold mb-6">Feedback and Contact</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
             We welcome your feedback on the accessibility of Carbon Insight. Please let us know if
             you encounter accessibility barriers:
           </p>
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-4 space-y-2">
-            <p className="text-sm">
-              <strong className="text-gray-900 dark:text-white">Email:</strong>{" "}
-              <a
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-4">
+            <p className="font-medium mb-2">Accessibility Support:</p>
+            <p className="text-gray-600 dark:text-gray-400">
+              Email: <a 
                 href={`mailto:${contactEmail}`}
-                className="text-red hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 rounded"
+                className="text-red hover:text-red-700 underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 rounded"
               >
                 {contactEmail}
               </a>
             </p>
-            <p className="text-sm">
-              <strong className="text-gray-900 dark:text-white">Response time:</strong>{" "}
-              <span className="text-gray-700 dark:text-gray-300">Within 2 business days</span>
+            <p className="text-gray-600 dark:text-gray-400 mt-2">
+              We aim to respond to accessibility feedback within 2 business days.
             </p>
           </div>
-          <p className="mt-4 text-gray-700 dark:text-gray-300">
-            Please provide as much detail as possible, including:
-          </p>
-          <ul className="list-disc list-inside space-y-1 mt-2 text-gray-700 dark:text-gray-300">
-            <li>The page or feature where you encountered the issue</li>
-            <li>Your assistive technology and browser</li>
-            <li>A description of the problem</li>
-            <li>Any error messages you received</li>
-          </ul>
+          <div className="mt-4">
+            <p className="font-medium text-gray-900 dark:text-white mb-2">
+              When reporting an issue, please include:
+            </p>
+            <p className="text-gray-600 dark:text-gray-400">
+              The page or feature where you encountered the issue, your assistive technology and
+              browser, a description of the problem, and any error messages you received.
+            </p>
+          </div>
         </Card>
 
-        <Card as="section" title="Enforcement">
-          <p className="text-gray-700 dark:text-gray-300">
-            If you are not satisfied with our response to your accessibility feedback, you may file
-            a complaint with the relevant authorities in your jurisdiction. In the European Union,
-            this would be your national enforcement body for web accessibility.
-          </p>
+        {/* Technical and Legal */}
+        <Card>
+          <h2 className="text-2xl font-semibold mb-6">Technical Specifications</h2>
+          <div className="space-y-2 text-gray-600 dark:text-gray-400">
+            <p><strong>Accessibility Standard:</strong> WCAG 2.1 Level AA</p>
+            <p><strong>Last Updated:</strong> {mounted ? lastUpdated : "Loading..."}</p>
+            <p><strong>Technologies:</strong> HTML5, WAI-ARIA 1.2, CSS3, JavaScript (ECMAScript 2015+), React 19</p>
+            <p><strong>Assessment Methods:</strong> Automated testing (axe DevTools), manual testing, screen reader testing</p>
+          </div>
         </Card>
 
-        <Card as="section" title="Technical Specifications">
-          <p className="text-gray-700 dark:text-gray-300 mb-4">
-            Accessibility of Carbon Insight relies on the following technologies to work with the
-            particular combination of web browser and any assistive technologies or plugins
-            installed on your computer:
-          </p>
-          <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
-            <li>HTML5</li>
-            <li>WAI-ARIA 1.2</li>
-            <li>CSS3</li>
-            <li>JavaScript (ECMAScript 2015+)</li>
-            <li>React 19</li>
-          </ul>
-          <p className="mt-4 text-gray-700 dark:text-gray-300">
-            These technologies are relied upon for conformance with the accessibility standards
-            used.
-          </p>
-        </Card>
-
-        <Card as="section" title="Assessment and Testing">
-          <p className="text-gray-700 dark:text-gray-300 mb-4">
-            Carbon Insight's accessibility has been evaluated through:
-          </p>
-          <ul className="list-disc list-inside space-y-2 text-gray-700 dark:text-gray-300">
-            <li>Automated testing using axe DevTools and Lighthouse</li>
-            <li>Manual keyboard navigation testing</li>
-            <li>Screen reader testing with NVDA and VoiceOver</li>
-            <li>Color contrast analysis using WCAG-compliant tools</li>
-            <li>Code review for semantic HTML and ARIA implementation</li>
-          </ul>
-        </Card>
-
-        <div className="text-center pt-8">
-          <Link
-            href="/support"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-red hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-          >
-            Contact Support
+        <div className="text-center mt-8">
+          <Link href="/support">
+            <button className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-red hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+              Contact Support
+            </button>
           </Link>
         </div>
       </div>

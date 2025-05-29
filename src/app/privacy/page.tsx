@@ -1,10 +1,19 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Link from "next/link";
 
 export default function PrivacyPage() {
+  // Fix hydration error by only rendering date on client
+  const [mounted, setMounted] = useState(false);
+  const lastUpdated = "December 2024";
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <div className="py-12 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="text-center mb-12">
@@ -19,91 +28,144 @@ export default function PrivacyPage() {
       <Card className="mb-8">
         <h2 className="text-2xl font-semibold mb-6">Information We Collect</h2>
         <div className="space-y-4 text-gray-600 dark:text-gray-400">
+          <p>
+            We collect information necessary to provide our carbon footprint calculation services:
+          </p>
+
           <div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Account Information</h3>
-            <ul className="list-disc list-inside space-y-1">
-              <li>Name and email address</li>
-              <li>Company affiliation</li>
-              <li>Account credentials (securely hashed)</li>
-            </ul>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Account Information
+            </h3>
+            <p>
+              When you create an account, we collect your name, email address, and company
+              affiliation. Your account credentials are securely hashed and never stored in plain
+              text.
+            </p>
           </div>
-          
+
           <div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Business Data</h3>
-            <ul className="list-disc list-inside space-y-1">
-              <li>Company information (name, VAT number, registration number)</li>
-              <li>Product information and specifications</li>
-              <li>Supply chain and emissions data</li>
-              <li>Carbon footprint calculations</li>
-            </ul>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Business Data
+            </h3>
+            <p>
+              To calculate carbon footprints, we collect company information (name, VAT number,
+              registration number), product specifications, supply chain data, and emissions
+              calculations. This data is essential for generating accurate Digital Product
+              Passports.
+            </p>
           </div>
-          
+
           <div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Usage Data</h3>
-            <ul className="list-disc list-inside space-y-1">
-              <li>Log data (IP address, browser type, pages visited)</li>
-              <li>Feature usage patterns</li>
-              <li>Performance metrics</li>
-            </ul>
+            <p>
+              We automatically collect standard log data including IP addresses, browser type, and
+              pages visited to improve our service and ensure security. We also track feature usage
+              patterns to enhance user experience.
+            </p>
           </div>
         </div>
       </Card>
 
       <Card className="mb-8">
         <h2 className="text-2xl font-semibold mb-6">How We Use Your Information</h2>
-        <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-400">
-          <li>To provide carbon footprint calculation services</li>
-          <li>To generate Digital Product Passports</li>
-          <li>To facilitate data sharing between supply chain partners</li>
-          <li>To improve our services and develop new features</li>
-          <li>To communicate important updates and changes</li>
-          <li>To ensure security and prevent fraud</li>
-          <li>To comply with legal obligations</li>
-        </ul>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">
+          Your information enables us to provide comprehensive carbon footprint services:
+        </p>
+        <p className="text-gray-600 dark:text-gray-400">
+          We use your data to calculate product carbon footprints, generate Digital Product
+          Passports, and facilitate secure data sharing between supply chain partners. This
+          information helps us improve our services, develop new features, and communicate
+          important updates. We also use it to ensure platform security, prevent fraud, and
+          comply with legal obligations.
+        </p>
       </Card>
 
       <Card className="mb-8">
         <h2 className="text-2xl font-semibold mb-6">Data Sharing and Disclosure</h2>
         <div className="space-y-4 text-gray-600 dark:text-gray-400">
-          <p>We do not sell your personal or business data. We share information only in these circumstances:</p>
-          <ul className="list-disc list-inside space-y-2">
-            <li><strong>With your consent:</strong> When you explicitly approve data sharing with supply chain partners</li>
-            <li><strong>Within your organization:</strong> With other authorized users in your company</li>
-            <li><strong>Service providers:</strong> With trusted third parties who assist in operating our service</li>
-            <li><strong>Legal requirements:</strong> When required by law or to protect rights and safety</li>
-          </ul>
+          <p>
+            <strong>We do not sell your personal or business data.</strong> We share information
+            only in these specific circumstances:
+          </p>
+
+          <div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              With Your Consent
+            </h3>
+            <p>
+              When you explicitly approve data sharing with supply chain partners or other
+              authorized users within your organization.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Service Providers
+            </h3>
+            <p>
+              We work with trusted third parties who assist in operating our service, all bound by
+              strict confidentiality agreements.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+              Legal Requirements
+            </h3>
+            <p>
+              We may disclose information when required by law or to protect rights and safety.
+            </p>
+          </div>
         </div>
       </Card>
 
       <Card className="mb-8">
         <h2 className="text-2xl font-semibold mb-6">Data Security</h2>
-        <div className="space-y-4 text-gray-600 dark:text-gray-400">
-          <p>We implement industry-standard security measures to protect your data:</p>
-          <ul className="list-disc list-inside space-y-2">
-            <li>Encryption in transit (HTTPS) and at rest</li>
-            <li>Secure authentication and session management</li>
-            <li>Regular security audits and updates</li>
-            <li>Access controls and employee training</li>
-            <li>Secure cloud infrastructure (EU-based servers)</li>
-          </ul>
-        </div>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">
+          We implement industry-standard security measures to protect your data:
+        </p>
+        <p className="text-gray-600 dark:text-gray-400">
+          All data is encrypted in transit using HTTPS and at rest using modern encryption
+          standards. We maintain secure authentication with session management, conduct regular
+          security audits, and provide comprehensive employee training. Our infrastructure is
+          hosted on secure, EU-based cloud servers with robust access controls.
+        </p>
       </Card>
 
       <Card className="mb-8">
-        <h2 className="text-2xl font-semibold mb-6">Your Rights</h2>
+        <h2 className="text-2xl font-semibold mb-6">Your Rights Under GDPR</h2>
         <div className="space-y-4 text-gray-600 dark:text-gray-400">
-          <p>Under GDPR, you have the following rights regarding your data:</p>
-          <ul className="list-disc list-inside space-y-2">
-            <li><strong>Access:</strong> Request a copy of your personal data</li>
-            <li><strong>Rectification:</strong> Correct inaccurate or incomplete data</li>
-            <li><strong>Erasure:</strong> Request deletion of your data</li>
-            <li><strong>Portability:</strong> Receive your data in a portable format</li>
-            <li><strong>Restriction:</strong> Limit how we process your data</li>
-            <li><strong>Objection:</strong> Object to certain types of processing</li>
-          </ul>
+          <p>
+            You have comprehensive rights regarding your personal data:
+          </p>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <h3 className="font-medium text-gray-900 dark:text-white">Access & Portability</h3>
+              <p className="text-sm">Request a copy of your data in a portable format</p>
+            </div>
+            <div>
+              <h3 className="font-medium text-gray-900 dark:text-white">
+                Rectification & Erasure
+              </h3>
+              <p className="text-sm">Correct inaccurate data or request complete deletion</p>
+            </div>
+            <div>
+              <h3 className="font-medium text-gray-900 dark:text-white">Restriction</h3>
+              <p className="text-sm">Limit how we process your data</p>
+            </div>
+            <div>
+              <h3 className="font-medium text-gray-900 dark:text-white">Objection</h3>
+              <p className="text-sm">Object to certain types of processing</p>
+            </div>
+          </div>
+
           <p className="mt-4">
             To exercise these rights, contact us at{" "}
-            <a href="mailto:privacy@carboninsight.win.tue.nl" className="text-red hover:text-red-700 underline">
+            <a
+              href="mailto:privacy@carboninsight.win.tue.nl"
+              className="text-red hover:text-red-700 underline"
+            >
               privacy@carboninsight.win.tue.nl
             </a>
           </p>
@@ -113,56 +175,68 @@ export default function PrivacyPage() {
       <Card className="mb-8">
         <h2 className="text-2xl font-semibold mb-6">Data Retention</h2>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
-          We retain your data for as long as your account is active or as needed to provide services. 
-          Specifically:
+          We retain your data only as long as necessary:
         </p>
-        <ul className="list-disc list-inside space-y-2 text-gray-600 dark:text-gray-400">
-          <li>Account data: Until account deletion</li>
-          <li>Product and emissions data: 5 years after last modification</li>
-          <li>Usage logs: 12 months</li>
-          <li>Legal compliance data: As required by law</li>
-        </ul>
-      </Card>
-
-      <Card className="mb-8">
-        <h2 className="text-2xl font-semibold mb-6">Cookies and Tracking</h2>
-        <div className="space-y-4 text-gray-600 dark:text-gray-400">
-          <p>We use only essential cookies necessary for the service to function:</p>
-          <ul className="list-disc list-inside space-y-2">
-            <li>Authentication tokens (session management)</li>
-            <li>User preferences (theme, language)</li>
-            <li>Security tokens (CSRF protection)</li>
-          </ul>
-          <p>We do not use tracking cookies or third-party analytics.</p>
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+          <p className="text-gray-600 dark:text-gray-400">
+            Account data is kept until you delete your account. Product and emissions data is
+            retained for 5 years after last modification to support historical reporting. Usage
+            logs are kept for 12 months for security and performance analysis. Any data required
+            for legal compliance is retained as mandated by law.
+          </p>
         </div>
       </Card>
 
       <Card className="mb-8">
+        <h2 className="text-2xl font-semibold mb-6">Cookies and Tracking</h2>
+        <p className="text-gray-600 dark:text-gray-400">
+          We use only essential cookies necessary for the service to function properly. These
+          include authentication tokens for secure login, user preferences for theme and
+          language settings, and security tokens for CSRF protection. We do not use tracking
+          cookies or third-party analytics services.
+        </p>
+      </Card>
+
+      <Card className="mb-8">
         <h2 className="text-2xl font-semibold mb-6">Contact Information</h2>
-        <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg space-y-2">
-          <p className="text-gray-600 dark:text-gray-400">
-            <strong>Data Controller:</strong> Brainport Industries / TU Eindhoven
-          </p>
-          <p className="text-gray-600 dark:text-gray-400">
-            <strong>Email:</strong>{" "}
-            <a href="mailto:privacy@carboninsight.win.tue.nl" className="text-red hover:text-red-700 underline">
-              privacy@carboninsight.win.tue.nl
-            </a>
-          </p>
-          <p className="text-gray-600 dark:text-gray-400">
-            <strong>Address:</strong> Eindhoven, North Brabant, Netherlands
-          </p>
+        <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg space-y-3">
+          <div>
+            <p className="font-medium text-gray-900 dark:text-white">Data Controller</p>
+            <p className="text-gray-600 dark:text-gray-400">
+              Brainport Industries / TU Eindhoven
+            </p>
+          </div>
+          <div>
+            <p className="font-medium text-gray-900 dark:text-white">Email</p>
+            <p>
+              <a
+                href="mailto:privacy@carboninsight.win.tue.nl"
+                className="text-red hover:text-red-700 underline"
+              >
+                privacy@carboninsight.win.tue.nl
+              </a>
+            </p>
+          </div>
+          <div>
+            <p className="font-medium text-gray-900 dark:text-white">Address</p>
+            <p className="text-gray-600 dark:text-gray-400">
+              Eindhoven, North Brabant, Netherlands
+            </p>
+          </div>
+          <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              <strong>Last Updated:</strong> {mounted ? lastUpdated : "Loading..."}
+            </p>
+          </div>
         </div>
       </Card>
 
       <Card>
         <h2 className="text-2xl font-semibold mb-6">Updates to This Policy</h2>
         <p className="text-gray-600 dark:text-gray-400">
-          We may update this privacy policy from time to time. We will notify you of any changes by 
-          posting the new policy on this page and updating the "Last Updated" date.
-        </p>
-        <p className="text-gray-600 dark:text-gray-400 mt-4">
-          <strong>Last Updated:</strong> {new Date().toLocaleDateString()}
+          We may update this privacy policy from time to time. We will notify you of any changes
+          by posting the new policy on this page and updating the "Last Updated" date. Significant
+          changes will be communicated via email to all registered users.
         </p>
       </Card>
 

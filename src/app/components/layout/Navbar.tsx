@@ -61,6 +61,28 @@ export default function Navbar() {
         setIsProfileMenuOpen(false);
         profileButtonRef.current?.focus();
       }
+
+      // Navigate menu items with arrow keys
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        e.preventDefault();
+        const menuItems = profileMenuRef.current?.querySelectorAll(
+          'a[role="menuitem"], button[role="menuitem"]'
+        );
+        if (!menuItems) return;
+
+        const currentIndex = Array.from(menuItems).findIndex(
+          item => item === document.activeElement
+        );
+
+        let nextIndex;
+        if (e.key === "ArrowDown") {
+          nextIndex = currentIndex + 1 >= menuItems.length ? 0 : currentIndex + 1;
+        } else {
+          nextIndex = currentIndex - 1 < 0 ? menuItems.length - 1 : currentIndex - 1;
+        }
+
+        (menuItems[nextIndex] as HTMLElement).focus();
+      }
     };
 
     document.addEventListener("keydown", handleKeyDown);
@@ -176,17 +198,21 @@ export default function Navbar() {
         <div className="flex justify-between h-16">
           {/* Logo and brand */}
           <div className="flex-shrink-0 flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
+            <Link
+              href="/"
+              className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red rounded-md"
+              aria-label="Carbon Insight - Home"
+            >
               <Image
                 src="/brainport-logo-white.webp"
-                alt="Carbon Footprint Calculator"
+                alt=""
                 width={32}
                 height={32}
                 className="hidden dark:block"
               />
               <Image
                 src="/brainport-logo.webp"
-                alt="Carbon Footprint Calculator"
+                alt=""
                 width={32}
                 height={32}
                 className="block dark:hidden"
@@ -199,8 +225,9 @@ export default function Navbar() {
           <div className="flex items-center sm:hidden">
             <button
               onClick={toggleMenu}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red-500"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-red min-w-[44px] min-h-[44px]"
               aria-expanded={isMenuOpen}
+              aria-controls="mobile-menu"
               aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
             >
               <span className="sr-only">{isMenuOpen ? "Close main menu" : "Open main menu"}</span>
@@ -242,68 +269,81 @@ export default function Navbar() {
           <div className="hidden sm:flex sm:items-center sm:space-x-1 lg:space-x-4">
             {isAuthenticated && mounted ? (
               <>
-                {/* Dashboard - Only show when company is selected */}
-                {showCompanySpecificItems && (
-                  <Link
-                    href="/dashboard"
-                    className={`flex items-center px-2 lg:px-3 py-2 rounded-md text-sm font-medium 
-                      ${
-                        isActive("/dashboard")
-                          ? "bg-red text-white"
-                          : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
-                      }`}
-                    aria-current={isActive("/dashboard") ? "page" : undefined}
-                  >
-                    <LayoutDashboardIcon size={16} className="mr-1" aria-hidden="true" />
-                    Dashboard
-                  </Link>
-                )}
+                {/* Navigation list */}
+                <ul className="flex items-center space-x-1 lg:space-x-4 list-none" role="list">
+                  {/* Dashboard - Only show when company is selected */}
+                  {showCompanySpecificItems && (
+                    <li>
+                      <Link
+                        href="/dashboard"
+                        className={`flex items-center px-2 lg:px-3 py-2 rounded-md text-sm font-medium min-h-[44px]
+                          ${
+                            isActive("/dashboard")
+                              ? "bg-red text-white"
+                              : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                          }`}
+                        aria-current={isActive("/dashboard") ? "page" : undefined}
+                      >
+                        <LayoutDashboardIcon size={16} className="mr-1" aria-hidden="true" />
+                        Dashboard
+                      </Link>
+                    </li>
+                  )}
 
-                {/* Companies - Always show for authenticated users */}
-                <Link
-                  href="/list-companies"
-                  className={`flex items-center px-2 lg:px-3 py-2 rounded-md text-sm font-medium 
-                    ${
-                      isActive("/list-companies") ||
-                      isActive("/company-details") ||
-                      isActive("/manage-user") ||
-                      isActive("/product-data-sharing")
-                        ? "bg-red text-white"
-                        : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
-                    }`}
-                  aria-current={isActive("/list-companies") ? "page" : undefined}
-                >
-                  <BuildingIcon size={16} className="mr-1" aria-hidden="true" />
-                  Companies
-                </Link>
+                  {/* Companies - Always show for authenticated users */}
+                  <li>
+                    <Link
+                      href="/list-companies"
+                      className={`flex items-center px-2 lg:px-3 py-2 rounded-md text-sm font-medium min-h-[44px]
+                        ${
+                          isActive("/list-companies") ||
+                          isActive("/company-details") ||
+                          isActive("/manage-user") ||
+                          isActive("/product-data-sharing")
+                            ? "bg-red text-white"
+                            : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                        }`}
+                      aria-current={
+                        isActive("/list-companies") || isActive("/company-details")
+                          ? "page"
+                          : undefined
+                      }
+                    >
+                      <BuildingIcon size={16} className="mr-1" aria-hidden="true" />
+                      Companies
+                    </Link>
+                  </li>
 
-                {/* Products - Only show when company is selected */}
-                {showCompanySpecificItems && (
-                  <Link
-                    href="/product-list"
-                    className={`flex items-center px-2 lg:px-3 py-2 rounded-md text-sm font-medium 
-                      ${
-                        isActive("/product-list")
-                          ? "bg-red text-white"
-                          : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
-                      }`}
-                    aria-current={isActive("/product-list") ? "page" : undefined}
-                  >
-                    <Boxes size={16} className="mr-1" aria-hidden="true" />
-                    Products
-                  </Link>
-                )}
+                  {/* Products - Only show when company is selected */}
+                  {showCompanySpecificItems && (
+                    <li>
+                      <Link
+                        href="/product-list"
+                        className={`flex items-center px-2 lg:px-3 py-2 rounded-md text-sm font-medium min-h-[44px]
+                          ${
+                            isActive("/product-list")
+                              ? "bg-red text-white"
+                              : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                          }`}
+                        aria-current={isActive("/product-list") ? "page" : undefined}
+                      >
+                        <Boxes size={16} className="mr-1" aria-hidden="true" />
+                        Products
+                      </Link>
+                    </li>
+                  )}
+                </ul>
 
                 <div className="relative ml-3" ref={profileMenuRef}>
                   <div>
                     <button
                       ref={profileButtonRef}
                       onClick={toggleProfileMenu}
-                      className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                      className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red min-h-[44px] p-2"
                       id="user-menu-button"
                       aria-expanded={isProfileMenuOpen}
                       aria-haspopup="true"
-                      aria-label="User account menu"
+                      aria-label={`User account menu for ${user?.username || "User"}`}
                     >
                       <span className="sr-only">Open user menu</span>
                       <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700">
@@ -339,37 +379,40 @@ export default function Navbar() {
                         <p className="font-medium">{user?.username}</p>
                         <p className="text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
                       </div>
-                      <div className="border-b border-gray-200 dark:border-gray-700">
+                      <div className="border-b border-gray-200 dark:border-gray-700" role="none">
                         <Link
                           href="/account"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 min-h-[44px] flex items-center"
                           onClick={() => setIsProfileMenuOpen(false)}
                           role="menuitem"
                         >
+                          <SettingsIcon size={16} className="mr-2" aria-hidden="true" />
                           Account Settings
                         </Link>
                         {companyId && !companyError && (
                           <Link
                             href="/company-details"
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 min-h-[44px] flex items-center"
                             onClick={() => setIsProfileMenuOpen(false)}
                             role="menuitem"
                           >
+                            <BuildingIcon size={16} className="mr-2" aria-hidden="true" />
                             Company Details
                           </Link>
                         )}
                         <Link
                           href="/support"
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 min-h-[44px] flex items-center"
                           onClick={() => setIsProfileMenuOpen(false)}
                           role="menuitem"
                         >
+                          <HelpCircle size={16} className="mr-2" aria-hidden="true" />
                           Support & Help
                         </Link>
                       </div>
                       <Link
                         href="/list-companies"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 min-h-[44px] flex items-center"
                         onClick={() => {
                           setIsProfileMenuOpen(false);
                           // Clear the selected company when switching
@@ -387,7 +430,7 @@ export default function Navbar() {
                           setIsProfileMenuOpen(false);
                           handleLogout();
                         }}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 min-h-[44px]"
                         role="menuitem"
                       >
                         Sign out
@@ -413,6 +456,7 @@ export default function Navbar() {
       {/* Mobile menu, show/hide based on state */}
       <div
         className={`${isMenuOpen ? "block" : "hidden"} sm:hidden bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700`}
+        id="mobile-menu"
         role="navigation"
         aria-label="Mobile navigation"
       >
@@ -423,7 +467,7 @@ export default function Navbar() {
               {showCompanySpecificItems && (
                 <Link
                   href="/dashboard"
-                  className={`flex items-center px-3 py-2 rounded-md text-base font-medium 
+                  className={`flex items-center px-3 py-2 rounded-md text-base font-medium min-h-[44px]
                     ${
                       isActive("/dashboard")
                         ? "bg-red text-white"
@@ -440,7 +484,7 @@ export default function Navbar() {
               {/* Companies - Always show for authenticated users */}
               <Link
                 href="/list-companies"
-                className={`flex items-center px-3 py-2 rounded-md text-base font-medium 
+                className={`flex items-center px-3 py-2 rounded-md text-base font-medium min-h-[44px]
                   ${
                     isActive("/list-companies") ||
                     isActive("/company-details") ||
@@ -450,7 +494,9 @@ export default function Navbar() {
                       : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
                   }`}
                 onClick={() => setIsMenuOpen(false)}
-                aria-current={isActive("/list-companies") ? "page" : undefined}
+                aria-current={
+                  isActive("/list-companies") || isActive("/company-details") ? "page" : undefined
+                }
               >
                 <BuildingIcon size={16} className="mr-2" aria-hidden="true" />
                 Companies
@@ -460,7 +506,7 @@ export default function Navbar() {
               {showCompanySpecificItems && (
                 <Link
                   href="/product-list"
-                  className={`flex items-center px-3 py-2 rounded-md text-base font-medium 
+                  className={`flex items-center px-3 py-2 rounded-md text-base font-medium min-h-[44px]
                     ${
                       isActive("/product-list")
                         ? "bg-red text-white"
@@ -476,7 +522,7 @@ export default function Navbar() {
 
               <Link
                 href="/account"
-                className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 min-h-[44px]"
                 onClick={() => setIsMenuOpen(false)}
               >
                 <SettingsIcon size={16} className="mr-2" aria-hidden="true" />
@@ -485,7 +531,7 @@ export default function Navbar() {
               {companyId && !companyError && (
                 <Link
                   href="/company-details"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 min-h-[44px]"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Company details
@@ -493,7 +539,7 @@ export default function Navbar() {
               )}
               <Link
                 href="/support"
-                className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 min-h-[44px]"
                 onClick={() => setIsMenuOpen(false)}
               >
                 <HelpCircle size={16} className="mr-2" aria-hidden="true" />
@@ -501,7 +547,7 @@ export default function Navbar() {
               </Link>
               <Link
                 href="/list-companies"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 min-h-[44px]"
                 onClick={() => {
                   setIsProfileMenuOpen(false);
                   setIsMenuOpen(false);
@@ -516,7 +562,7 @@ export default function Navbar() {
               </Link>
               <button
                 onClick={handleLogout}
-                className="flex items-center w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                className="flex items-center w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 min-h-[44px]"
               >
                 Sign out
               </button>
@@ -525,14 +571,14 @@ export default function Navbar() {
             <>
               <Link
                 href="/login"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 min-h-[44px]"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Log in
               </Link>
               <Link
                 href="/register"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 min-h-[44px]"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Register

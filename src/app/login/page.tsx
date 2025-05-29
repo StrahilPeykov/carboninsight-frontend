@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Card from "../components/ui/Card";
@@ -14,10 +14,33 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isAccountBlocked, setIsAccountBlocked] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const errorAnnouncementRef = useRef<HTMLDivElement>(null);
+
   const [formData, setFormData] = useState<LoginCredentials>({
     username: "",
     password: "",
   });
+
+  // Announce errors to screen readers
+  useEffect(() => {
+    if (error && errorAnnouncementRef.current) {
+      // Create a live region announcement
+      const announcement = document.createElement("div");
+      announcement.setAttribute("role", "alert");
+      announcement.setAttribute("aria-live", "assertive");
+      announcement.className = "sr-only";
+      announcement.textContent = error;
+      document.body.appendChild(announcement);
+
+      // Remove after announcement
+      setTimeout(() => {
+        if (announcement.parentNode) {
+          document.body.removeChild(announcement);
+        }
+      }, 1000);
+    }
+  }, [error]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -25,6 +48,12 @@ export default function LoginPage() {
       ...prev,
       [name]: value,
     }));
+
+    // Clear error when user starts typing
+    if (error) {
+      setError(null);
+      setIsAccountBlocked(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -35,6 +64,15 @@ export default function LoginPage() {
 
     try {
       await login(formData);
+
+      // Announce successful login
+      const announcement = document.createElement("div");
+      announcement.setAttribute("role", "status");
+      announcement.setAttribute("aria-live", "polite");
+      announcement.className = "sr-only";
+      announcement.textContent = "Login successful. Redirecting to dashboard...";
+      document.body.appendChild(announcement);
+
       router.push("/dashboard");
     } catch (err) {
       console.error("Login error:", err);
@@ -45,6 +83,11 @@ export default function LoginPage() {
 
         setIsAccountBlocked(isBlocked);
         setError(err.message);
+
+        // Focus on error message for screen readers
+        if (isBlocked) {
+          formRef.current?.querySelector<HTMLElement>('[role="alert"]')?.focus();
+        }
       } else {
         setError("Login failed. Please try again.");
       }
@@ -68,11 +111,18 @@ export default function LoginPage() {
         {/* Regular Error Message */}
         {error && !isAccountBlocked && (
           <div
+            ref={errorAnnouncementRef}
             role="alert"
             aria-live="assertive"
-            className="mb-4 p-3 bg-red-100 text-red-800 rounded-md dark:bg-red-900/20 dark:text-red-300"
+            className="mb-4 p-3 bg-red-100 text-red-800 rounded-md dark:bg-red-900/20 dark:text-red-300 border border-red-200 dark:border-red-800"
+            tabIndex={-1}
           >
-            {error}
+            <div className="flex items-start">
+              <span className="text-red-600 mr-2" aria-hidden="true">
+                ✗
+              </span>
+              <span>{error}</span>
+            </div>
           </div>
         )}
 
@@ -82,8 +132,12 @@ export default function LoginPage() {
             role="alert"
             aria-live="assertive"
             className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md dark:bg-red-900/20 dark:border-red-900"
+            tabIndex={-1}
           >
-            <h3 className="text-lg font-medium text-red-800 dark:text-red-300 mb-2">
+            <h3 className="text-lg font-medium text-red-800 dark:text-red-300 mb-2 flex items-center">
+              <span className="text-red-600 mr-2" aria-hidden="true">
+                ⚠
+              </span>
               Account Temporarily Blocked
             </h3>
             <p className="text-sm text-red-700 dark:text-red-200 mb-4">{error}</p>
@@ -101,7 +155,7 @@ export default function LoginPage() {
                   <strong>Support:</strong>{" "}
                   <a
                     href="mailto:support@carboninsight.win.tue.nl?subject=Account Unlock Request"
-                    className="underline hover:no-underline"
+                    className="hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                   >
                     support@carboninsight.win.tue.nl
                   </a>
@@ -114,7 +168,7 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form ref={formRef} onSubmit={handleSubmit} className="space-y-6" noValidate>
           <div>
             <label
               htmlFor="username"
@@ -163,12 +217,15 @@ export default function LoginPage() {
               required
               aria-required="true"
               aria-invalid={!!error}
-              aria-describedby={error ? "login-error" : undefined}
+              aria-describedby={error ? "login-error" : "password-hint"}
               value={formData.password}
               onChange={handleChange}
               disabled={isLoading}
               className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
             />
+            <span id="password-hint" className="sr-only">
+              Enter your password
+            </span>
             {error && (
               <span id="login-error" className="sr-only">
                 {error}
@@ -180,7 +237,7 @@ export default function LoginPage() {
             <div className="text-sm">
               <Link
                 href="/register"
-                className="font-medium text-red hover:text-red-700 dark:text-red-400"
+                className="font-medium text-red hover:text-red-700 dark:text-red-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 rounded"
               >
                 Need an account? Register
               </Link>
@@ -188,22 +245,21 @@ export default function LoginPage() {
             <div className="text-sm">
               <Link
                 href="/support"
-                className="font-medium text-red hover:text-red-700 dark:text-red-400"
+                className="font-medium text-red hover:text-red-700 dark:text-red-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 rounded"
               >
                 Need help?
               </Link>
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading} aria-busy={isLoading}>
-            {isLoading ? (
-              <>
-                <span className="sr-only">Logging in, please wait</span>
-                <span aria-hidden="true">Logging in...</span>
-              </>
-            ) : (
-              "Login"
-            )}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isLoading}
+            loading={isLoading}
+            ariaLabel="Sign in to your account"
+          >
+            {isLoading ? "Signing in..." : "Login"}
           </Button>
         </form>
 
@@ -215,7 +271,7 @@ export default function LoginPage() {
             </p>
             <Link
               href="/support"
-              className="text-xs text-red hover:text-red-700 dark:text-red-400 underline"
+              className="text-xs text-red hover:text-red-700 dark:text-red-400 underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red rounded"
             >
               Contact Support
             </Link>

@@ -56,7 +56,7 @@ export default function ListCompaniesPage() {
   if (authLoading || loading || !mounted) {
     return (
       <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <LoadingSkeleton count={3} />
+        <LoadingSkeleton />
       </div>
     );
   }
@@ -68,7 +68,7 @@ export default function ListCompaniesPage() {
         <div className="text-center py-12">
           <Building2 className="mx-auto h-16 w-16 text-gray-400 mb-4" />
           <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-4">
-            Welcome to Carbon Insight
+            Welcome to CarbonInsight
           </h1>
           <p className="text-lg text-gray-500 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
             You don't have any companies yet. Create your first company to start calculating product

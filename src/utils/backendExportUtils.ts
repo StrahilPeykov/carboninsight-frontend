@@ -379,7 +379,7 @@ function generatePDFReportHTML(product: Product, emissionTrace: any): string {
 
       <div class="footer">
         <p>Generated on: ${new Date().toLocaleString()}</p>
-        <p>Carbon Insight - Digital Product Passport</p>
+        <p>CarbonInsight - Digital Product Passport</p>
         <p>This report contains confidential carbon footprint data calculated according to ${emissionTrace.pcf_calculation_method || "ISO 14040/14044"} standards.</p>
         <p>Compatible with Asset Administration Shell (AAS) and Smart Connected Supplier Network (SCSN) specifications.</p>
       </div>

@@ -75,7 +75,7 @@ export default function CreateCompanyPage() {
   if (isLoading) {
     return (
       <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <LoadingSkeleton count={3} />
+        <LoadingSkeleton />
       </div>
     );
   }

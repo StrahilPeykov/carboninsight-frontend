@@ -5,9 +5,8 @@ import Card from "../components/ui/Card";
 import Link from "next/link";
 
 export default function AccessibilityStatementPage() {
-  // Fix hydration error by only rendering date on client
   const [mounted, setMounted] = useState(false);
-  const lastUpdated = "November 2024";
+  const lastUpdated = "May 2025";
   const contactEmail = "accessibility@carboninsight.win.tue.nl";
 
   useEffect(() => {
@@ -23,9 +22,7 @@ export default function AccessibilityStatementPage() {
         <p className="mt-4 text-xl text-gray-500 dark:text-gray-400">
           Our commitment to digital accessibility for all users
         </p>
-        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-          Last updated: {lastUpdated}
-        </p>
+        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Last updated: {lastUpdated}</p>
       </div>
 
       <div className="space-y-8">
@@ -33,7 +30,7 @@ export default function AccessibilityStatementPage() {
         <Card className="mb-8">
           <h2 className="text-2xl font-semibold mb-6">Our Accessibility Commitment</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Carbon Insight is committed to ensuring digital accessibility for people with
+            CarbonInsight is committed to ensuring digital accessibility for people with
             disabilities. We are continually improving the user experience for everyone and applying
             the relevant accessibility standards.
           </p>
@@ -47,8 +44,8 @@ export default function AccessibilityStatementPage() {
         <Card className="mb-8">
           <h2 className="text-2xl font-semibold mb-6">Conformance Status</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            <strong>Carbon Insight is partially conformant with WCAG 2.1 level AA.</strong>{" "}
-            Partially conformant means that some parts of the content do not fully conform to the
+            <strong>CarbonInsight is partially conformant with WCAG 2.1 level AA.</strong> Partially
+            conformant means that some parts of the content do not fully conform to the
             accessibility standard.
           </p>
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-4">
@@ -67,10 +64,10 @@ export default function AccessibilityStatementPage() {
               <h3 className="text-lg font-medium mb-2">Visual Accessibility</h3>
               <p className="text-gray-600 dark:text-gray-400">
                 Our platform provides full screen reader support with proper ARIA labels, semantic
-                HTML structure, and keyboard navigation. We maintain WCAG AA compliant color contrast
-                ratios (minimum 4.5:1 for normal text, 3:1 for large text) and support browser zoom
-                up to 200% without horizontal scrolling. All images include descriptive alternative
-                text, and we offer a dark mode option to reduce eye strain.
+                HTML structure, and keyboard navigation. We maintain WCAG AA compliant color
+                contrast ratios (minimum 4.5:1 for normal text, 3:1 for large text) and support
+                browser zoom up to 200% without horizontal scrolling. All images include descriptive
+                alternative text, and we offer a dark mode option to reduce eye strain.
               </p>
             </div>
 
@@ -88,8 +85,8 @@ export default function AccessibilityStatementPage() {
               <h3 className="text-lg font-medium mb-2">Content and Forms</h3>
               <p className="text-gray-600 dark:text-gray-400">
                 All form fields include descriptive labels and clear error messages linked directly
-                to the relevant fields. We provide helpful instructions and validation feedback, with
-                no time limits on form completion. Status messages and important updates are
+                to the relevant fields. We provide helpful instructions and validation feedback,
+                with no time limits on form completion. Status messages and important updates are
                 automatically announced to screen readers.
               </p>
             </div>
@@ -98,27 +95,30 @@ export default function AccessibilityStatementPage() {
 
         {/* Guidelines for Visually Impaired Users */}
         <Card className="mb-8">
-          <h2 className="text-2xl font-semibold mb-6">Guidelines for Users with Visual Impairments</h2>
+          <h2 className="text-2xl font-semibold mb-6">
+            Guidelines for Users with Visual Impairments
+          </h2>
           <div className="space-y-4">
             <p className="text-gray-600 dark:text-gray-400">
-              Carbon Insight is designed to work seamlessly with assistive technologies:
+              CarbonInsight is designed to work seamlessly with assistive technologies.
             </p>
 
             <div>
               <h3 className="text-lg font-medium mb-2">Screen Reader Compatibility</h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Our platform is fully compatible with popular screen readers including NVDA (Windows),
-                JAWS (Windows), VoiceOver (macOS/iOS), and TalkBack (Android). We use semantic HTML
-                and ARIA labels to ensure all content and functionality is properly announced.
+                Our platform is fully compatible with popular screen readers including NVDA
+                (Windows), JAWS (Windows), VoiceOver (macOS/iOS), and TalkBack (Android). We use
+                semantic HTML and ARIA labels to ensure all content and functionality is properly
+                announced.
               </p>
             </div>
 
             <div>
               <h3 className="text-lg font-medium mb-2">Magnification and Zoom</h3>
               <p className="text-gray-600 dark:text-gray-400">
-                The interface remains fully functional when using browser zoom or screen magnification
-                software. Text reflows properly at higher zoom levels, and all functionality remains
-                accessible without horizontal scrolling at 200% zoom.
+                The interface remains fully functional when using browser zoom or screen
+                magnification software. Text reflows properly at higher zoom levels, and all
+                functionality remains accessible without horizontal scrolling at 200% zoom.
               </p>
             </div>
 
@@ -126,8 +126,8 @@ export default function AccessibilityStatementPage() {
               <h3 className="text-lg font-medium mb-2">High Contrast Support</h3>
               <p className="text-gray-600 dark:text-gray-400">
                 Our color scheme works well with high contrast modes, and we provide a built-in dark
-                mode option. All information conveyed through color is also available through text or
-                other visual indicators.
+                mode option. All information conveyed through color is also available through text
+                or other visual indicators.
               </p>
             </div>
           </div>
@@ -137,7 +137,7 @@ export default function AccessibilityStatementPage() {
         <Card className="mb-8">
           <h2 className="text-2xl font-semibold mb-6">Keyboard Navigation</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            You can navigate Carbon Insight entirely using your keyboard:
+            You can navigate CarbonInsight entirely using your keyboard.
           </p>
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -204,13 +204,11 @@ export default function AccessibilityStatementPage() {
         <Card className="mb-8">
           <h2 className="text-2xl font-semibold mb-6">Known Limitations</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Despite our best efforts to ensure accessibility, some areas may have limitations:
+            Despite our best efforts to ensure accessibility, some areas may have limitations.
           </p>
           <div className="space-y-3">
             <div>
-              <h3 className="font-medium text-gray-900 dark:text-white">
-                Data Visualizations
-              </h3>
+              <h3 className="font-medium text-gray-900 dark:text-white">Data Visualizations</h3>
               <p className="text-gray-600 dark:text-gray-400">
                 Some complex charts may not have complete text alternatives yet. We're working on
                 providing accessible data tables as alternatives.
@@ -237,13 +235,14 @@ export default function AccessibilityStatementPage() {
         <Card className="mb-8">
           <h2 className="text-2xl font-semibold mb-6">Feedback and Contact</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            We welcome your feedback on the accessibility of Carbon Insight. Please let us know if
+            We welcome your feedback on the accessibility of CarbonInsight. Please let us know if
             you encounter accessibility barriers:
           </p>
           <div className="bg-gray-50 dark:bg-gray-800 rounded-md p-4">
             <p className="font-medium mb-2">Accessibility Support:</p>
             <p className="text-gray-600 dark:text-gray-400">
-              Email: <a 
+              Email:{" "}
+              <a
                 href={`mailto:${contactEmail}`}
                 className="text-red hover:text-red-700 underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 rounded"
               >
@@ -269,10 +268,20 @@ export default function AccessibilityStatementPage() {
         <Card>
           <h2 className="text-2xl font-semibold mb-6">Technical Specifications</h2>
           <div className="space-y-2 text-gray-600 dark:text-gray-400">
-            <p><strong>Accessibility Standard:</strong> WCAG 2.1 Level AA</p>
-            <p><strong>Last Updated:</strong> {mounted ? lastUpdated : "Loading..."}</p>
-            <p><strong>Technologies:</strong> HTML5, WAI-ARIA 1.2, CSS3, JavaScript (ECMAScript 2015+), React 19</p>
-            <p><strong>Assessment Methods:</strong> Automated testing (axe DevTools), manual testing, screen reader testing</p>
+            <p>
+              <strong>Accessibility Standard:</strong> WCAG 2.1 Level AA
+            </p>
+            <p>
+              <strong>Last Updated:</strong> {mounted ? lastUpdated : "Loading..."}
+            </p>
+            <p>
+              <strong>Technologies:</strong> HTML5, WAI-ARIA 1.2, CSS3, JavaScript (ECMAScript
+              2015+), React 19
+            </p>
+            <p>
+              <strong>Assessment Methods:</strong> Automated testing (axe DevTools), manual testing,
+              screen reader testing
+            </p>
           </div>
         </Card>
 

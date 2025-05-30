@@ -76,9 +76,6 @@ body {
   outline: none;
 }
 
-/* Keep original link styles - no underlines, original colors */
-/* Links use the original styles from your design */
-
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   :root {

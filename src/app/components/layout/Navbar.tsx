@@ -201,7 +201,7 @@ export default function Navbar() {
             <Link
               href="/"
               className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red rounded-md"
-              aria-label="Carbon Insight - Home"
+              aria-label="CarbonInsight - Home"
             >
               <Image
                 src="/brainport-logo-white.webp"
@@ -217,7 +217,7 @@ export default function Navbar() {
                 height={32}
                 className="block dark:hidden"
               />
-              <span className="text-xl font-bold ml-1 mr-4">Carbon Insight</span>
+              <span className="text-xl font-bold ml-1 mr-4">CarbonInsight</span>
             </Link>
           </div>
 

@@ -1,32 +1,17 @@
-export default function LoadingSkeleton({
-  count = 3,
-  message = "Loading content, please wait...",
-  className = "",
-}: {
-  count?: number;
-  message?: string;
-  className?: string;
-}) {
+export default function LoadingSkeleton() {
   return (
     <div
-      className={`space-y-4 ${className}`}
+      className="flex items-center justify-center min-h-[200px]"
       role="status"
-      aria-busy="true"
       aria-live="polite"
-      aria-label={message}
     >
-      <span className="sr-only">{message}</span>
-      {[...Array(count)].map((_, i) => (
+      <div className="text-center">
         <div
-          key={i}
-          className="h-20 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse"
+          className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-red"
           aria-hidden="true"
-        >
-          <span className="sr-only">
-            Loading item {i + 1} of {count}
-          </span>
-        </div>
-      ))}
+        ></div>
+        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Loading...</p>
+      </div>
     </div>
   );
 }

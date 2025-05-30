@@ -6,9 +6,8 @@ import Button from "../components/ui/Button";
 import Link from "next/link";
 
 export default function PrivacyPage() {
-  // Fix hydration error by only rendering date on client
   const [mounted, setMounted] = useState(false);
-  const lastUpdated = "December 2024";
+  const lastUpdated = "May 2024";
 
   useEffect(() => {
     setMounted(true);
@@ -29,7 +28,7 @@ export default function PrivacyPage() {
         <h2 className="text-2xl font-semibold mb-6">Information We Collect</h2>
         <div className="space-y-4 text-gray-600 dark:text-gray-400">
           <p>
-            We collect information necessary to provide our carbon footprint calculation services:
+            We collect information necessary to provide our carbon footprint calculation services.
           </p>
 
           <div>
@@ -69,14 +68,14 @@ export default function PrivacyPage() {
       <Card className="mb-8">
         <h2 className="text-2xl font-semibold mb-6">How We Use Your Information</h2>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
-          Your information enables us to provide comprehensive carbon footprint services:
+          Your information enables us to provide comprehensive carbon footprint services.
         </p>
         <p className="text-gray-600 dark:text-gray-400">
           We use your data to calculate product carbon footprints, generate Digital Product
           Passports, and facilitate secure data sharing between supply chain partners. This
-          information helps us improve our services, develop new features, and communicate
-          important updates. We also use it to ensure platform security, prevent fraud, and
-          comply with legal obligations.
+          information helps us improve our services, develop new features, and communicate important
+          updates. We also use it to ensure platform security, prevent fraud, and comply with legal
+          obligations.
         </p>
       </Card>
 
@@ -85,7 +84,7 @@ export default function PrivacyPage() {
         <div className="space-y-4 text-gray-600 dark:text-gray-400">
           <p>
             <strong>We do not sell your personal or business data.</strong> We share information
-            only in these specific circumstances:
+            only in these specific circumstances.
           </p>
 
           <div>
@@ -112,9 +111,7 @@ export default function PrivacyPage() {
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               Legal Requirements
             </h3>
-            <p>
-              We may disclose information when required by law or to protect rights and safety.
-            </p>
+            <p>We may disclose information when required by law or to protect rights and safety.</p>
           </div>
         </div>
       </Card>
@@ -122,22 +119,20 @@ export default function PrivacyPage() {
       <Card className="mb-8">
         <h2 className="text-2xl font-semibold mb-6">Data Security</h2>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
-          We implement industry-standard security measures to protect your data:
+          We implement industry-standard security measures to protect your data.
         </p>
         <p className="text-gray-600 dark:text-gray-400">
           All data is encrypted in transit using HTTPS and at rest using modern encryption
           standards. We maintain secure authentication with session management, conduct regular
-          security audits, and provide comprehensive employee training. Our infrastructure is
-          hosted on secure, EU-based cloud servers with robust access controls.
+          security audits, and provide comprehensive employee training. Our infrastructure is hosted
+          on secure, EU-based cloud servers with robust access controls.
         </p>
       </Card>
 
       <Card className="mb-8">
         <h2 className="text-2xl font-semibold mb-6">Your Rights Under GDPR</h2>
         <div className="space-y-4 text-gray-600 dark:text-gray-400">
-          <p>
-            You have comprehensive rights regarding your personal data:
-          </p>
+          <p>You have comprehensive rights regarding your personal data.</p>
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
@@ -145,9 +140,7 @@ export default function PrivacyPage() {
               <p className="text-sm">Request a copy of your data in a portable format</p>
             </div>
             <div>
-              <h3 className="font-medium text-gray-900 dark:text-white">
-                Rectification & Erasure
-              </h3>
+              <h3 className="font-medium text-gray-900 dark:text-white">Rectification & Erasure</h3>
               <p className="text-sm">Correct inaccurate data or request complete deletion</p>
             </div>
             <div>
@@ -175,14 +168,14 @@ export default function PrivacyPage() {
       <Card className="mb-8">
         <h2 className="text-2xl font-semibold mb-6">Data Retention</h2>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
-          We retain your data only as long as necessary:
+          We retain your data only as long as necessary.
         </p>
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
           <p className="text-gray-600 dark:text-gray-400">
             Account data is kept until you delete your account. Product and emissions data is
-            retained for 5 years after last modification to support historical reporting. Usage
-            logs are kept for 12 months for security and performance analysis. Any data required
-            for legal compliance is retained as mandated by law.
+            retained for 5 years after last modification to support historical reporting. Usage logs
+            are kept for 12 months for security and performance analysis. Any data required for
+            legal compliance is retained as mandated by law.
           </p>
         </div>
       </Card>
@@ -191,9 +184,9 @@ export default function PrivacyPage() {
         <h2 className="text-2xl font-semibold mb-6">Cookies and Tracking</h2>
         <p className="text-gray-600 dark:text-gray-400">
           We use only essential cookies necessary for the service to function properly. These
-          include authentication tokens for secure login, user preferences for theme and
-          language settings, and security tokens for CSRF protection. We do not use tracking
-          cookies or third-party analytics services.
+          include authentication tokens for secure login, user preferences for theme and language
+          settings, and security tokens for CSRF protection. We do not use tracking cookies or
+          third-party analytics services.
         </p>
       </Card>
 
@@ -202,9 +195,7 @@ export default function PrivacyPage() {
         <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg space-y-3">
           <div>
             <p className="font-medium text-gray-900 dark:text-white">Data Controller</p>
-            <p className="text-gray-600 dark:text-gray-400">
-              Brainport Industries / TU Eindhoven
-            </p>
+            <p className="text-gray-600 dark:text-gray-400">Brainport Industries / TU Eindhoven</p>
           </div>
           <div>
             <p className="font-medium text-gray-900 dark:text-white">Email</p>
@@ -234,8 +225,8 @@ export default function PrivacyPage() {
       <Card>
         <h2 className="text-2xl font-semibold mb-6">Updates to This Policy</h2>
         <p className="text-gray-600 dark:text-gray-400">
-          We may update this privacy policy from time to time. We will notify you of any changes
-          by posting the new policy on this page and updating the "Last Updated" date. Significant
+          We may update this privacy policy from time to time. We will notify you of any changes by
+          posting the new policy on this page and updating the "Last Updated" date. Significant
           changes will be communicated via email to all registered users.
         </p>
       </Card>

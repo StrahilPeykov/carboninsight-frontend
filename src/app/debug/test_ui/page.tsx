@@ -17,7 +17,7 @@ export default function UITestPage() {
         <button onClick={() => setState("success")}>Success</button>
       </div>
 
-      {state === "loading" && <LoadingSkeleton count={3} />}
+      {state === "loading" && <LoadingSkeleton />}
       {state === "error" && <ErrorBanner error="Something went wrong!" />}
       {state === "empty" && <EmptyState message="Nothing to display." />}
       {state === "success" && <div className="text-green-600">✅ Everything is working!</div>}

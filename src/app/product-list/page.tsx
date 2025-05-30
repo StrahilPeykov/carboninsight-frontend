@@ -1,4 +1,3 @@
-// src/app/product-list/page.tsx
 "use client";
 
 import Card from "../components/ui/Card";
@@ -14,8 +13,8 @@ import ReactMarkdown from "react-markdown";
 import ExportModal from "../components/ui/ExportModal";
 
 // Set page title
-if (typeof document !== 'undefined') {
-  document.title = "Products - Carbon Insight";
+if (typeof document !== "undefined") {
+  document.title = "Products - CarbonInsight";
 }
 
 // Types
@@ -52,7 +51,7 @@ export default function ProductListPage() {
   const [mounted, setMounted] = useState(false);
 
   // UI modes
-  const [editMode, setEditMode] = useState(false);
+  const [editMode, setEditMode] = useState(false); // AI-selection toggle
 
   // Export
   const [showExportModal, setShowExportModal] = useState(false);
@@ -109,7 +108,7 @@ export default function ProductListPage() {
     try {
       setDataLoading(true);
       setError("");
-      
+
       // Announce loading to screen readers
       const liveRegion = document.getElementById("live-announcements");
       if (liveRegion) {
@@ -136,14 +135,14 @@ export default function ProductListPage() {
 
       const data = await res.json();
       setProducts(data);
-      
+
       // Announce completion
       if (liveRegion) {
         liveRegion.textContent = `${data.length} products loaded`;
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
-      
+
       // Announce error
       const urgentRegion = document.getElementById("live-urgent");
       if (urgentRegion) {
@@ -177,18 +176,22 @@ export default function ProductListPage() {
   }, [searchQuery, companyId, mounted]);
 
   // CRUD actions
+
+  // Opens the "type-to-confirm" modal
   const handleDelete = (id: string) => {
     const prod = products.find(p => p.id === id) ?? null;
     setToDeleteProduct(prod);
     setConfirmInput("");
   };
 
+  // Actually calls DELETE once confirmed
   const confirmDelete = async () => {
     if (!toDeleteProduct) return;
     setIsDeleting(true);
     try {
       const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-      const company_pk = typeof window !== "undefined" ? localStorage.getItem("selected_company_id") : null;
+      const company_pk =
+        typeof window !== "undefined" ? localStorage.getItem("selected_company_id") : null;
       if (!token || !company_pk) {
         router.push("/login");
         return;
@@ -202,7 +205,7 @@ export default function ProductListPage() {
         throw new Error(errData?.detail || "Failed to delete product");
       }
       setProducts(prev => prev.filter(p => p.id !== toDeleteProduct.id));
-      
+
       // Announce deletion
       const liveRegion = document.getElementById("live-announcements");
       if (liveRegion) {
@@ -237,7 +240,8 @@ export default function ProductListPage() {
   const handleRequestProductAdvice = async (productId: string, prompt: string) => {
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-    const company = typeof window !== "undefined" ? localStorage.getItem("selected_company_id") : null;
+    const company =
+      typeof window !== "undefined" ? localStorage.getItem("selected_company_id") : null;
 
     if (!API_URL || !token || !company) return;
 
@@ -289,7 +293,7 @@ export default function ProductListPage() {
   if (isLoading || !mounted) {
     return (
       <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <LoadingSkeleton count={3} />
+        <LoadingSkeleton />
       </div>
     );
   }
@@ -370,23 +374,32 @@ export default function ProductListPage() {
             <span className="ml-3 text-gray-500">Loading products...</span>
           </div>
         ) : error ? (
-          <p className="text-red-500" role="alert">{error}</p>
+          <p className="text-red-500" role="alert">
+            {error}
+          </p>
         ) : (
           <>
             {/* Desktop and tablet table */}
             <div className="hidden sm:block overflow-x-auto">
               <table className="min-w-full table-auto text-base">
                 <caption className="sr-only">
-                  Products table showing manufacturer, product name, SKU, status, PCF calculation method, and carbon footprint
+                  Products table showing manufacturer, product name, SKU, status, PCF calculation
+                  method, and carbon footprint
                 </caption>
                 <thead>
                   <tr className="text-left border-b">
-                    <th scope="col" className="p-2">Manufacturer</th>
-                    <th scope="col" className="p-2">Product name</th>
+                    <th scope="col" className="p-2">
+                      Manufacturer
+                    </th>
+                    <th scope="col" className="p-2">
+                      Product name
+                    </th>
                     <th scope="col" className="p-2">
                       <abbr title="Stock Keeping Unit">SKU</abbr>
                     </th>
-                    <th scope="col" className="p-2">Status</th>
+                    <th scope="col" className="p-2">
+                      Status
+                    </th>
                     <th scope="col" className="p-2">
                       <abbr title="Product Carbon Footprint">PCF</abbr> calculation method
                     </th>
@@ -394,7 +407,9 @@ export default function ProductListPage() {
                       <abbr title="Product Carbon Footprint">PCF</abbr>
                       <span className="sr-only"> in kilograms CO2 equivalent</span>
                     </th>
-                    <th scope="col" className="p-2">Actions</th>
+                    <th scope="col" className="p-2">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
 
@@ -522,10 +537,12 @@ export default function ProductListPage() {
                   </div>
                   <div className="text-sm text-gray-600 space-y-1">
                     <p>Manufacturer: {product.manufacturer_name}</p>
-                    <p><abbr title="Stock Keeping Unit">SKU</abbr>: {product.sku}</p>
+                    <p>
+                      <abbr title="Stock Keeping Unit">SKU</abbr>: {product.sku}
+                    </p>
                     <p>Method: {product.pcf_calculation_method}</p>
                     <p className="flex items-center gap-1">
-                      <abbr title="Product Carbon Footprint">PCF</abbr>: 
+                      <abbr title="Product Carbon Footprint">PCF</abbr>:
                       <span aria-label={`${product.emission_total} kilograms CO2 equivalent`}>
                         {product.emission_total}
                       </span>
@@ -648,7 +665,7 @@ export default function ProductListPage() {
         />
       )}
 
-      {/* AI modal */}
+      {/* AI modal (confirm → loading → result) */}
       {aiModalStep && (
         <Modal
           title={

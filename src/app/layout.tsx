@@ -1,4 +1,3 @@
-// src/app/layout.tsx
 import type { Metadata } from "next";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
@@ -6,8 +5,9 @@ import { AuthProvider } from "./context/AuthContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Carbon Insight - Product Carbon Footprint Calculator",
-  description: "Calculate your product carbon footprint and generate Digital Product Passports compliant with AAS standards",
+  title: "CarbonInsight - Product Carbon Footprint Calculator",
+  description:
+    "Calculate your product carbon footprint and generate Digital Product Passports compliant with AAS standards",
   keywords: "carbon footprint, PCF, digital product passport, DPP, sustainability, AAS",
 };
 
@@ -36,20 +36,10 @@ export default function RootLayout({
         </AuthProvider>
 
         {/* Live region for important announcements */}
-        <div 
-          aria-live="polite" 
-          aria-atomic="true" 
-          className="sr-only"
-          id="live-announcements"
-        />
-        
+        <div aria-live="polite" aria-atomic="true" className="sr-only" id="live-announcements" />
+
         {/* Live region for urgent announcements like errors */}
-        <div 
-          aria-live="assertive" 
-          aria-atomic="true" 
-          className="sr-only"
-          id="live-urgent"
-        />
+        <div aria-live="assertive" aria-atomic="true" className="sr-only" id="live-urgent" />
       </body>
     </html>
   );

@@ -1,12 +1,10 @@
 import { Metadata } from "next";
 
-const baseTitle = "Carbon Insight";
-const baseDescription = "Calculate your product carbon footprint and generate Digital Product Passports";
+const baseTitle = "CarbonInsight";
+const baseDescription =
+  "Calculate your product carbon footprint and generate Digital Product Passports";
 
-export function generateMetadata(
-  pageTitle: string,
-  pageDescription?: string
-): Metadata {
+export function generateMetadata(pageTitle: string, pageDescription?: string): Metadata {
   return {
     title: `${pageTitle} | ${baseTitle}`,
     description: pageDescription || baseDescription,

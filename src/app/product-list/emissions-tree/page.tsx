@@ -169,7 +169,7 @@ function EmissionsTreePageContent() {
   if (isLoading || dataLoading) {
     return (
       <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <LoadingSkeleton count={3} />
+        <LoadingSkeleton />
       </div>
     );
   }
@@ -242,7 +242,7 @@ export default function EmissionsTreePage() {
     <Suspense
       fallback={
         <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <LoadingSkeleton count={3} />
+          <LoadingSkeleton />
         </div>
       }
     >

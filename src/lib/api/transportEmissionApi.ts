@@ -1,11 +1,12 @@
 import { apiRequest } from "./apiClient";
-import { OverrideFactor } from "./materialEmissionApi";
+import { OverrideFactor, LifecycleStage } from "./materialEmissionApi";
 
 export interface TransportEmission {
   id: number;
   distance: number;
   weight: number;
   reference: number;
+  reference_details: ReferenceDetails;
   override_factors: OverrideFactor[];
   line_items: number[];
 }
@@ -14,7 +15,8 @@ export interface CreateTransportEmission {
   distance: number;
   weight: number;
   reference: number;
-  override_factors: OverrideFactor[];
+  override_factors?: OverrideFactor[];
+  line_items?: number[];
 }
 
 export interface UpdateTransportEmission {
@@ -22,6 +24,40 @@ export interface UpdateTransportEmission {
   weight?: number;
   reference?: number;
   override_factors?: OverrideFactor[];
+}
+
+export interface TransportEmissionSchema {
+  actions: {
+    POST: {
+      override_factors?: {
+        child?: {
+          children?: {
+            lifecycle_stage?: {
+              choices: LifecycleStageChoice[];
+            };
+          };
+        };
+      };
+    };
+  };
+}
+
+export interface ReferenceDetails {
+  id: number;
+  name: string;
+  emission_factors: EmissionFactor[];
+}
+
+export interface EmissionFactor {
+  id: number;
+  lifecycle_stage: LifecycleStage;
+  co_2_emission_factor_biogenic: number;
+  co_2_emission_factor_non_biogenic: number;
+}
+
+interface LifecycleStageChoice {
+  value: string;
+  display_name: string;
 }
 
 export const transportEmissionApi = {
@@ -51,6 +87,14 @@ export const transportEmissionApi = {
       `/companies/${company_id}/products/${product_id}/emissions/transport/${emission_id}/`,
       {
         method: "GET",
+      }
+    ),
+
+  getTransportEmissionOptions: (company_id: number, product_id: number) =>
+    apiRequest<TransportEmissionSchema>(
+      `/companies/${company_id}/products/${product_id}/emissions/transport/`,
+      {
+        method: "OPTIONS",
       }
     ),
 

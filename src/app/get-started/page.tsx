@@ -28,7 +28,7 @@ export default function GetStartedPage() {
       } else {
         setSelectedFile(null);
         setFileError(
-          `Invalid file format: .${fileExtension}. Please upload a .json, .csv, .xlsx, or .aasx file.`
+          `Invalid file format: .${fileExtension}. Please upload a .json, .csv, or .xlsx file.`
         );
       }
     }

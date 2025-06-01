@@ -17,7 +17,7 @@ export class ApiError extends Error {
 }
 
 // Types
-export type RequestMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+export type RequestMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS";
 
 export interface RequestOptions<T = Record<string, unknown>> {
   method?: RequestMethod;

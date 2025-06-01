@@ -183,7 +183,8 @@ export default function LoginPage() {
               id="username"
               name="username"
               type="email"
-              autoComplete="email"
+              autoComplete="username email"
+              inputMode="email"
               required
               aria-required="true"
               aria-invalid={!!error}
@@ -252,13 +253,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isLoading}
-            loading={isLoading}
-            ariaLabel="Sign in to your account"
-          >
+          <Button type="submit" className="w-full" disabled={isLoading} loading={isLoading}>
             {isLoading ? "Signing in..." : "Login"}
           </Button>
         </form>

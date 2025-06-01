@@ -22,6 +22,7 @@ const Transportation = dynamic(() => import("./tabs/transportation"), { ssr: fal
 
 import Card from "@/app/components/ui/Card";
 import Button from "@/app/components/ui/Button";
+import PopupModal from "@/app/components/ui/PopupModal";
 import { useRouter } from "next/navigation";
 import { Mode } from "./enums";
 
@@ -101,7 +102,7 @@ export default function ProductClientPage() {
       label: "Bill of Materials",
       Comp: BillOfMaterials,
       saved: false,
-      disabled: true, // disabled until productInfo is saved
+      disabled: true,
       errorBannerText: "",
     },
     {
@@ -110,7 +111,7 @@ export default function ProductClientPage() {
       label: "Production Energy",
       Comp: ProductionEnergy,
       saved: false,
-      disabled: true, // disabled until productInfo is saved
+      disabled: true,
       errorBannerText: "",
     },
     {
@@ -119,7 +120,7 @@ export default function ProductClientPage() {
       label: "User Energy",
       Comp: UserEnergy,
       saved: false,
-      disabled: true, // disabled until productInfo is saved
+      disabled: true,
       errorBannerText: "",
     },
     {
@@ -128,17 +129,16 @@ export default function ProductClientPage() {
       label: "Transportation",
       Comp: Transportation,
       saved: false,
-      disabled: true, // disabled until productInfo is saved
+      disabled: true,
       errorBannerText: "",
     },
   ]);
 
   const [activeTab, setActiveTab] = useState(0);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleAddProduct = () => {
-    if (tabConfig.every(tab => tab.saved)) {
-      console.log("All sections saved — final submit");
-    } else {
+    if (!tabConfig.every(tab => tab.saved)) {
       setTabConfig(cfg =>
         cfg.map((t, i) =>
           i === activeTab
@@ -146,8 +146,10 @@ export default function ProductClientPage() {
             : t
         )
       );
+      return;
     }
-    router.push("/product-list");
+    // all sections are saved → open the success modal
+    setShowSuccessModal(true);
   };
 
   const onTabSaved = async (tabKey: string) => {
@@ -173,37 +175,37 @@ export default function ProductClientPage() {
 
   const onNext = async () => {
     let errorMessage: string = "Failed to save. Please try again.";
-    // deligate to the tab component
+    // delegate to the tab component
     switch (tabConfig[activeTab].key) {
       case "productInfo":
         errorMessage =
           (await (mode == Mode.ADD
             ? productInfoRef.current?.saveTab()
-            : productInfoRef.current?.updateTab())) ?? "Failed to save. Please try again.";
+            : productInfoRef.current?.updateTab())) ?? errorMessage;
         break;
       case "billOfMaterials":
         errorMessage =
           (await (mode == Mode.ADD
             ? billOfMaterialsRef.current?.saveTab()
-            : billOfMaterialsRef.current?.updateTab())) ?? "Failed to save. Please try again.";
+            : billOfMaterialsRef.current?.updateTab())) ?? errorMessage;
         break;
       case "productionEnergy":
         errorMessage =
           (await (mode == Mode.ADD
             ? productionEnergyRef.current?.saveTab()
-            : productionEnergyRef.current?.updateTab())) ?? "Failed to save. Please try again.";
+            : productionEnergyRef.current?.updateTab())) ?? errorMessage;
         break;
       case "userEnergy":
         errorMessage =
           (await (mode == Mode.ADD
             ? userEnergyRef.current?.saveTab()
-            : userEnergyRef.current?.updateTab())) ?? "Failed to save. Please try again.";
+            : userEnergyRef.current?.updateTab())) ?? errorMessage;
         break;
       case "transportation":
         errorMessage =
           (await (mode == Mode.ADD
             ? transportationRef.current?.saveTab()
-            : transportationRef.current?.updateTab())) ?? "Failed to save. Please try again.";
+            : transportationRef.current?.updateTab())) ?? errorMessage;
         break;
     }
 
@@ -301,6 +303,28 @@ export default function ProductClientPage() {
               {mode == Mode.ADD ? "Add Product" : "Update Product"}
             </Button>
           </div>
+
+          {/* Success Modal */}
+          {showSuccessModal && (
+            <PopupModal
+              title="Product added successfully!"
+              onClose={() => {
+                setShowSuccessModal(false);
+                router.push("/product-list");
+              }}
+            >
+              <p>Your new product has been added.</p>
+              <Button
+                className="mt-4"
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  router.push("/product-list");
+                }}
+              >
+                OK
+              </Button>
+            </PopupModal>
+          )}
         </Card>
       </div>
     </Suspense>

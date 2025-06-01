@@ -135,6 +135,7 @@ export default function CompanyDetailsPage() {
             <input
               id="name"
               name="name"
+              autoComplete="organization"
               value={formData.name}
               onChange={handleChange}
               required
@@ -149,6 +150,7 @@ export default function CompanyDetailsPage() {
             <input
               id="vat_number"
               name="vat_number"
+              autoComplete="off"
               value={formData.vat_number}
               onChange={handleChange}
               className="mt-1 p-2 w-full border rounded focus:ring focus:ring-green-300"
@@ -164,6 +166,7 @@ export default function CompanyDetailsPage() {
             <input
               id="business_registration_number"
               name="business_registration_number"
+              autoComplete="off"
               value={formData.business_registration_number}
               onChange={handleChange}
               className="mt-1 p-2 w-full border rounded focus:ring focus:ring-green-300"

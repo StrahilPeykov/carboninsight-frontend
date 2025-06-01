@@ -12,6 +12,7 @@ import { productApi, Product } from "@/lib/api/productApi";
 import { Mode } from "../enums";
 import { on } from "events";
 
+
 export type Material = {
   id: number;
   productName: string;
@@ -40,6 +41,9 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
     const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [newQuantity, setNewQuantity] = useState<string>("1");
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [deleteMaterial, setDeleteMaterial] = useState<Material|null>(null);
+    const [mainProduct, setMainProduct] = useState<Product|null>(null);
 
     let company_pk_string = localStorage.getItem("selected_company_id");
 
@@ -123,6 +127,18 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
         fetchProducts(selectedCompany.id, searchProduct);
       }
     }, [selectedCompany, searchProduct, currentStep]);
+
+    useEffect(() => {
+      const fetchMain = async () => {
+        try {
+          const prod = await productApi.getProduct(company_pk_string, productId_string);
+          setMainProduct(prod);
+        } catch (e) {
+          console.error("Error loading main product", e);
+        }
+    };
+    fetchMain();
+},  [company_pk_string, productId_string]);
 
     const handleDelete = async (id: number) => {
       try {
@@ -310,6 +326,28 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
       }
     };
 
+    function openDeleteModal(item: Material) {
+      setDeleteMaterial(item);
+      setIsDeleteModalOpen(true);
+    }
+    function closeDeleteModal() {
+      setDeleteMaterial(null);
+      setIsDeleteModalOpen(false);
+    }
+    async function confirmDelete() {
+      if (!deleteMaterial) return;
+      try {
+        await bomApi.deleteLineItem(company_pk, productId(), deleteMaterial.id);
+        // update list and notify parent
+        setMaterials(mats => mats.filter(m => m.id !== deleteMaterial.id));
+        onFieldChange();
+      } catch (e) {
+        console.error("Delete failed", e);
+      } finally {
+        closeDeleteModal();
+      }
+    }
+
     return (
       <>
         <div>
@@ -334,7 +372,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
                       <Edit className="w-4 h-4 text-blue-500" />
                     </button>
                     <button
-                      onClick={() => handleDelete(material.id)}
+                      onClick={() => openDeleteModal(material)}
                       className="p-1 hover:bg-gray-100 rounded-full"
                     >
                       <Trash className="w-4 h-4 text-red-500" />
@@ -462,7 +500,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
                         <Edit className="w-4 h-4 text-blue-500" />
                       </button>
                       <button
-                        onClick={() => handleDelete(material.id)}
+                        onClick={() => openDeleteModal(material)}
                         className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
                       >
                         <Trash className="w-4 h-4 text-red-500" />
@@ -703,6 +741,29 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
                     Update Quantity
                   </Button>
                 </div>
+              </div>
+            </Card>
+          </div>
+        )}
+        {/* Delete Confirmation Modal */}
+        {isDeleteModalOpen && deleteMaterial && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-30">
+            <Card className="w-11/12 max-w-md p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold">Confirm Deletion</h3>
+                <button onClick={closeDeleteModal} className="p-1 rounded-full hover:bg-gray-100">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <p className="mb-6">
+                Are you sure you want to delete
+                <span className="font-medium"> {deleteMaterial.productName} </span>
+                from
+                <span className="font-medium"> {mainProduct?.name} </span>?
+              </p>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={closeDeleteModal}>Cancel</Button>
+                <Button variant="primary" onClick={confirmDelete}>Delete</Button>
               </div>
             </Card>
           </div>

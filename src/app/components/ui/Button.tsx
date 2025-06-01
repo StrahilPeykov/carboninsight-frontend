@@ -50,15 +50,12 @@ export default function Button({
   const focusVisibleStyles =
     "focus:not(:focus-visible):ring-0 focus:not(:focus-visible):ring-offset-0";
 
-  // Ensure we have an accessible label
-  const accessibleLabel = ariaLabel || (typeof children === "string" ? children : undefined);
-
   return (
     <button
       type={type}
       className={`${baseStyles} ${variantStyles[variant]} ${variant !== "icon" ? sizeStyles[size] : ""} ${focusVisibleStyles} ${className}`}
       disabled={disabled || loading}
-      aria-label={accessibleLabel}
+      aria-label={ariaLabel}
       aria-pressed={ariaPressed}
       aria-expanded={ariaExpanded}
       aria-controls={ariaControls}
@@ -73,7 +70,6 @@ export default function Button({
           <span className="loading-spinner mr-2" aria-hidden="true" />
         </>
       )}
-      {variant === "icon" && !accessibleLabel && <span className="sr-only">Button action</span>}
       {children}
     </button>
   );

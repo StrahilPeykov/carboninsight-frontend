@@ -110,6 +110,7 @@ export default function CreateCompanyPage() {
               type="text"
               id="name"
               name="name"
+              autoComplete="organization"
               value={formData.name}
               onChange={handleChange}
               required
@@ -132,6 +133,7 @@ export default function CreateCompanyPage() {
               type="text"
               id="vat_number"
               name="vat_number"
+              autoComplete="off"
               value={formData.vat_number}
               onChange={handleChange}
               required
@@ -156,6 +158,7 @@ export default function CreateCompanyPage() {
               type="text"
               id="business_registration_number"
               name="business_registration_number"
+              autoComplete="off"
               value={formData.business_registration_number}
               onChange={handleChange}
               required

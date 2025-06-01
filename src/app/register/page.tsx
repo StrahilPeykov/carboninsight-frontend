@@ -174,6 +174,7 @@ export default function RegisterPage() {
               name="email"
               type="email"
               autoComplete="email"
+              inputMode="email"
               required
               aria-required="true"
               aria-invalid={!!error}

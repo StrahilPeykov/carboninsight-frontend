@@ -4,11 +4,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer
-      className="bg-white dark:bg-gray-900 mt-auto"
-      role="contentinfo"
-      aria-label="Site footer"
-    >
+    <footer className="bg-white dark:bg-gray-900 mt-auto" aria-label="Site footer">
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
           {/* Footer Links */}
@@ -16,10 +12,7 @@ export default function Footer() {
             className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 mb-4"
             aria-label="Footer navigation"
           >
-            <ul
-              className="flex flex-wrap justify-center sm:justify-start space-x-6 text-sm list-none"
-              role="list"
-            >
+            <ul className="flex flex-wrap justify-center sm:justify-start space-x-6 text-sm list-none">
               <li>
                 <Link
                   href="/support"

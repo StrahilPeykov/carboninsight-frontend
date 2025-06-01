@@ -29,17 +29,19 @@ export default function RootLayout({
 
         <AuthProvider>
           <Navbar />
-          <main id="main-content" className="flex-grow" role="main" tabIndex={-1}>
+          <main id="main-content" className="flex-grow" tabIndex={-1}>
             {children}
           </main>
           <Footer />
         </AuthProvider>
 
-        {/* Live region for important announcements */}
-        <div aria-live="polite" aria-atomic="true" className="sr-only" id="live-announcements" />
-
-        {/* Live region for urgent announcements like errors */}
-        <div aria-live="assertive" aria-atomic="true" className="sr-only" id="live-urgent" />
+        {/* Consolidated live regions */}
+        <div className="sr-only" aria-live="polite" aria-atomic="true">
+          <div id="status-announcements"></div>
+        </div>
+        <div className="sr-only" aria-live="assertive" aria-atomic="true">
+          <div id="error-announcements"></div>
+        </div>
       </body>
     </html>
   );

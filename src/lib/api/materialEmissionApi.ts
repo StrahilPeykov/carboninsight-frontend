@@ -26,9 +26,10 @@ export type LifecycleStage =
   | "Other";
 
 export interface OverrideFactor {
-  id: number;
+  id?: number;
   lifecycle_stage: LifecycleStage;
-  co_2_emission_factor: number;
+  co_2_emission_factor_biogenic?: number;
+  co_2_emission_factor_non_biogenic?: number;
 }
 
 export interface MaterialEmission {

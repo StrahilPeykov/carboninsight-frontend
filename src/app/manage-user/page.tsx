@@ -133,17 +133,14 @@ export default function ManageUserPage() {
               <div className="flex w-full">
                 <Button className="invisible flex-none"> X </Button>
                 <div className="grow flex justify-center items-center px-4 text-2xl font-bold">
-                  {" "}
-                  Add User{" "}
+                  Add User
                 </div>
                 <Button className="flex-none" onClick={() => setAddingModal(false)}>
-                  {" "}
-                  X{" "}
+                  X
                 </Button>
               </div>
               <div className="w-100 max-w-full text-center">
-                {" "}
-                Type the username of the user you want to authenticate for this company.{" "}
+                Type the username of the user you want to authenticate for this company.
               </div>
               <input
                 type="text"
@@ -170,8 +167,7 @@ export default function ManageUserPage() {
               )}
 
               <Button className="w-full" onClick={() => handleAddingUser()}>
-                {" "}
-                Add User To Company{" "}
+                Add User To Company
               </Button>
             </div>
           </Card>
@@ -186,17 +182,14 @@ export default function ManageUserPage() {
               <div className="flex w-full">
                 <Button className="invisible flex-none"> X </Button>
                 <div className="grow flex justify-center items-center px-4 text-2xl font-bold">
-                  {" "}
-                  Remove User{" "}
+                  Remove User
                 </div>
                 <Button className="flex-none" onClick={() => setRemovingModal(false)}>
-                  {" "}
-                  X{" "}
+                  X
                 </Button>
               </div>
               <div className="w-100 max-w-full text-center">
-                {" "}
-                Are you sure you want to remove {userToRemove} from this company?{" "}
+                Are you sure you want to remove {userToRemove} from this company?
               </div>
               <Button
                 className="w-full"
@@ -205,8 +198,7 @@ export default function ManageUserPage() {
                   setRemovingModal(false);
                 }}
               >
-                {" "}
-                Remove User{" "}
+                Remove User
               </Button>
             </div>
           </Card>
@@ -217,8 +209,7 @@ export default function ManageUserPage() {
         <div className="font-bold text-4xl text-center w-auto"> Manage Authorized Users </div>
 
         <Button className="w-auto" onClick={() => setAddingModal(true)}>
-          {" "}
-          Add user{" "}
+          Add user
         </Button>
 
         {/* Display Removal Message */}
@@ -244,14 +235,16 @@ export default function ManageUserPage() {
                 {/* Map all users to an actual div */}
                 {dataLoading && (
                   <tr>
-                    {" "}
-                    <td className="py-3 px-6">Loading users...</td>{" "}
+                    <td className="py-3 px-6" colSpan={5}>
+                      Loading users...
+                    </td>
                   </tr>
                 )}
                 {loadingError && (
                   <tr>
-                    {" "}
-                    <td className="py-3 px-6 text-red-500">Error: {loadingError} </td>{" "}
+                    <td className="py-3 px-6 text-red-500" colSpan={5}>
+                      Error: {loadingError}
+                    </td>
                   </tr>
                 )}
                 {!dataLoading &&

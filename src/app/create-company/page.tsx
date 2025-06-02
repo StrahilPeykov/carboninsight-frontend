@@ -51,9 +51,16 @@ export default function CreateCompanyPage() {
       // Store the new company ID in localStorage using the helper function
       setLocalStorageItem("selected_company_id", newCompany.id);
 
+      // Notify navbar that company list changed
+      if (typeof window !== "undefined") {
+        console.log("Company created - dispatching events");
+        window.dispatchEvent(new CustomEvent("companyListChanged"));
+        window.dispatchEvent(new CustomEvent("companyChanged"));
+      }
+
       // Redirect after a short delay to show the success message
       setTimeout(() => {
-        router.push("/company-details");
+        router.push("/dashboard");
       }, 2000);
     } catch (err) {
       console.error("Error creating company:", err);

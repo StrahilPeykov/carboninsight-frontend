@@ -74,6 +74,13 @@ export default function CompanyDetailsPage() {
         business_registration_number: formData.business_registration_number.trim(),
       });
       setSuccessMessage("Company data successfully edited!");
+      
+      // Notify navbar that company data changed (name might have changed)
+      if (typeof window !== "undefined") {
+        console.log("Company updated - dispatching events");
+        window.dispatchEvent(new CustomEvent("companyListChanged"));
+        window.dispatchEvent(new CustomEvent("companyChanged"));
+      }
     } catch (err) {
       if (err instanceof ApiError && err.data) {
         setFieldErrors(err.data as { [key: string]: string[] });
@@ -98,9 +105,30 @@ export default function CompanyDetailsPage() {
     setIsDeleting(true);
     setError("");
     try {
+      console.log("About to delete company:", companyId);
       await companyApi.deleteCompany(companyId);
-      router.push("/list-companies");
+      console.log("Company deleted successfully");
+      
+      // Clear the selected company from localStorage first
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("selected_company_id");
+        
+        // Then dispatch events to notify navbar with a small delay
+        console.log("Company deleted - dispatching events");
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent("companyListChanged"));
+          window.dispatchEvent(new CustomEvent("companyChanged"));
+          console.log("Events dispatched");
+        }, 50);
+      }
+      
+      // Small delay to ensure events are processed before redirect
+      setTimeout(() => {
+        console.log("Redirecting to list companies");
+        router.push("/list-companies");
+      }, 200);
     } catch (err) {
+      console.error("Error deleting company:", err);
       setError((err as Error).message || "Delete failed");
     } finally {
       setIsDeleting(false);

@@ -50,6 +50,13 @@ export default function ListCompaniesPage() {
 
   const selectCompany = (companyId: string) => {
     setLocalStorageItem("selected_company_id", companyId);
+
+    // Notify navbar that company selection changed
+    if (typeof window !== "undefined") {
+      console.log("Company selected - dispatching events");
+      window.dispatchEvent(new CustomEvent("companyChanged"));
+    }
+
     router.push("/dashboard");
   };
 
@@ -140,6 +147,10 @@ export default function ListCompaniesPage() {
                       size="sm"
                       onClick={() => {
                         setLocalStorageItem("selected_company_id", company.id);
+                        // Notify navbar
+                        if (typeof window !== "undefined") {
+                          window.dispatchEvent(new CustomEvent("companyChanged"));
+                        }
                         router.push("/manage-user");
                       }}
                       className="flex items-center justify-center gap-1"
@@ -154,6 +165,10 @@ export default function ListCompaniesPage() {
                       size="sm"
                       onClick={() => {
                         setLocalStorageItem("selected_company_id", company.id);
+                        // Notify navbar
+                        if (typeof window !== "undefined") {
+                          window.dispatchEvent(new CustomEvent("companyChanged"));
+                        }
                         router.push("/product-list");
                       }}
                       className="flex items-center justify-center gap-1"
@@ -168,6 +183,10 @@ export default function ListCompaniesPage() {
                       size="sm"
                       onClick={() => {
                         setLocalStorageItem("selected_company_id", company.id);
+                        // Notify navbar
+                        if (typeof window !== "undefined") {
+                          window.dispatchEvent(new CustomEvent("companyChanged"));
+                        }
                         router.push("/product-data-sharing");
                       }}
                       className="flex items-center justify-center gap-1"

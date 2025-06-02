@@ -157,6 +157,20 @@ export default function DashboardPage() {
     if (!isLoading && mounted) {
       fetchDashboardData();
     }
+
+    // Listen for company changes to refresh data
+    const handleCompanyChange = () => {
+      console.log("Company changed, refreshing dashboard data");
+      fetchDashboardData();
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("companyChanged", handleCompanyChange);
+      
+      return () => {
+        window.removeEventListener("companyChanged", handleCompanyChange);
+      };
+    }
   }, [API_URL, isLoading, mounted]);
 
   if (isLoading || dataLoading || !mounted) {

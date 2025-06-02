@@ -89,12 +89,12 @@ export default function CleanCompanySelector({
         onClick={() => onToggle()}
         className={`flex items-center px-3 py-2 rounded-md text-sm font-medium min-h-[44px] border transition-all duration-200 min-w-[160px] max-w-[240px]
           ${currentCompany 
-            ? "bg-red-600 text-white border-red-600 hover:bg-red-700" 
+            ? "bg-red-600 text-white border-red-600 hover:bg-red-700 shadow-sm" 
             : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 border-gray-300 dark:border-gray-600"
           }`}
         aria-expanded={isOpen}
         aria-haspopup="true"
-        aria-label={`Current company: ${currentCompany?.name || "None selected"}`}
+        aria-label={`${currentCompany ? `Current company: ${currentCompany.name}. Click to change or manage company.` : "No company selected. Click to select a company."}`}
       >
         <div className="flex items-center min-w-0 flex-1">
           {currentCompany?.avatar ? (
@@ -106,9 +106,20 @@ export default function CleanCompanySelector({
           ) : (
             <Building2 size={16} className="mr-2 flex-shrink-0" aria-hidden="true" />
           )}
-          <span className="truncate" title={currentCompany?.name}>
-            {currentCompany ? truncateCompanyName(currentCompany.name, 18) : "Select Company"}
-          </span>
+          <div className="min-w-0 flex-1">
+            {currentCompany ? (
+              <>
+                <div className="truncate text-sm font-semibold" title={currentCompany.name}>
+                  {truncateCompanyName(currentCompany.name, 16)}
+                </div>
+                <div className="text-xs opacity-80 -mt-0.5">
+                  Selected Company
+                </div>
+              </>
+            ) : (
+              <span className="truncate">Select Company</span>
+            )}
+          </div>
         </div>
         <ChevronDown 
           size={14} 
@@ -125,24 +136,32 @@ export default function CleanCompanySelector({
           <div className="p-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 rounded-t-lg">
             <div className="grid grid-cols-3 gap-2">
               <button
-                onClick={() => {
-                  onCompanySettings();
-                  onClose();
+                onClick={(e) => {
+                  e.preventDefault();
+                  console.log("Settings clicked, currentCompanyId:", currentCompanyId);
+                  if (currentCompanyId) {
+                    onCompanySettings();
+                    onClose();
+                  }
                 }}
-                disabled={!currentCompany}
-                className="flex flex-col items-center p-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-white dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!currentCompanyId}
+                className="flex flex-col items-center p-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-200 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Company Settings"
               >
                 <Settings size={16} className="mb-1" />
                 <span>Settings</span>
               </button>
               <button
-                onClick={() => {
-                  onManageUsers();
-                  onClose();
+                onClick={(e) => {
+                  e.preventDefault();
+                  console.log("Users clicked, currentCompanyId:", currentCompanyId);
+                  if (currentCompanyId) {
+                    onManageUsers();
+                    onClose();
+                  }
                 }}
-                disabled={!currentCompany}
-                className="flex flex-col items-center p-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-white dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!currentCompanyId}
+                className="flex flex-col items-center p-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-200 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Manage Users"
               >
                 <Users size={16} className="mb-1" />
@@ -153,7 +172,7 @@ export default function CleanCompanySelector({
                   onCreateCompany();
                   onClose();
                 }}
-                className="flex flex-col items-center p-2 text-xs text-green-700 hover:text-green-800 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/20 rounded-md transition-colors"
+                className="flex flex-col items-center p-2 text-xs text-green-700 hover:text-green-800 hover:bg-green-100 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/30 rounded-md transition-colors"
                 title="Create New Company"
               >
                 <Plus size={16} className="mb-1" />
@@ -206,7 +225,7 @@ export default function CleanCompanySelector({
                       className={`w-full flex items-center px-3 py-2.5 text-sm rounded-md transition-colors group ${
                         company.id === currentCompanyId 
                           ? "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800" 
-                          : "text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                          : "text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
                       }`}
                     >
                       <div className="flex items-center flex-1 min-w-0">
@@ -217,7 +236,7 @@ export default function CleanCompanySelector({
                             className="w-5 h-5 rounded mr-3 flex-shrink-0"
                           />
                         ) : (
-                          <Building2 size={16} className="mr-3 flex-shrink-0 text-gray-400 group-hover:text-gray-600" />
+                          <Building2 size={16} className="mr-3 flex-shrink-0 text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200" />
                         )}
                         <span className="truncate font-medium" title={company.name}>
                           {company.name}

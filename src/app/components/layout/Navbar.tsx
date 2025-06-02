@@ -14,8 +14,10 @@ import {
   Boxes,
   HelpCircle,
   Plus,
+  Users,
 } from "lucide-react";
 import { companyApi } from "@/lib/api/companyApi";
+import { setLocalStorageItem } from "@/lib/api/apiClient";
 import CleanCompanySelector from "./CompanySelector";
 
 export default function RevisedNavbar() {
@@ -150,8 +152,11 @@ export default function RevisedNavbar() {
 
   // Enhanced company selector handlers
   const handleCompanySelect = (selectedCompanyId: string) => {
+    setLocalStorageItem("selected_company_id", selectedCompanyId);
+    
+    // Notify other components that company changed
     if (typeof window !== "undefined") {
-      localStorage.setItem("selected_company_id", selectedCompanyId);
+      console.log("Company selected - dispatching events");
       window.dispatchEvent(new CustomEvent("companyChanged"));
     }
     
@@ -166,14 +171,20 @@ export default function RevisedNavbar() {
   };
 
   const handleCompanySettings = () => {
-    router.push("/company-details");
+    if (companyId) {
+      // Ensure the selected company is set before navigating
+      setLocalStorageItem("selected_company_id", companyId);
+      router.push("/company-details");
+    }
   };
 
   const handleManageUsers = () => {
-    router.push("/manage-user");
+    if (companyId) {
+      // Ensure the selected company is set before navigating
+      setLocalStorageItem("selected_company_id", companyId);
+      router.push("/manage-user");
+    }
   };
-
-  // Generate breadcrumbs based on current path - REMOVED since user doesn't want breadcrumbs
 
   return (
     <>
@@ -435,7 +446,7 @@ export default function RevisedNavbar() {
                           }}
                           className="flex items-center text-sm text-gray-600 hover:text-gray-900 py-1"
                         >
-                          <HelpCircle size={14} className="mr-2" />
+                          <Users size={14} className="mr-2" />
                           Manage Users
                         </button>
                       </>

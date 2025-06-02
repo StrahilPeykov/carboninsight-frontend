@@ -100,15 +100,18 @@ export default function DropdownField({
 
   // 1) Derive the selected object from your string `value` prop:
 
-  return (
+return (
     <div className="space-y-1">
       <div className="flex items-center mb-1">
-        <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor={name}
+          className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
           {label} {required && <span className="text-red-500">*</span>}
         </label>
         {tooltip && (
           <div className="relative group ml-2">
-            <CircleHelp className="h-4 w-4 text-gray-400 cursor-pointer" />
+            <CircleHelp className="h-4 w-4 text-gray-400 dark:text-gray-500 cursor-pointer" />
             <span className={tooltipBaseClass}>{tooltip}</span>
           </div>
         )}
@@ -116,50 +119,70 @@ export default function DropdownField({
 
       {isLoading ? (
         <div
-          className={`relative w-full cursor-default overflow-hidden rounded-md bg-white border 
-                    border-gray-300 text-left p-2 flex items-center justify-between`}
+          className="
+            relative w-full cursor-default overflow-hidden rounded-md
+            bg-white dark:bg-gray-800
+            border border-gray-300 dark:border-gray-600
+            text-left p-2 flex items-center justify-between
+          "
         >
-          <span className="text-gray-500">{placeholder}</span>
-          <Loader2 className="h-5 w-5 text-gray-400 animate-spin" />
+          <span className="text-gray-500 dark:text-gray-400">{placeholder}</span>
+          <Loader2 className="h-5 w-5 text-gray-400 dark:text-gray-500 animate-spin" />
         </div>
       ) : (
         <Combobox
           value={selectedOptionDisplayName}
           onChange={selectedItem => {
-            // selectedItem will be the full DropdownOption object or null
-            // Call your component's onChange prop with the string value
-            onFieldChange(options.find(o => o.display_name === selectedItem)?.value || "");
-            console.log("Selected item:", selectedItem);
-            setSelectedOptionDisplayName(selectedItem != null ? selectedItem : "");
+            onFieldChange(
+              options.find(o => o.display_name === selectedItem)?.value || ""
+            );
+            setSelectedOptionDisplayName(selectedItem || "");
           }}
-          virtual={{ options: filteredOptions.map(option => option.display_name) }}
+          virtual={{ options: filteredOptions.map(o => o.display_name) }}
           onClose={() => setQuery("")}
         >
           <div className="relative mt-1 overflow-visible">
             <div
-              className={`relative w-full cursor-default overflow-hidden rounded-md bg-white border ${
-                error ? "border-red-500" : "border-gray-300"
-              } text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:border-green-500`}
+              className={`
+                relative w-full cursor-default overflow-hidden rounded-md
+                bg-white dark:bg-gray-800
+                border ${error ? "border-red-500 dark:border-red-400" : "border-gray-300 dark:border-gray-600"}
+                text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:border-red-500
+              `}
             >
               <ComboboxInput
                 id={name}
-                className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 focus:ring-0"
-                displayValue={(option_value: string) => option_value}
-                onChange={event => setQuery(event.target.value)}
+                className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 dark:text-gray-100 focus:ring-0"
+                displayValue={(v: string) => v}
+                onChange={e => setQuery(e.target.value)}
                 placeholder={placeholder}
               />
               <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
-                <ChevronDown className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                <ChevronDown className="h-5 w-5 text-gray-400 dark:text-gray-500" />
               </ComboboxButton>
             </div>
 
-            <ComboboxOptions className="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
-              {({ option: option_value }) => (
+            <ComboboxOptions
+              className="
+                absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md
+                bg-white dark:bg-gray-800
+                py-1 text-base dark:text-gray-100
+                shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-white dark:ring-opacity-10
+                focus:outline-none sm:text-sm
+              "
+            >
+              {({ option }) => (
                 <ComboboxOption
-                  value={option_value}
-                  className="relative cursor-default select-none w-full py-2 pl-3 pr-9 data-focus:bg-green-100 data-hover:bg-gray-100"
+                  key={option}
+                  value={option}
+                  className="
+                    relative cursor-default select-none w-full py-2 pl-3 pr-9
+                    data-focus:bg-red-100 dark:data-focus:bg-red
+                    data-hover:bg-gray-100 dark:data-hover:bg-gray-700
+                    text-gray-900 dark:text-gray-100
+                  "
                 >
-                  {option_value}
+                  {option}
                 </ComboboxOption>
               )}
             </ComboboxOptions>
@@ -167,7 +190,7 @@ export default function DropdownField({
         </Combobox>
       )}
 
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-red-500 dark:text-red-400">{error}</p>}
     </div>
   );
 }

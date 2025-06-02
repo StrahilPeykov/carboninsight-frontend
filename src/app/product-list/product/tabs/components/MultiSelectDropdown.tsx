@@ -37,11 +37,23 @@ export default function MultiSelectDropdown({
 
   return (
     <div className="w-full">
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        {label}
+      </label>
 
       <Listbox value={selectedValues} onChange={onChange} multiple>
         <div className="relative">
-          <Listbox.Button className="relative w-full cursor-default rounded-md bg-white border border-gray-300 py-2 pl-3 pr-10 text-left text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+          <Listbox.Button
+            className="
+              relative w-full cursor-default rounded-md
+              bg-white dark:bg-gray-800
+              border border-gray-300 dark:border-gray-600
+              py-2 pl-3 pr-10 text-left text-sm
+              text-gray-900 dark:text-gray-100
+              shadow-sm dark:shadow-none
+              focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500
+            "
+          >
             <span className="block truncate">
               {selectedValues.length > 0
                 ? options
@@ -51,7 +63,7 @@ export default function MultiSelectDropdown({
                 : placeholder}
             </span>
             <span className="absolute inset-y-0 right-0 flex items-center pr-2">
-              <ChevronDown className="h-5 w-5 text-gray-400" />
+              <ChevronDown className="h-5 w-5 text-gray-400 dark:text-gray-500" />
             </span>
           </Listbox.Button>
 
@@ -61,15 +73,27 @@ export default function MultiSelectDropdown({
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+            <Listbox.Options
+              className="
+                absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md
+                bg-white dark:bg-gray-800
+                py-1 text-sm text-gray-900 dark:text-gray-100
+                shadow-lg ring-1 ring-black dark:ring-white ring-opacity-5 dark:ring-opacity-10
+                focus:outline-none
+              "
+            >
               {options.map(option => (
                 <Listbox.Option key={option.value} value={option.value} as={Fragment}>
                   {({ active, selected }) => (
                     <li
                       className={clsx(
                         "cursor-default select-none relative py-2 pl-10 pr-4",
-                        active ? "bg-green-100" : "",
-                        selected ? "font-medium" : "font-normal"
+                        active
+                          ? "bg-red-100 dark:bg-red"
+                          : "",
+                        selected
+                          ? "font-medium text-gray-900 dark:text-gray-100"
+                          : "font-normal"
                       )}
                       onClick={() => handleToggle(option.value)}
                     >
@@ -88,7 +112,6 @@ export default function MultiSelectDropdown({
         </div>
       </Listbox>
 
-      {/* Tags / pills below the dropdown */}
       {selectedValues.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-2">
           {selectedValues.map(value => {
@@ -96,16 +119,27 @@ export default function MultiSelectDropdown({
             return (
               <span
                 key={value}
-                className="flex items-center gap-1 px-2 py-1 text-sm bg-gray-100 rounded-full"
+                className="
+                  flex items-center gap-1 px-2 py-1 text-sm
+                  bg-gray-100 dark:bg-gray-700
+                  text-gray-900 dark:text-gray-100
+                  rounded-full
+                "
               >
                 {item?.display_name || value}
-                <button onClick={() => handleToggle(value)} className="hover:text-red-600">
+                <button
+                  onClick={() => handleToggle(value)}
+                  className="hover:text-red-600 dark:hover:text-red-400"
+                >
                   <X className="w-4 h-4" />
                 </button>
               </span>
             );
           })}
-          <button onClick={clearAll} className="text-sm text-red-500 hover:underline ml-auto">
+          <button
+            onClick={clearAll}
+            className="text-sm text-red-500 dark:text-red-400 hover:underline ml-auto"
+          >
             Clear all
           </button>
         </div>

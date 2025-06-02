@@ -233,12 +233,19 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
           } = await res.json();
 
           const flat: Partial<FieldErrors> = {};
+          let formError = "";
+          
           payload.errors.forEach(({ attr, detail }) => {
+          if (attr === "non_field_errors") {
+            formError = detail;
+          } else {
             flat[attr as FieldKey] = detail;
-          });
+          }
+        });
 
-          setFieldErrors(prev => ({ ...prev, ...flat }));
-          return "Please fix the errors in the form.";
+        setFieldErrors(prev => ({ ...prev, ...flat }));
+        // return the non_field_errors if present, otherwise fallback
+        return formError || "Please fix the errors in the form.";
         }
         console.error("Unexpected status", res.status);
         return "An unexpected error occurred. Please try again.";
@@ -362,9 +369,9 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
         {/* Left Column */}
-        <div className="space-y-8 md:border-r md:border-gray-200 md:pr-8 md:mr-0">
+        <div className="space-y-8 md:border-r md:border-gray-200 dark:md:border-gray-700 md:pr-8 md:mr-0">
           <Fieldset className="space-y-6">
-            <Legend className="text-lg font-medium text-gray-700 border-b border-gray-200 pb-2 w-full mb-4">
+            <Legend className="text-lg font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2 w-full mb-4">
               Product Details
             </Legend>
             {renderField("name")}
@@ -375,7 +382,7 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
           </Fieldset>
 
           <Fieldset className="space-y-6">
-            <Legend className="text-lg font-medium text-gray-700 border-b border-gray-200 pb-2 w-full mb-4">
+            <Legend className="text-lg font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2 w-full mb-4">
               Technical Specifications
             </Legend>
             {renderField("reference_impact_unit")}
@@ -386,7 +393,7 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
         {/* Right Column */}
         <div>
           <Fieldset className="space-y-6">
-            <Legend className="text-lg font-medium text-gray-700 border-b border-gray-200 pb-2 w-full mb-4">
+            <Legend className="text-lg font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2 w-full mb-4">
               Manufacturer Information
             </Legend>
             {renderField("manufacturer_name")}

@@ -40,12 +40,12 @@ export default function RadioField({
     <div className="space-y-1">
       <RadioGroup value={value} onChange={onFieldChange} aria-label={label}>
         <div className="flex items-center mb-1">
-          <Label className="block text-sm font-medium text-gray-700">
+          <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             {label} {required && <span className="text-red-500">*</span>}
           </Label>
           {tooltip && (
             <div className="relative group ml-2">
-              <CircleHelp className="h-4 w-4 text-gray-400 cursor-pointer" />
+              <CircleHelp className="h-4 w-4 text-gray-400 dark:text-gray-500 cursor-pointer" />
               <span className={tooltipBaseClass}>{tooltip}</span>
             </div>
           )}
@@ -55,17 +55,26 @@ export default function RadioField({
             <Field key={String(option.value)} className="flex items-center gap-2">
               <Radio
                 value={option.value}
-                className="group flex size-4 items-center justify-center rounded-full border-2 border-gray-300 bg-white data-[checked]:border-green-600 data-[checked]:bg-green-600"
+                className="
+                  group flex size-4 items-center justify-center rounded-full
+                  border-2 border-gray-300 dark:border-gray-600
+                  bg-white dark:bg-gray-800
+                  data-[checked]:border-green-600 data-[checked]:bg-green-600
+                "
               >
                 <span className="invisible size-2 rounded-full bg-white group-data-[checked]:visible" />
               </Radio>
-              <Label className="text-gray-700 cursor-pointer">{option.label}</Label>
+              <Label className="text-gray-700 dark:text-gray-100 cursor-pointer">
+                {option.label}
+              </Label>
             </Field>
           ))}
         </div>
       </RadioGroup>
 
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && (
+        <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
+      )}
     </div>
   );
 }

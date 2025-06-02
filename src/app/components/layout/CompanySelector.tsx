@@ -1,4 +1,4 @@
-// Clean Company Selector - No breadcrumbs, better UX
+// src/app/components/layout/CompanySelector.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -38,7 +38,29 @@ export default function CleanCompanySelector({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const currentCompany = companies.find(c => c.id === currentCompanyId);
+  // Debug logging to help identify the issue
+  useEffect(() => {
+    console.log("CompanySelector Debug:", {
+      currentCompanyId,
+      currentCompanyIdType: typeof currentCompanyId,
+      companiesLength: companies.length,
+      companyIds: companies.map(c => ({ id: c.id, type: typeof c.id, name: c.name })),
+    });
+  }, [currentCompanyId, companies]);
+
+  // Enhanced company finding with better type safety
+  const currentCompany = companies.find(c => {
+    // Ensure both values are strings and trim any whitespace
+    const companyId = String(c.id).trim();
+    const selectedId = String(currentCompanyId || '').trim();
+    return companyId === selectedId;
+  });
+
+  // Additional debug for the found company
+  useEffect(() => {
+    console.log("Current company found:", currentCompany);
+  }, [currentCompany]);
+
   const shouldShowSearch = companies.length > 8;
 
   // Filter companies based on search
@@ -48,6 +70,7 @@ export default function CleanCompanySelector({
 
   // Handle company selection
   const handleCompanySelect = (companyId: string) => {
+    console.log("Selecting company:", companyId);
     onCompanySelect(companyId);
     onClose();
     setSearchQuery("");
@@ -84,12 +107,12 @@ export default function CleanCompanySelector({
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Company Selector Button */}
+      {/* Company Selector Button - Subtle styling */}
       <button
         onClick={() => onToggle()}
-        className={`flex items-center px-3 py-2 rounded-md text-sm font-medium min-h-[44px] border transition-all duration-200 min-w-[160px] max-w-[240px]
+        className={`flex items-center px-3 py-2 rounded-md text-sm font-medium h-[44px] transition-all duration-200 min-w-[160px] max-w-[240px] border
           ${currentCompany 
-            ? "bg-red-600 text-white border-red-600 hover:bg-red-700 shadow-sm" 
+            ? "bg-red-50 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800 dark:hover:bg-red-900/30" 
             : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 border-gray-300 dark:border-gray-600"
           }`}
         aria-expanded={isOpen}
@@ -101,29 +124,29 @@ export default function CleanCompanySelector({
             <img 
               src={currentCompany.avatar} 
               alt="" 
-              className="w-5 h-5 rounded mr-2 flex-shrink-0"
+              className="w-4 h-4 rounded mr-2 flex-shrink-0"
             />
           ) : (
-            <Building2 size={16} className="mr-2 flex-shrink-0" aria-hidden="true" />
+            <Building2 size={14} className={`mr-2 flex-shrink-0 ${currentCompany ? 'text-red-600 dark:text-red-400' : ''}`} aria-hidden="true" />
           )}
           <div className="min-w-0 flex-1">
             {currentCompany ? (
               <>
-                <div className="truncate text-sm font-semibold" title={currentCompany.name}>
+                <div className="truncate text-sm font-semibold leading-tight" title={currentCompany.name}>
                   {truncateCompanyName(currentCompany.name, 16)}
                 </div>
-                <div className="text-xs opacity-80 -mt-0.5">
+                <div className="text-xs opacity-70 leading-tight -mt-0.5">
                   Selected Company
                 </div>
               </>
             ) : (
-              <span className="truncate">Select Company</span>
+              <span className="truncate text-sm">Select Company</span>
             )}
           </div>
         </div>
         <ChevronDown 
-          size={14} 
-          className={`ml-2 flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+          size={12} 
+          className={`ml-2 flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${currentCompany ? 'text-red-600 dark:text-red-400' : ''}`} 
           aria-hidden="true" 
         />
       </button>

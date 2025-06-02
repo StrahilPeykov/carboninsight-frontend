@@ -1,4 +1,3 @@
-// Revised Navbar.tsx with enhanced company navigation
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -20,7 +19,7 @@ import { companyApi } from "@/lib/api/companyApi";
 import { setLocalStorageItem } from "@/lib/api/apiClient";
 import CleanCompanySelector from "./CompanySelector";
 
-export default function RevisedNavbar() {
+export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated, logout, isLoading } = useAuth();
@@ -99,14 +98,53 @@ export default function RevisedNavbar() {
     const id = typeof window !== "undefined" ? localStorage.getItem("selected_company_id") : null;
     setCompanyId(id);
 
-    const handleCompanyChange = () => {
+    const handleCompanyChange = (event: Event) => {
+      console.log("Company change event received in navbar");
       const id = localStorage.getItem("selected_company_id");
       setCompanyId(id);
+      
+      // Force re-fetch of company data
+      if (id && isAuthenticated && !isLoading) {
+        fetchCompanyData(id);
+      }
+    };
+
+    const handleCompanyListChange = (event: Event) => {
+      console.log("Company list change event received in navbar");
+      // Refetch the companies list
+      if (isAuthenticated && !isLoading) {
+        fetchAllCompanies();
+      }
     };
 
     window.addEventListener("companyChanged", handleCompanyChange);
-    return () => window.removeEventListener("companyChanged", handleCompanyChange);
-  }, [mounted]);
+    window.addEventListener("companyListChanged", handleCompanyListChange);
+    
+    return () => {
+      window.removeEventListener("companyChanged", handleCompanyChange);
+      window.removeEventListener("companyListChanged", handleCompanyListChange);
+    };
+  }, [mounted, isAuthenticated, isLoading]);
+
+  // Helper functions
+  const fetchCompanyData = async (companyId: string) => {
+    try {
+      const data = await companyApi.getCompany(companyId);
+      setCompanyData(data);
+    } catch (err) {
+      console.error("Error fetching company data:", err);
+    }
+  };
+
+  const fetchAllCompanies = async () => {
+    try {
+      const companies = await companyApi.listCompanies();
+      setAllCompanies(companies);
+    } catch (err) {
+      console.error("Error fetching companies:", err);
+      setAllCompanies([]);
+    }
+  };
 
   // Fetch companies list and selected company data
   useEffect(() => {
@@ -114,12 +152,10 @@ export default function RevisedNavbar() {
 
     const fetchData = async () => {
       try {
-        const companies = await companyApi.listCompanies();
-        setAllCompanies(companies);
+        await fetchAllCompanies();
 
         if (companyId) {
-          const data = await companyApi.getCompany(companyId);
-          setCompanyData(data);
+          await fetchCompanyData(companyId);
         }
       } catch (err) {
         console.error("Error fetching companies:", err);
@@ -152,16 +188,29 @@ export default function RevisedNavbar() {
 
   // Enhanced company selector handlers
   const handleCompanySelect = (selectedCompanyId: string) => {
+    console.log("Company selection started:", selectedCompanyId);
+    
     setLocalStorageItem("selected_company_id", selectedCompanyId);
     
-    // Notify other components that company changed
+    // Force a state update first
+    setCompanyId(selectedCompanyId);
+    
+    // Dispatch events with slight delays to ensure proper order
     if (typeof window !== "undefined") {
-      console.log("Company selected - dispatching events");
-      window.dispatchEvent(new CustomEvent("companyChanged"));
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("companyListChanged"));
+      }, 10);
+      
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("companyChanged"));
+      }, 20);
+      
+      console.log("Company selection events dispatched for:", selectedCompanyId);
     }
     
-    // Redirect to dashboard when company is selected
-    if (pathname === "/" || !companyId) {
+    // Don't force redirect - let user stay on current page
+    // Only redirect if they're on a page that requires no company (like list-companies)
+    if (pathname === "/list-companies" || (!companyId && pathname === "/")) {
       router.push("/dashboard");
     }
   };
@@ -195,10 +244,10 @@ export default function RevisedNavbar() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            {/* Logo and brand */}
+            {/* Logo and brand - FIXED: Always go to home page */}
             <div className="flex-shrink-0 flex items-center">
               <Link
-                href={isAuthenticated ? (companyId ? "/dashboard" : "/") : "/"}
+                href="/"
                 className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red rounded-md"
                 aria-label="CarbonInsight - Home"
               >

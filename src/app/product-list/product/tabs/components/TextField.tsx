@@ -34,12 +34,15 @@ export default function TextField({
   return (
     <div className="space-y-1">
       <div className="flex items-center mb-1">
-        <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+        <label
+          htmlFor={name}
+          className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
           {label} {required && <span className="text-red-500">*</span>}
         </label>
         {tooltip && (
           <div className="relative group ml-2">
-            <CircleHelp className="h-4 w-4 text-gray-400 cursor-pointer" />
+            <CircleHelp className="h-4 w-4 text-gray-400 dark:text-gray-500 cursor-pointer" />
             <span className={tooltipBaseClass}>{tooltip}</span>
           </div>
         )}
@@ -51,11 +54,23 @@ export default function TextField({
         value={value}
         placeholder={placeholder}
         onChange={e => onFieldChange(e.target.value)}
-        className={`mt-1 block w-full rounded-md border ${
-          error ? "border-red-500" : "border-gray-300"
-        } px-3 py-2 focus:ring-green-500 focus:border-green-500 data-[focus]:border-green-500 data-[focus]:ring-green-500`}
+        className={`
+          mt-1 block w-full rounded-md
+          bg-white dark:bg-gray-800
+          text-gray-900 dark:text-gray-100
+          border ${
+            error
+              ? "border-red-500 dark:border-red-400"
+              : "border-gray-300 dark:border-gray-600"
+          }
+          px-3 py-2
+          focus:ring-green-500 focus:border-green-500
+          data-[focus]:border-green-500 data-[focus]:ring-green-500
+        `}
       />
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && (
+        <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
+      )}
     </div>
   );
 }

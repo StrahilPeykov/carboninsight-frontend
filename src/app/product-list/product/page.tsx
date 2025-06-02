@@ -135,6 +135,7 @@ export default function ProductClientPage() {
   ]);
 
   const [activeTab, setActiveTab] = useState(0);
+  const [productInfoSavedOnce, setProductInfoSavedOnce] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const handleAddProduct = () => {
@@ -142,8 +143,8 @@ export default function ProductClientPage() {
       setTabConfig(cfg =>
         cfg.map((t, i) =>
           i === activeTab
-            ? { ...t, errorBannerText: "Please save all sections before adding a new product." }
-            : t
+        ? { ...t, errorBannerText: "Please save all sections before continuing." }
+        : t
         )
       );
       return;
@@ -155,10 +156,10 @@ export default function ProductClientPage() {
   const onTabSaved = async (tabKey: string) => {
     // Clear the error banner for the current tab
     setTabConfig(cfg => cfg.map((t, i) => (i == activeTab ? { ...t, errorBannerText: "" } : t)));
-
     // If it is the first tab, enable all tabs
     if (tabKey === "productInfo") {
       setTabConfig(config => config.map(tab => ({ ...tab, disabled: false })));
+      setProductInfoSavedOnce(true);
     }
 
     // set the tab to saved
@@ -173,13 +174,13 @@ export default function ProductClientPage() {
     );
   };
 
-  const onNext = async () => {
+  const onSaveTab = async () => {
     let errorMessage: string = "Failed to save. Please try again.";
     // delegate to the tab component
     switch (tabConfig[activeTab].key) {
       case "productInfo":
         errorMessage =
-          (await (mode == Mode.ADD
+          (await (mode == Mode.ADD && !productInfoSavedOnce
             ? productInfoRef.current?.saveTab()
             : productInfoRef.current?.updateTab())) ?? errorMessage;
         break;
@@ -212,17 +213,37 @@ export default function ProductClientPage() {
     if (!errorMessage) {
       // Record the tab as saved and move to the next tab
       onTabSaved(tabConfig[activeTab].key);
-      setActiveTab(i => Math.min(i + 1, tabConfig.length - 1));
     } else {
       // If saving was unsuccessful, show an error banner
       onTabSaveError(errorMessage);
     }
   };
 
+  const onNext = async () => {
+    setActiveTab(i => Math.min(i + 1, tabConfig.length - 1));
+  }
+
+  const onBack = async () => {
+    setActiveTab(i => Math.max(i - 1, 0));
+  }
+
   return (
-    <Suspense fallback={<div>Loading…</div>}>
-      <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Card className="overflow-visible">
+    <Suspense fallback={<div className="text-center py-10">Loading…</div>}>
+      <div
+        className="
+          py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8
+          bg-white dark:bg-gray-900
+          text-gray-900 dark:text-gray-100
+        "
+      >
+        <Card
+          className="
+            overflow-visible
+            bg-white dark:bg-gray-800
+            border border-gray-200 dark:border-gray-700
+            shadow-sm dark:shadow-none
+          "
+        >
           <TabGroup selectedIndex={activeTab} onChange={setActiveTab}>
             <TabList className="flex relative justify-between mb-10 px-6">
               {tabConfig.map((t, index) => (
@@ -234,18 +255,23 @@ export default function ProductClientPage() {
                     {({ selected }) => (
                       <>
                         <div
-                          className={`z-10 w-8 h-8 rounded-full flex items-center justify-center mb-1 text-white text-sm font-medium ${
-                            t.saved ? "bg-red-600" : "bg-gray-600"
-                          }`}
+                          className={`
+                            z-10 w-8 h-8 rounded-full flex items-center justify-center mb-1
+                            text-white text-sm font-medium
+                            ${t.saved
+                              ? "bg-red-600 dark:bg-red-500"
+                              : "bg-gray-600 dark:bg-gray-500"}
+                          `}
                         >
                           {index + 1}
                         </div>
                         <div
-                          className={`text-sm text-center ${
-                            selected
-                              ? "text-green-600 font-semibold"
-                              : "text-gray-500 group-hover:text-gray-700"
-                          }`}
+                          className={`
+                            text-sm text-center
+                            ${selected
+                              ? "text-green-600 dark:text-green-300 font-semibold"
+                              : "text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300"}
+                          `}
                         >
                           {t.label}
                         </div>
@@ -253,10 +279,9 @@ export default function ProductClientPage() {
                     )}
                   </Tab>
 
-                  {/* Connecting line */}
                   {index < tabConfig.length - 1 && (
                     <div className="absolute top-4 left-1/2 w-full">
-                      <div className="h-0.5 bg-gray-400 w-full transform translate-x-4"></div>
+                      <div className="h-0.5 bg-gray-400 dark:bg-gray-600 w-full transform translate-x-4" />
                     </div>
                   )}
                 </div>
@@ -264,7 +289,7 @@ export default function ProductClientPage() {
             </TabList>
 
             <TabPanels>
-              {tabConfig.map(t => (
+              {tabConfig.map((t) => (
                 <TabPanel key={t.key} unmount={false}>
                   <t.Comp
                     ref={t.ref}
@@ -273,8 +298,10 @@ export default function ProductClientPage() {
                     mode={mode}
                     setProductId={setProductId}
                     onFieldChange={() =>
-                      setTabConfig(cfg =>
-                        cfg.map((tab, i) => (i === activeTab ? { ...tab, saved: false } : tab))
+                      setTabConfig((cfg) =>
+                        cfg.map((tab, i) =>
+                          i === activeTab ? { ...tab, saved: false } : tab
+                        )
                       )
                     }
                   />
@@ -284,45 +311,72 @@ export default function ProductClientPage() {
           </TabGroup>
 
           {tabConfig[activeTab].errorBannerText && (
-            <div className="mt-4 text-red-500">{tabConfig[activeTab].errorBannerText}</div>
+            <div className="mt-4 text-red-500 dark:text-red-400">
+              {tabConfig[activeTab].errorBannerText}
+            </div>
           )}
 
           <div className="flex justify-end space-x-4 mt-6">
+            <div className="flex flex-1">
+              <Button
+                onClick={onBack}
+                disabled={activeTab === 0}
+                variant={activeTab === 0 ? "outline" : "primary"}
+                className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+              >
+                Back
+              </Button>
+            </div>
+
             <Button
-              onClick={onNext}
+              onClick={onSaveTab}
               disabled={tabConfig[activeTab].saved}
               variant={tabConfig[activeTab].saved ? "outline" : "primary"}
+              className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
             >
-              {activeTab === tabConfig.length - 1 ? "Save" : "Save & Next"}
+              Save
             </Button>
+
+            <Button
+              onClick={onNext}
+              disabled={activeTab === tabConfig.length - 1 || !productInfoSavedOnce}
+              variant={activeTab === tabConfig.length - 1 || !productInfoSavedOnce ? "outline" : "primary"}
+              className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+            >
+              Next
+            </Button>
+
             <Button
               onClick={handleAddProduct}
-              disabled={!tabConfig.every(tab => tab.saved)}
-              variant={!tabConfig.every(tab => tab.saved) ? "outline" : "primary"}
+              disabled={false}
+              variant={
+                !tabConfig.every((tab) => tab.saved) ? "outline" : "primary"
+              }
+              className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
             >
-              {mode == Mode.ADD ? "Add Product" : "Update Product"}
+              {mode === Mode.ADD ? "Finish" : "Update Product"}
             </Button>
           </div>
 
-          {/* Success Modal */}
           {showSuccessModal && (
             <PopupModal
-              title="Product added successfully!"
-              onClose={() => {
-                setShowSuccessModal(false);
-                router.push("/product-list");
+              title={mode === Mode.EDIT ? "Product updated successfully!" : "Product added successfully!"}
+              confirmLabel="Ok"
+              onConfirm={() => {
+              setShowSuccessModal(false);
+              router.push("/product-list");
               }}
+              onClose={() => {
+              setShowSuccessModal(false);
+              router.push("/product-list");
+              }}
+              showCancel={false}
             >
-              <p>Your new product has been added.</p>
-              <Button
-                className="mt-4"
-                onClick={() => {
-                  setShowSuccessModal(false);
-                  router.push("/product-list");
-                }}
-              >
-                OK
-              </Button>
+              <p className="text-gray-800 dark:text-gray-200">
+              {mode === Mode.EDIT
+                ? "Your product has been updated."
+                : "Your new product has been added."}
+              </p>
             </PopupModal>
           )}
         </Card>

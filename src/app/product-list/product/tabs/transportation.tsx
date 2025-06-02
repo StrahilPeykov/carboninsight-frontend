@@ -59,7 +59,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
     // Fetch all BoM data
     useEffect(() => {
       // Only fetch in Edit mode
-      if (mode == Mode.EDIT) {
+      if (mode == Mode.EDIT || mode == Mode.ADD) {
         fetchBOMItems();
         fetchTransportEmissions();
         fetchLifecycleStageChoices();
@@ -497,7 +497,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                         />
                         <div className="relative mb-4 overflow-visible">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1 mt-4">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 mt-4">
                               Override reference emissions
                             </label>
                             <div className="flex flex-col space-y-2 overflow-visible">

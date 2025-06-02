@@ -137,7 +137,9 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
       }
       if (
         formData.override_factors.some(
-          factor => factor.lifecycle_stage === "" || isNaN(factor.co_2_emission_factor)
+          factor => factor.lifecycle_stage === "" ||
+            isNaN(factor.co_2_emission_factor_biogenic) ||
+            isNaN(factor.co_2_emission_factor_non_biogenic)
         )
       ) {
         alert("Please fill in all override factor fields correctly.");
@@ -209,18 +211,28 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
         ...formData,
         override_factors: [
           ...formData.override_factors,
-          { lifecycle_stage: "", co_2_emission_factor: 1 },
+          {
+            lifecycle_stage: "",
+            co_2_emission_factor_biogenic: 1,
+            co_2_emission_factor_non_biogenic: 1
+          },
         ],
       });
     };
 
     // Update an override factor
-    const handleOverrideFactorChange = (index: number, field: "name" | "value", value: string) => {
+    const handleOverrideFactorChange = (
+      index: number,
+      field: "name" | "biogenic" | "non_biogenic",
+      value: string
+    ) => {
       const updatedFactors = [...formData.override_factors];
       if (field === "name") {
         updatedFactors[index].lifecycle_stage = value;
+      } else if (field === "biogenic") {
+        updatedFactors[index].co_2_emission_factor_biogenic = parseFloat(value);
       } else {
-        updatedFactors[index].co_2_emission_factor = parseFloat(value);
+        updatedFactors[index].co_2_emission_factor_non_biogenic = parseFloat(value);
       }
 
       setFormData({
@@ -714,14 +726,25 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                   </div>
 
                   {formData.override_factors.map((factor, index) => (
-                    <div key={index} className="flex gap-2 mb-2">
-                      <div className="relative flex-1">
+                    <div key={index} className="mb-4 border p-3 rounded-lg dark:border-gray-700 relative">
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveOverrideFactor(index)}
+                        className="absolute top-2 right-2 p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Lifecycle Stage
+                      </label>
+                      <div className="relative mb-3">
                         <Combobox
                           value={
                             factor.lifecycle_stage
                               ? lifecycleOptions.find(opt =>
-                                  opt.startsWith(factor.lifecycle_stage)
-                                ) || ""
+                              opt.startsWith(factor.lifecycle_stage)
+                            ) || ""
                               : ""
                           }
                           onChange={value => {
@@ -770,21 +793,32 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                           </div>
                         </Combobox>
                       </div>
-                      <input
-                        type="number"
-                        placeholder="Value"
-                        value={factor.co_2_emission_factor}
-                        onChange={e => handleOverrideFactorChange(index, "value", e.target.value)}
-                        min={1}
-                        className="w-24 p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveOverrideFactor(index)}
-                        className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Biogenic CO₂ Factor
+                          </label>
+                          <input
+                            type="number"
+                            value={factor.co_2_emission_factor_biogenic}
+                            onChange={e => handleOverrideFactorChange(index, "biogenic", e.target.value)}
+                            min={0}
+                            className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Non-Biogenic CO₂ Factor
+                          </label>
+                          <input
+                            type="number"
+                            value={factor.co_2_emission_factor_non_biogenic}
+                            onChange={e => handleOverrideFactorChange(index, "non_biogenic", e.target.value)}
+                            min={0}
+                            className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                          />
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -897,7 +931,8 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                               factor.lifecycle_stage}
                           </td>
                           <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                            {factor.co_2_emission_factor}
+                            <div>Bio: {factor.co_2_emission_factor_biogenic}</div>
+                            <div>Non-bio: {factor.co_2_emission_factor_non_biogenic}</div>
                           </td>
                         </tr>
                       ))}

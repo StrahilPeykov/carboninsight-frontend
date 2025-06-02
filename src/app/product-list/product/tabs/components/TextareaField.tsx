@@ -32,30 +32,49 @@ export default function TextareaField({
 
   return (
     <Field>
+      {/* Label + tooltip */}
       <div className="flex items-center mb-1">
-        <Label htmlFor={name} className="block text-sm font-medium text-gray-700">
+        <Label
+          htmlFor={name}
+          className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+        >
           {label} {required && <span className="text-red-500">*</span>}
         </Label>
         {tooltip && (
           <div className="relative group ml-2">
-            <CircleHelp className="h-4 w-4 text-gray-400 cursor-pointer" />
+            <CircleHelp className="h-4 w-4 text-gray-400 dark:text-gray-500 cursor-pointer" />
             <span className={tooltipBaseClass}>{tooltip}</span>
           </div>
         )}
       </div>
 
+      {/* Textarea */}
       <Textarea
         id={name}
         name={name}
         value={value}
         placeholder={placeholder}
         onChange={e => onFieldChange(e.target.value)}
-        className={`block w-full rounded-md border ${
-          error ? "border-red-500" : "border-gray-300"
-        } px-3 py-2 focus:ring-green-500 focus:border-green-500`}
+        className={`
+          block w-full rounded-md
+          bg-white dark:bg-gray-800
+          text-gray-900 dark:text-gray-100
+          border ${
+            error
+              ? "border-red-500 dark:border-red-400"
+              : "border-gray-300 dark:border-gray-600"
+          }
+          px-3 py-2
+          focus:ring-green-500 focus:border-green-500
+        `}
       />
 
-      {error && <p className="text-xs text-red-500 mt-1">{error}</p>}
+      {/* Error message */}
+      {error && (
+        <p className="text-xs text-red-500 dark:text-red-400 mt-1">
+          {error}
+        </p>
+      )}
     </Field>
   );
 }

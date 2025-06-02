@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import { AuthProvider } from "./context/AuthContext";
+import GlobalCompanyChangeHandler from "./components/GlobalCompanyChangeHandler";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -28,6 +29,7 @@ export default function RootLayout({
         </a>
 
         <AuthProvider>
+          <GlobalCompanyChangeHandler />
           <Navbar />
           <main id="main-content" className="flex-grow" tabIndex={-1}>
             {children}

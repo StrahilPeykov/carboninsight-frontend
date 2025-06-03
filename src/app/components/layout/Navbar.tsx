@@ -26,17 +26,17 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isCompanyMenuOpen, setIsCompanyMenuOpen] = useState(false);
-  
+
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const profileButtonRef = useRef<HTMLButtonElement>(null);
-  
+
   const [companyId, setCompanyId] = useState<string | null>(null);
   const [companyData, setCompanyData] = useState({
     name: "",
     vat_number: "",
     business_registration_number: "",
   });
-  const [allCompanies, setAllCompanies] = useState<Array<{id: string, name: string}>>([]);
+  const [allCompanies, setAllCompanies] = useState<Array<{ id: string; name: string }>>([]);
   const [mounted, setMounted] = useState(false);
 
   // Ensure component is mounted before accessing localStorage
@@ -45,7 +45,7 @@ export default function Navbar() {
   }, []);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  
+
   const toggleProfileMenu = () => {
     setIsProfileMenuOpen(!isProfileMenuOpen);
     if (!isProfileMenuOpen) setIsCompanyMenuOpen(false); // Close company menu when opening profile
@@ -102,7 +102,7 @@ export default function Navbar() {
       console.log("Company change event received in navbar");
       const id = localStorage.getItem("selected_company_id");
       setCompanyId(id);
-      
+
       // Force re-fetch of company data
       if (id && isAuthenticated && !isLoading) {
         fetchCompanyData(id);
@@ -119,7 +119,7 @@ export default function Navbar() {
 
     window.addEventListener("companyChanged", handleCompanyChange);
     window.addEventListener("companyListChanged", handleCompanyListChange);
-    
+
     return () => {
       window.removeEventListener("companyChanged", handleCompanyChange);
       window.removeEventListener("companyListChanged", handleCompanyListChange);
@@ -174,7 +174,7 @@ export default function Navbar() {
   // Format user display name
   const getUserDisplayName = () => {
     if (!user) return "User";
-    
+
     if (user.first_name && user.last_name) {
       return `${user.first_name} ${user.last_name}`;
     } else if (user.first_name) {
@@ -189,25 +189,25 @@ export default function Navbar() {
   // Enhanced company selector handlers
   const handleCompanySelect = (selectedCompanyId: string) => {
     console.log("Company selection started:", selectedCompanyId);
-    
+
     setLocalStorageItem("selected_company_id", selectedCompanyId);
-    
+
     // Force a state update first
     setCompanyId(selectedCompanyId);
-    
+
     // Dispatch events with slight delays to ensure proper order
     if (typeof window !== "undefined") {
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent("companyListChanged"));
       }, 10);
-      
+
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent("companyChanged"));
       }, 20);
-      
+
       console.log("Company selection events dispatched for:", selectedCompanyId);
     }
-    
+
     // Don't force redirect - let user stay on current page
     // Only redirect if they're on a page that requires no company (like list-companies)
     if (pathname === "/list-companies" || (!companyId && pathname === "/")) {
@@ -280,11 +280,31 @@ export default function Navbar() {
               >
                 <span className="sr-only">{isMenuOpen ? "Close main menu" : "Open main menu"}</span>
                 {/* Hamburger/X icon */}
-                <svg className={`${isMenuOpen ? "hidden" : "block"} h-6 w-6`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                <svg
+                  className={`${isMenuOpen ? "hidden" : "block"} h-6 w-6`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 </svg>
-                <svg className={`${isMenuOpen ? "block" : "hidden"} h-6 w-6`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className={`${isMenuOpen ? "block" : "hidden"} h-6 w-6`}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -352,8 +372,9 @@ export default function Navbar() {
                       <span className="sr-only">Open user menu</span>
                       <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700">
                         <span aria-hidden="true">
-                          {user?.first_name?.charAt(0)?.toUpperCase() || 
-                           user?.username?.charAt(0)?.toUpperCase() || "U"}
+                          {user?.first_name?.charAt(0)?.toUpperCase() ||
+                            user?.username?.charAt(0)?.toUpperCase() ||
+                            "U"}
                         </span>
                       </div>
                       <ChevronDown size={16} className="ml-1" aria-hidden="true" />
@@ -365,7 +386,7 @@ export default function Navbar() {
                           <p className="font-medium">{getUserDisplayName()}</p>
                           <p className="text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
                         </div>
-                        
+
                         <Link
                           href="/account"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 min-h-[44px] flex items-center"
@@ -374,7 +395,7 @@ export default function Navbar() {
                           <SettingsIcon size={16} className="mr-2" aria-hidden="true" />
                           Account Settings
                         </Link>
-                        
+
                         <Link
                           href="/support"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 min-h-[44px] flex items-center"
@@ -383,7 +404,7 @@ export default function Navbar() {
                           <HelpCircle size={16} className="mr-2" aria-hidden="true" />
                           Support & Help
                         </Link>
-                        
+
                         <div className="border-t border-gray-200 dark:border-gray-700">
                           <button
                             onClick={() => {
@@ -414,7 +435,9 @@ export default function Navbar() {
         </div>
 
         {/* Mobile menu */}
-        <div className={`${isMenuOpen ? "block" : "hidden"} sm:hidden bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700`}>
+        <div
+          className={`${isMenuOpen ? "block" : "hidden"} sm:hidden bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700`}
+        >
           <div className="pt-2 pb-3 space-y-1">
             {isAuthenticated && mounted ? (
               <>
@@ -448,7 +471,7 @@ export default function Navbar() {
                   <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Current Company:</p>
                   <select
                     value={companyId || ""}
-                    onChange={(e) => {
+                    onChange={e => {
                       if (e.target.value) {
                         handleCompanySelect(e.target.value);
                       }
@@ -456,13 +479,13 @@ export default function Navbar() {
                     className="w-full p-2 border border-gray-300 rounded-md text-sm"
                   >
                     <option value="">Select Company</option>
-                    {allCompanies.map((company) => (
+                    {allCompanies.map(company => (
                       <option key={company.id} value={company.id}>
                         {company.name}
                       </option>
                     ))}
                   </select>
-                  
+
                   {/* Mobile company actions */}
                   <div className="mt-3 space-y-1">
                     <button
@@ -475,7 +498,7 @@ export default function Navbar() {
                       <Plus size={14} className="mr-1" />
                       Create New Company
                     </button>
-                    
+
                     {companyId && (
                       <>
                         <button
@@ -513,7 +536,7 @@ export default function Navbar() {
                     <SettingsIcon size={16} className="mr-2" aria-hidden="true" />
                     Account Settings
                   </Link>
-                  
+
                   <Link
                     href="/support"
                     className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 min-h-[44px]"
@@ -522,7 +545,7 @@ export default function Navbar() {
                     <HelpCircle size={16} className="mr-2" aria-hidden="true" />
                     Support & Help
                   </Link>
-                  
+
                   <button
                     onClick={handleLogout}
                     className="flex items-center w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 min-h-[44px]"

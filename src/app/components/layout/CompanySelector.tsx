@@ -1,4 +1,3 @@
-// src/app/components/layout/CompanySelector.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -34,32 +33,16 @@ export default function CleanCompanySelector({
   onClose,
 }: CleanCompanySelectorProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  
+
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Debug logging to help identify the issue
-  useEffect(() => {
-    console.log("CompanySelector Debug:", {
-      currentCompanyId,
-      currentCompanyIdType: typeof currentCompanyId,
-      companiesLength: companies.length,
-      companyIds: companies.map(c => ({ id: c.id, type: typeof c.id, name: c.name })),
-    });
-  }, [currentCompanyId, companies]);
-
   // Enhanced company finding with better type safety
   const currentCompany = companies.find(c => {
-    // Ensure both values are strings and trim any whitespace
     const companyId = String(c.id).trim();
-    const selectedId = String(currentCompanyId || '').trim();
+    const selectedId = String(currentCompanyId || "").trim();
     return companyId === selectedId;
   });
-
-  // Additional debug for the found company
-  useEffect(() => {
-    console.log("Current company found:", currentCompany);
-  }, [currentCompany]);
 
   const shouldShowSearch = companies.length > 8;
 
@@ -97,46 +80,54 @@ export default function CleanCompanySelector({
         setSearchQuery("");
       }
     }
-    
+
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
-    
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, onClose]);
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Company Selector Button - Subtle styling */}
+      {/* Company Selector Button */}
       <button
         onClick={() => onToggle()}
         className={`flex items-center px-3 py-2 rounded-md text-sm font-medium h-[44px] transition-all duration-200 min-w-[160px] max-w-[240px] border
-          ${currentCompany 
-            ? "bg-red-50 text-red-700 border-red-200 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800 dark:hover:bg-red-900/30" 
-            : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 border-gray-300 dark:border-gray-600"
-          }`}
+          ${
+            currentCompany
+              ? "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
+              : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 border-gray-300 dark:border-gray-600"
+          } focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2`}
         aria-expanded={isOpen}
         aria-haspopup="true"
         aria-label={`${currentCompany ? `Current company: ${currentCompany.name}. Click to change or manage company.` : "No company selected. Click to select a company."}`}
       >
         <div className="flex items-center min-w-0 flex-1">
           {currentCompany?.avatar ? (
-            <img 
-              src={currentCompany.avatar} 
-              alt="" 
+            <img
+              src={currentCompany.avatar}
+              alt=""
               className="w-4 h-4 rounded mr-2 flex-shrink-0"
             />
           ) : (
-            <Building2 size={14} className={`mr-2 flex-shrink-0 ${currentCompany ? 'text-red-600 dark:text-red-400' : ''}`} aria-hidden="true" />
+            <Building2
+              size={14}
+              className={`mr-2 flex-shrink-0 ${currentCompany ? "text-gray-600 dark:text-gray-400" : "text-gray-500"}`}
+              aria-hidden="true"
+            />
           )}
           <div className="min-w-0 flex-1">
             {currentCompany ? (
               <>
-                <div className="truncate text-sm font-semibold leading-tight" title={currentCompany.name}>
+                <div
+                  className="truncate text-sm font-semibold leading-tight"
+                  title={currentCompany.name}
+                >
                   {truncateCompanyName(currentCompany.name, 16)}
                 </div>
-                <div className="text-xs opacity-70 leading-tight -mt-0.5">
-                  Selected Company
+                <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight -mt-0.5">
+                  Current Company
                 </div>
               </>
             ) : (
@@ -144,47 +135,53 @@ export default function CleanCompanySelector({
             )}
           </div>
         </div>
-        <ChevronDown 
-          size={12} 
-          className={`ml-2 flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''} ${currentCompany ? 'text-red-600 dark:text-red-400' : ''}`} 
-          aria-hidden="true" 
+        <ChevronDown
+          size={12}
+          className={`ml-2 flex-shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""} text-gray-500`}
+          aria-hidden="true"
         />
       </button>
 
-      {/* Clean Dropdown */}
+      {/* Dropdown with clear hierarchy */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none z-50 border border-gray-200 dark:border-gray-700">
-          
-          {/* Quick Actions Header */}
-          <div className="p-3 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 rounded-t-lg">
+        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none z-50 border border-gray-200 dark:border-gray-700">
+          {/* Clear Header Section */}
+          <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 rounded-t-lg">
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
+              Select Company
+            </h3>
             <div className="grid grid-cols-3 gap-2">
               <button
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault();
                   console.log("Settings clicked, currentCompanyId:", currentCompanyId);
                   if (currentCompanyId) {
                     onCompanySettings();
                     onClose();
+                  } else {
+                    console.log("No company selected for settings");
                   }
                 }}
                 disabled={!currentCompanyId}
-                className="flex flex-col items-center p-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-200 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex flex-col items-center p-3 text-xs text-gray-600 hover:text-gray-900 hover:bg-white dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-transparent hover:border-gray-200 dark:hover:border-gray-600"
                 title="Company Settings"
               >
                 <Settings size={16} className="mb-1" />
                 <span>Settings</span>
               </button>
               <button
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault();
                   console.log("Users clicked, currentCompanyId:", currentCompanyId);
                   if (currentCompanyId) {
                     onManageUsers();
                     onClose();
+                  } else {
+                    console.log("No company selected for users");
                   }
                 }}
                 disabled={!currentCompanyId}
-                className="flex flex-col items-center p-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-gray-200 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex flex-col items-center p-3 text-xs text-gray-600 hover:text-gray-900 hover:bg-white dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-transparent hover:border-gray-200 dark:hover:border-gray-600"
                 title="Manage Users"
               >
                 <Users size={16} className="mb-1" />
@@ -195,7 +192,7 @@ export default function CleanCompanySelector({
                   onCreateCompany();
                   onClose();
                 }}
-                className="flex flex-col items-center p-2 text-xs text-green-700 hover:text-green-800 hover:bg-green-100 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/30 rounded-md transition-colors"
+                className="flex flex-col items-center p-3 text-xs text-green-700 hover:text-green-800 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/30 rounded-md transition-colors border border-transparent hover:border-green-200 dark:hover:border-green-800"
                 title="Create New Company"
               >
                 <Plus size={16} className="mb-1" />
@@ -208,13 +205,16 @@ export default function CleanCompanySelector({
           {shouldShowSearch && (
             <div className="p-3 border-b border-gray-100 dark:border-gray-700">
               <div className="relative">
-                <Search size={14} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Search
+                  size={14}
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                />
                 <input
                   ref={searchInputRef}
                   type="text"
                   placeholder="Search companies..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={e => setSearchQuery(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-white"
                 />
               </div>
@@ -222,7 +222,16 @@ export default function CleanCompanySelector({
           )}
 
           {/* Company List */}
-          <div className="py-2 max-h-64 overflow-y-auto">
+          <div className="max-h-64 overflow-y-auto">
+            {/* Clear header above company list */}
+            {filteredCompanies.length > 0 && (
+              <div className="px-4 py-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/30 border-b border-gray-100 dark:border-gray-700">
+                {filteredCompanies.length === 1
+                  ? "Your company"
+                  : `${filteredCompanies.length} companies available`}
+              </div>
+            )}
+
             <style jsx>{`
               .company-scroll::-webkit-scrollbar {
                 width: 6px;
@@ -238,60 +247,73 @@ export default function CleanCompanySelector({
                 background: rgba(156, 163, 175, 0.7);
               }
             `}</style>
-            <div className="company-scroll">
+            <div className="company-scroll py-1">
               {filteredCompanies.length > 0 ? (
-                <div className="px-2 space-y-1">
-                  {filteredCompanies.map((company) => (
+                <div className="px-1 space-y-1">
+                  {filteredCompanies.map(company => (
                     <button
                       key={company.id}
                       onClick={() => handleCompanySelect(company.id)}
                       className={`w-full flex items-center px-3 py-2.5 text-sm rounded-md transition-colors group ${
-                        company.id === currentCompanyId 
-                          ? "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800" 
-                          : "text-gray-700 hover:bg-gray-200 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
+                        company.id === currentCompanyId
+                          ? "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800"
+                          : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
                       }`}
                     >
                       <div className="flex items-center flex-1 min-w-0">
-                        {company.avatar ? (
-                          <img 
-                            src={company.avatar} 
-                            alt="" 
-                            className="w-5 h-5 rounded mr-3 flex-shrink-0"
-                          />
-                        ) : (
-                          <Building2 size={16} className="mr-3 flex-shrink-0 text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200" />
-                        )}
+                        <Building2
+                          size={16}
+                          className="mr-3 flex-shrink-0 text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200"
+                        />
                         <span className="truncate font-medium" title={company.name}>
                           {company.name}
                         </span>
                       </div>
                       {company.id === currentCompanyId && (
-                        <Check size={16} className="text-red-600 dark:text-red-400 flex-shrink-0 ml-2" />
+                        <Check
+                          size={16}
+                          className="text-red-600 dark:text-red-400 flex-shrink-0 ml-2"
+                        />
                       )}
                     </button>
                   ))}
                 </div>
               ) : (
-                <div className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 text-center">
-                  {searchQuery ? 'No companies found' : 'No companies available'}
+                <div className="px-4 py-6 text-sm text-gray-500 dark:text-gray-400 text-center">
+                  {searchQuery ? (
+                    <>
+                      <Building2 size={24} className="mx-auto mb-2 opacity-50" />
+                      <p>No companies found</p>
+                      <p className="text-xs">Try adjusting your search</p>
+                    </>
+                  ) : (
+                    <>
+                      <Building2 size={24} className="mx-auto mb-2 opacity-50" />
+                      <p>No companies available</p>
+                    </>
+                  )}
                 </div>
               )}
             </div>
           </div>
 
-          {/* Quick Create Footer */}
+          {/* Empty state with create action */}
           {companies.length === 0 && (
-            <div className="p-3 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50">
-              <button
-                onClick={() => {
-                  onCreateCompany();
-                  onClose();
-                }}
-                className="w-full flex items-center justify-center px-3 py-2 text-sm font-medium text-green-700 bg-green-50 hover:bg-green-100 dark:text-green-400 dark:bg-green-900/20 dark:hover:bg-green-900/30 rounded-md transition-colors"
-              >
-                <Plus size={16} className="mr-2" />
-                Create Your First Company
-              </button>
+            <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 rounded-b-lg">
+              <div className="text-center">
+                <Building2 size={32} className="mx-auto mb-3 text-gray-400" />
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">No companies yet</p>
+                <button
+                  onClick={() => {
+                    onCreateCompany();
+                    onClose();
+                  }}
+                  className="w-full flex items-center justify-center px-3 py-2 text-sm font-medium text-white bg-red hover:bg-red-700 rounded-md transition-colors"
+                >
+                  <Plus size={16} className="mr-2" />
+                  Create Your First Company
+                </button>
+              </div>
             </div>
           )}
         </div>

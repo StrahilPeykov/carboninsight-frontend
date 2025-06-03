@@ -74,7 +74,7 @@ export default function CompanyDetailsPage() {
         business_registration_number: formData.business_registration_number.trim(),
       });
       setSuccessMessage("Company data successfully edited!");
-      
+
       // Notify navbar that company data changed (name might have changed)
       if (typeof window !== "undefined") {
         console.log("Company updated - dispatching events");
@@ -108,11 +108,11 @@ export default function CompanyDetailsPage() {
       console.log("About to delete company:", companyId);
       await companyApi.deleteCompany(companyId);
       console.log("Company deleted successfully");
-      
+
       // Clear the selected company from localStorage first
       if (typeof window !== "undefined") {
         localStorage.removeItem("selected_company_id");
-        
+
         // Then dispatch events to notify navbar with a small delay
         console.log("Company deleted - dispatching events");
         setTimeout(() => {
@@ -121,7 +121,7 @@ export default function CompanyDetailsPage() {
           console.log("Events dispatched");
         }, 50);
       }
-      
+
       // Small delay to ensure events are processed before redirect
       setTimeout(() => {
         console.log("Redirecting to list companies");

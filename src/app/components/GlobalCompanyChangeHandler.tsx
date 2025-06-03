@@ -15,7 +15,7 @@ export default function GlobalCompanyChangeHandler() {
       const redirectPages = ["/list-companies", "/create-company"];
 
       // Pages that should NOT reload when company changes (navigation within same company)
-      const noReloadPages = ["/company-details", "/manage-user"];
+      const noReloadPages = ["/company-details", "/manage-user", "/product-data-sharing"];
 
       if (redirectPages.includes(pathname)) {
         router.push("/dashboard");

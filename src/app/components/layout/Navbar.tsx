@@ -14,6 +14,7 @@ import {
   HelpCircle,
   Plus,
   Users,
+  Share2,
 } from "lucide-react";
 import { companyApi } from "@/lib/api/companyApi";
 import { setLocalStorageItem } from "@/lib/api/apiClient";
@@ -235,6 +236,13 @@ export default function Navbar() {
     }
   };
 
+  const handleDataSharing = () => {
+    if (companyId) {
+      setLocalStorageItem("selected_company_id", companyId);
+      router.push("/product-data-sharing");
+    }
+  };
+
   return (
     <>
       <nav
@@ -244,7 +252,7 @@ export default function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            {/* Logo and brand - FIXED: Always go to home page */}
+            {/* Logo and brand */}
             <div className="flex-shrink-0 flex items-center">
               <Link
                 href="/"
@@ -313,7 +321,7 @@ export default function Navbar() {
             <div className="hidden sm:flex sm:items-center sm:space-x-4">
               {isAuthenticated && mounted ? (
                 <>
-                  {/* Main Navigation - Only show Dashboard and Products when company is selected */}
+                  {/* Main Navigation */}
                   {companyId && (
                     <nav className="flex items-center space-x-1" role="navigation">
                       <Link
@@ -346,7 +354,7 @@ export default function Navbar() {
                     </nav>
                   )}
 
-                  {/* Clean Company Selector */}
+                  {/* Company Selector */}
                   <CleanCompanySelector
                     companies={allCompanies}
                     currentCompanyId={companyId}
@@ -354,6 +362,7 @@ export default function Navbar() {
                     onCreateCompany={handleCreateCompany}
                     onCompanySettings={handleCompanySettings}
                     onManageUsers={handleManageUsers}
+                    onDataSharing={handleDataSharing}
                     isOpen={isCompanyMenuOpen}
                     onToggle={toggleCompanyMenu}
                     onClose={() => setIsCompanyMenuOpen(false)}
@@ -493,10 +502,13 @@ export default function Navbar() {
                         handleCreateCompany();
                         setIsMenuOpen(false);
                       }}
-                      className="flex items-center text-sm text-green-600 hover:text-green-900 py-1"
+                      className="flex items-center justify-between w-full text-sm text-green-600 hover:text-green-900 py-1"
                     >
-                      <Plus size={14} className="mr-1" />
-                      Create New Company
+                      <div className="flex items-center">
+                        <Plus size={14} className="mr-1" />
+                        Create New Company
+                      </div>
+                      <span className="text-xs text-gray-400">N</span>
                     </button>
 
                     {companyId && (
@@ -506,7 +518,7 @@ export default function Navbar() {
                             handleCompanySettings();
                             setIsMenuOpen(false);
                           }}
-                          className="flex items-center text-sm text-gray-600 hover:text-gray-900 py-1"
+                          className="flex items-center text-sm text-gray-600 hover:text-gray-900 py-1 w-full"
                         >
                           <SettingsIcon size={14} className="mr-2" />
                           Company Settings
@@ -516,10 +528,20 @@ export default function Navbar() {
                             handleManageUsers();
                             setIsMenuOpen(false);
                           }}
-                          className="flex items-center text-sm text-gray-600 hover:text-gray-900 py-1"
+                          className="flex items-center text-sm text-gray-600 hover:text-gray-900 py-1 w-full"
                         >
                           <Users size={14} className="mr-2" />
                           Manage Users
+                        </button>
+                        <button
+                          onClick={() => {
+                            handleDataSharing();
+                            setIsMenuOpen(false);
+                          }}
+                          className="flex items-center text-sm text-gray-600 hover:text-gray-900 py-1"
+                        >
+                          <Share2 size={14} className="mr-2" />
+                          Data Sharing
                         </button>
                       </>
                     )}
@@ -552,6 +574,13 @@ export default function Navbar() {
                   >
                     Sign out
                   </button>
+                </div>
+
+                {/* Keyboard shortcuts info for mobile */}
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-2 px-3 py-2">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                    Press ? to see keyboard shortcuts
+                  </p>
                 </div>
               </>
             ) : (

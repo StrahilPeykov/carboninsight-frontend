@@ -165,10 +165,10 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
         const transformed: Material[] = lineItems.map(item => ({
           id: item.id.toString(),
           productName: item.line_item_product.name,
-          supplierName: item.line_item_product.manufacturer ?? "Unknown",
+          supplierName: item.line_item_product.manufacturer_name ?? "Unknown",
           quantity: item.quantity,
           emission_total: Number(
-            (item.line_item_product.emmision_total * item.quantity).toFixed(2)
+            (item.line_item_product.emission_total * item.quantity).toFixed(2)
           ),
         }));
 

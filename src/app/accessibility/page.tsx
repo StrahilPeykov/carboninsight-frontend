@@ -200,6 +200,99 @@ export default function AccessibilityStatementPage() {
           </div>
         </Card>
 
+        {/* Keyboard Shortcuts */}
+        <Card className="mb-8" id="keyboard-shortcuts">
+          <h2 className="text-2xl font-semibold mb-6">Keyboard Shortcuts</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            CarbonInsight includes optional keyboard shortcuts to help power users work more efficiently. 
+            These shortcuts are safe and don't conflict with browser shortcuts.
+          </p>
+          
+          <div className="overflow-x-auto mb-6">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <caption className="sr-only">Available keyboard shortcuts in CarbonInsight</caption>
+              <thead className="bg-gray-50 dark:bg-gray-800">
+                <tr>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                  >
+                    Shortcut
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                  >
+                    Action
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                  >
+                    Notes
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                <tr>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <kbd className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-sm font-mono">/</kbd>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
+                    Focus search field
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                    Works on any page with a search field
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <kbd className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-sm font-mono">?</kbd>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
+                    Show keyboard shortcuts help
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                    Brings you to this section
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <kbd className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-sm font-mono">N</kbd>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
+                    Create new item
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                    Creates product or company based on current page
+                  </td>
+                </tr>
+                <tr>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <kbd className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-sm font-mono">Escape</kbd>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
+                    Close modals and menus
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                    Universal close action
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-4">
+            <h3 className="font-medium text-blue-800 dark:text-blue-300 mb-2">Important Notes:</h3>
+            <ul className="text-sm text-blue-700 dark:text-blue-200 space-y-1">
+              <li>• Shortcuts are disabled when typing in form fields to avoid conflicts</li>
+              <li>• These shortcuts don't interfere with browser shortcuts like Ctrl+D or Ctrl+P</li>
+              <li>• All functionality remains available through standard navigation</li>
+              <li>• Shortcuts follow common web application conventions</li>
+            </ul>
+          </div>
+        </Card>
+
         {/* Known Limitations */}
         <Card className="mb-8">
           <h2 className="text-2xl font-semibold mb-6">Known Limitations</h2>

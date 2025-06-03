@@ -10,8 +10,6 @@ import { bomApi, LineItem } from "@/lib/api/bomApi";
 import { companyApi, Company } from "@/lib/api/companyApi";
 import { productApi, Product } from "@/lib/api/productApi";
 import { Mode } from "../enums";
-import { on } from "events";
-
 
 export type Material = {
   id: number;
@@ -42,8 +40,9 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [newQuantity, setNewQuantity] = useState<string>("1");
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-    const [deleteMaterial, setDeleteMaterial] = useState<Material|null>(null);
-    const [mainProduct, setMainProduct] = useState<Product|null>(null);
+    const [deleteMaterial, setDeleteMaterial] = useState<Material | null>(null);
+    const [mainProduct, setMainProduct] = useState<Product | null>(null);
+    const [addMaterialError, setAddMaterialError] = useState<string | null>(null);
 
     let company_pk_string = localStorage.getItem("selected_company_id");
 
@@ -136,21 +135,9 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
         } catch (e) {
           console.error("Error loading main product", e);
         }
-    };
-    fetchMain();
-},  [company_pk_string, productId_string]);
-
-    const handleDelete = async (id: number) => {
-      try {
-        await bomApi.deleteLineItem(company_pk, productId(), id);
-
-        const updatedMaterials = materials.filter(material => material.id !== id);
-        setMaterials(updatedMaterials);
-        onFieldChange();
-      } catch (error) {
-        console.error("Error deleting material:", error);
-      }
-    };
+      };
+      fetchMain();
+    }, [company_pk_string, productId_string]);
 
     const handleEdit = (id: number) => {
       const foundMaterial = materials.find((m: Material) => m.id === id);
@@ -224,6 +211,8 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
     };
 
     const handleAddProduct = async () => {
+      setAddMaterialError(null);
+
       const parsedQuantity = parseInt(quantity);
       if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
         alert("Please enter a valid quantity greater than 0");
@@ -254,8 +243,65 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
           setMaterials(updatedMaterials);
           setIsModalOpen(false);
           onFieldChange();
-        } catch (error) {
+        } catch (error: unknown) {
           console.error("Error adding material:", error);
+
+          // Log the entire error object to see what we're working with
+          console.log("Full error response:", JSON.stringify(error));
+
+          let errorMessage = "Failed to add material. Please try again.";
+
+          // Try to extract error from various possible formats
+          try {
+            if (typeof error === "object" && error !== null) {
+              // Try to extract directly from the response data
+              const errorObj = error as any;
+
+              // Check for errors array in the raw error object
+              if (errorObj.errors && Array.isArray(errorObj.errors)) {
+                const detail = errorObj.errors.find(
+                  (e: any) => e.attr === "non_field_errors"
+                )?.detail;
+                if (detail) {
+                  errorMessage = detail;
+                }
+              }
+
+              // Check in response property (common in fetch/axios wrappers)
+              else if (errorObj.response?.data?.errors) {
+                const detail = errorObj.response.data.errors.find(
+                  (e: any) => e.attr === "non_field_errors"
+                )?.detail;
+                if (detail) {
+                  errorMessage = detail;
+                }
+              }
+
+              // Check in body property (common in some API clients)
+              else if (errorObj.body?.errors) {
+                const detail = errorObj.body.errors.find(
+                  (e: any) => e.attr === "non_field_errors"
+                )?.detail;
+                if (detail) {
+                  errorMessage = detail;
+                }
+              }
+
+              // Access potentially raw error data
+              else if (errorObj.data?.errors) {
+                const detail = errorObj.data.errors.find(
+                  (e: any) => e.attr === "non_field_errors"
+                )?.detail;
+                if (detail) {
+                  errorMessage = detail;
+                }
+              }
+            }
+          } catch (parseError) {
+            console.error("Error parsing error response:", parseError);
+          }
+
+          setAddMaterialError(errorMessage);
         }
       }
     };
@@ -274,11 +320,10 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
         const transformedMaterials: Material[] = data.map((item: LineItem) => ({
           id: item.id,
           productName: item.line_item_product.name,
-          supplierName: item.line_item_product.manufacturer || "Unknown",
+          supplierName: item.line_item_product.manufacturer_name || "Unknown",
           quantity: item.quantity,
-          emission_total: (item.calculate_emissions ?? []).reduce(
-            (total, e) => total + e.quantity,
-            0
+          emission_total: parseFloat(
+            (item.line_item_product.emission_total * item.quantity).toFixed(2)
           ),
           supplierId: item.line_item_product.supplier,
           productId: item.line_item_product.id,
@@ -324,6 +369,15 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
           console.error("Error adding material:", error);
         }
       }
+    };
+
+    const closeModal = () => {
+      setIsModalOpen(false);
+      setAddMaterialError(null);
+      setCurrentStep(1);
+      setSelectedCompany(null);
+      setSelectedProduct(null);
+      setQuantity("1");
     };
 
     function openDeleteModal(item: Material) {
@@ -529,168 +583,180 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
 
         {/* Add Material Modal */}
         {isModalOpen && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-20">
-            <Card className="w-11/12 max-w-2xl">
-              <div>
-                {/* Header with title and close button */}
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold">
-                    {currentStep === 1 ? "Step 1: Select a Company" : "Step 2: Select a Product"}
-                  </h3>
-                  <button
-                    onClick={() => setIsModalOpen(false)}
-                    className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-
-                {/* Stepper UI */}
-                <div className="flex items-center justify-center mb-6">
-                  <div className="flex items-center">
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 1 ? "bg-red text-white" : "bg-blue-100 text-blue-500"}`}
+          <div className="fixed inset-0 bg-black/50 z-60 overflow-y-auto py-8">
+            <div className="min-h-full flex items-center justify-center p-4">
+              <Card className="w-full max-w-2xl my-auto">
+                <div className="p-3 sm:p-5">
+                  {/* Header with title and close button */}
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold truncate pr-2">
+                      {currentStep === 1 ? "Step 1: Select a Company" : "Step 2: Select a Product"}
+                    </h3>
+                    <button
+                      onClick={closeModal}
+                      className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 flex-shrink-0"
                     >
-                      1
-                    </div>
-                    <div className="mx-2 w-16 h-0.5 bg-gray-300"></div>
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 2 ? "bg-red text-white" : "bg-gray-100 dark:bg-gray-600"}`}
-                    >
-                      2
-                    </div>
+                      <X className="w-5 h-5" />
+                    </button>
                   </div>
-                </div>
 
-                {/* Step content */}
-                {currentStep === 1 && (
-                  <div>
-                    <div className="relative mb-4">
-                      <input
-                        type="text"
-                        placeholder="Search companies..."
-                        value={searchCompany}
-                        onChange={e => setSearchCompany(e.target.value)}
-                        className="w-full p-2 pl-10 border rounded-lg"
-                      />
-                      <Search className="w-5 h-5 absolute left-2 top-2.5 text-gray-400" />
-                    </div>
-
-                    <div className="max-h-80 overflow-y-auto">
-                      {isLoading ? (
-                        <div className="text-center py-4">Loading...</div>
-                      ) : companies.length > 0 ? (
-                        companies.map(company => (
-                          <div
-                            key={company.id}
-                            onClick={() => handleSelectCompany(company)}
-                            className="p-3 border-b hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer flex justify-between items-center"
-                          >
-                            <div>
-                              <p className="font-medium">{company.name}</p>
-                              {company.business_registration_number && (
-                                <p className="text-xs text-gray-500">
-                                  Reg: {company.business_registration_number}
-                                </p>
-                              )}
-                            </div>
-                            <ChevronRight className="w-5 h-5 text-gray-400" />
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-center py-4 text-gray-500">No companies found</div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Step 2: Select Product */}
-                {currentStep === 2 && selectedCompany && (
-                  <div>
-                    <div className="mb-4">
-                      <p className="text-sm text-gray-500">Selected Company:</p>
-                      <p className="font-medium">{selectedCompany.name}</p>
-                    </div>
-
-                    <div className="relative mb-4">
-                      <input
-                        type="text"
-                        placeholder="Search products..."
-                        value={searchProduct}
-                        onChange={e => setSearchProduct(e.target.value)}
-                        className="w-full p-2 pl-10 border rounded-lg"
-                      />
-                      <Search className="w-5 h-5 absolute left-2 top-2.5 text-gray-400" />
-                    </div>
-
-                    <div className="max-h-60 overflow-y-auto mb-4">
-                      {isLoading ? (
-                        <div className="text-center py-4">Loading products...</div>
-                      ) : products.length > 0 ? (
-                        products.map(product => (
-                          <div
-                            key={product.id}
-                            onClick={() => setSelectedProduct(product)}
-                            className={`p-3 border rounded-lg mb-2 cursor-pointer ${selectedProduct?.id === product.id ? "border-blue-500 bg-blue-50" : "hover:bg-gray-50 dark:hover:bg-gray-900"}`}
-                          >
-                            <p className="font-medium">{product.name}</p>
-                            <div className="flex justify-between text-sm text-gray-500 mt-1">
-                              <span>SKU: {product.sku || "N/A"}</span>
-                              <span>Carbon: {product.emission_total} kg</span>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-center py-4 text-gray-500">No products found</div>
-                      )}
-                    </div>
-
-                    {selectedProduct && (
-                      <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Quantity
-                        </label>
-                        <input
-                          type="number"
-                          min="1"
-                          value={quantity}
-                          onChange={e => setQuantity(e.target.value)}
-                          className="w-full p-2 border rounded-lg"
-                        />
+                  {/* Stepper UI */}
+                  <div className="flex items-center justify-center mb-6">
+                    <div className="flex items-center">
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 1 ? "bg-red text-white" : "bg-blue-100 text-blue-500"}`}
+                      >
+                        1
                       </div>
+                      <div className="mx-2 w-16 h-0.5 bg-gray-300"></div>
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 2 ? "bg-red text-white" : "bg-gray-100 dark:bg-gray-600"}`}
+                      >
+                        2
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step content */}
+                  {currentStep === 1 && (
+                    <div>
+                      <div className="relative mb-4">
+                        <input
+                          type="text"
+                          placeholder="Search companies..."
+                          value={searchCompany}
+                          onChange={e => setSearchCompany(e.target.value)}
+                          className="w-full p-2 pl-10 border rounded-lg"
+                        />
+                        <Search className="w-5 h-5 absolute left-2 top-2.5 text-gray-400" />
+                      </div>
+
+                      <div className="max-h-[40vh] sm:max-h-80 overflow-y-auto">
+                        {isLoading ? (
+                          <div className="text-center py-4">Loading...</div>
+                        ) : companies.length > 0 ? (
+                          companies.map(company => (
+                            <div
+                              key={company.id}
+                              onClick={() => handleSelectCompany(company)}
+                              className="p-3 border-b hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer flex justify-between items-center"
+                            >
+                              <div className="overflow-hidden">
+                                <p className="font-medium truncate">{company.name}</p>
+                                {company.business_registration_number && (
+                                  <p className="text-xs text-gray-500 truncate">
+                                    Reg: {company.business_registration_number}
+                                  </p>
+                                )}
+                              </div>
+                              <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-4 text-gray-500">No companies found</div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Step 2: Select Product */}
+                  {currentStep === 2 && selectedCompany && (
+                    <div>
+                      <div className="mb-4">
+                        <p className="text-sm text-gray-500">Selected Company:</p>
+                        <p className="font-medium truncate">{selectedCompany.name}</p>
+                      </div>
+
+                      {/* Error message display */}
+                      {addMaterialError && (
+                        <div className="mb-4 p-3 text-sm bg-red-100 border border-red-200 text-red-800 rounded-lg">
+                          <p>{addMaterialError}</p>
+                        </div>
+                      )}
+
+                      <div className="relative mb-4">
+                        <input
+                          type="text"
+                          placeholder="Search products..."
+                          value={searchProduct}
+                          onChange={e => setSearchProduct(e.target.value)}
+                          className="w-full p-2 pl-10 border rounded-lg"
+                        />
+                        <Search className="w-5 h-5 absolute left-2 top-2.5 text-gray-400" />
+                      </div>
+
+                      <div className="max-h-[30vh] sm:max-h-60 overflow-y-auto mb-4">
+                        {isLoading ? (
+                          <div className="text-center py-4">Loading products...</div>
+                        ) : products.length > 0 ? (
+                          products.map(product => (
+                            <div
+                              key={product.id}
+                              onClick={() => setSelectedProduct(product)}
+                              className={`p-3 border rounded-lg mb-2 cursor-pointer ${selectedProduct?.id === product.id ? "bg-gray-50 dark:bg-gray-900" : "hover:bg-gray-50 dark:hover:bg-gray-900"}`}
+                            >
+                              <p className="font-medium truncate">{product.name}</p>
+                              <div className="flex justify-between text-sm text-gray-500 mt-1">
+                                <span className="truncate mr-2">SKU: {product.sku || "N/A"}</span>
+                                <span className="flex-shrink-0">
+                                  Carbon: {product.emission_total} kg
+                                </span>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-4 text-gray-500">No products found</div>
+                        )}
+                      </div>
+
+                      {selectedProduct && (
+                        <div className="mb-4">
+                          <label className="block text-sm font-medium text-gray-500 mb-1">
+                            Quantity
+                          </label>
+                          <input
+                            type="number"
+                            min="1"
+                            value={quantity}
+                            onChange={e => setQuantity(e.target.value)}
+                            className="w-full p-2 border rounded-lg"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Footer with buttons */}
+                  <div className="flex justify-between mt-6 pt-4 border-t">
+                    {currentStep === 2 ? (
+                      <>
+                        <Button
+                          onClick={() => setCurrentStep(1)}
+                          variant="outline"
+                          className="mr-2"
+                        >
+                          Back
+                        </Button>
+                        <Button
+                          onClick={handleAddProduct}
+                          variant="primary"
+                          disabled={!selectedProduct || parseInt(quantity) <= 0 || quantity === ""}
+                        >
+                          Add Material
+                        </Button>
+                      </>
+                    ) : (
+                      <Button onClick={closeModal} variant="outline" className="ml-auto">
+                        Cancel
+                      </Button>
                     )}
                   </div>
-                )}
-
-                {/* Footer with buttons */}
-                <div className="flex justify-between mt-6 pt-4 border-t">
-                  {currentStep === 2 ? (
-                    <>
-                      <Button onClick={() => setCurrentStep(1)} variant="outline">
-                        Back
-                      </Button>
-                      <Button
-                        onClick={handleAddProduct}
-                        variant="primary"
-                        disabled={!selectedProduct || parseInt(quantity) <= 0 || quantity === ""}
-                      >
-                        Add Material
-                      </Button>
-                    </>
-                  ) : (
-                    <Button
-                      onClick={() => setIsModalOpen(false)}
-                      variant="outline"
-                      className="ml-auto"
-                    >
-                      Cancel
-                    </Button>
-                  )}
                 </div>
-              </div>
-            </Card>
+              </Card>
+            </div>
           </div>
         )}
+
         {/* Edit Material Modal */}
         {isEditModalOpen && editingMaterial && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-20">
@@ -762,8 +828,12 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
                 <span className="font-medium"> {mainProduct?.name} </span>?
               </p>
               <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={closeDeleteModal}>Cancel</Button>
-                <Button variant="primary" onClick={confirmDelete}>Delete</Button>
+                <Button variant="outline" onClick={closeDeleteModal}>
+                  Cancel
+                </Button>
+                <Button variant="primary" onClick={confirmDelete}>
+                  Delete
+                </Button>
               </div>
             </Card>
           </div>

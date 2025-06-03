@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Building2, Search, Settings, Users, Plus, Check, ChevronDown } from "lucide-react";
+import { Building2, Search, Settings, Users, Plus, Check, ChevronDown, Share2 } from "lucide-react";
 
 interface Company {
   id: string;
@@ -16,6 +16,7 @@ interface CleanCompanySelectorProps {
   onCreateCompany: () => void;
   onCompanySettings: () => void;
   onManageUsers: () => void;
+  onDataSharing: () => void;
   isOpen: boolean;
   onToggle: () => void;
   onClose: () => void;
@@ -28,6 +29,7 @@ export default function CleanCompanySelector({
   onCreateCompany,
   onCompanySettings,
   onManageUsers,
+  onDataSharing,
   isOpen,
   onToggle,
   onClose,
@@ -150,11 +152,10 @@ export default function CleanCompanySelector({
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
               Select Company
             </h3>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-4 gap-2">
               <button
                 onClick={e => {
                   e.preventDefault();
-                  console.log("Settings clicked, currentCompanyId:", currentCompanyId);
                   if (currentCompanyId) {
                     onCompanySettings();
                     onClose();
@@ -163,16 +164,15 @@ export default function CleanCompanySelector({
                   }
                 }}
                 disabled={!currentCompanyId}
-                className="flex flex-col items-center p-3 text-xs text-gray-600 hover:text-gray-900 hover:bg-white dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-transparent hover:border-gray-200 dark:hover:border-gray-600"
+                className="flex flex-col items-center p-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-white dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-transparent hover:border-gray-200 dark:hover:border-gray-600"
                 title="Company Settings"
               >
-                <Settings size={16} className="mb-1" />
+                <Settings size={14} className="mb-1" />
                 <span>Settings</span>
               </button>
               <button
                 onClick={e => {
                   e.preventDefault();
-                  console.log("Users clicked, currentCompanyId:", currentCompanyId);
                   if (currentCompanyId) {
                     onManageUsers();
                     onClose();
@@ -181,21 +181,38 @@ export default function CleanCompanySelector({
                   }
                 }}
                 disabled={!currentCompanyId}
-                className="flex flex-col items-center p-3 text-xs text-gray-600 hover:text-gray-900 hover:bg-white dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-transparent hover:border-gray-200 dark:hover:border-gray-600"
+                className="flex flex-col items-center p-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-white dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-transparent hover:border-gray-200 dark:hover:border-gray-600"
                 title="Manage Users"
               >
-                <Users size={16} className="mb-1" />
+                <Users size={14} className="mb-1" />
                 <span>Users</span>
+              </button>
+              <button
+                onClick={e => {
+                  e.preventDefault();
+                  if (currentCompanyId) {
+                    onDataSharing();
+                    onClose();
+                  } else {
+                    console.log("No company selected for data sharing");
+                  }
+                }}
+                disabled={!currentCompanyId}
+                className="flex flex-col items-center p-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-white dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-transparent hover:border-gray-200 dark:hover:border-gray-600"
+                title="Data Sharing Requests"
+              >
+                <Share2 size={14} className="mb-1" />
+                <span>Sharing</span>
               </button>
               <button
                 onClick={() => {
                   onCreateCompany();
                   onClose();
                 }}
-                className="flex flex-col items-center p-3 text-xs text-green-700 hover:text-green-800 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/30 rounded-md transition-colors border border-transparent hover:border-green-200 dark:hover:border-green-800"
+                className="flex flex-col items-center p-2 text-xs text-green-700 hover:text-green-800 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/30 rounded-md transition-colors border border-transparent hover:border-green-200 dark:hover:border-green-800"
                 title="Create New Company"
               >
-                <Plus size={16} className="mb-1" />
+                <Plus size={14} className="mb-1" />
                 <span>Create</span>
               </button>
             </div>

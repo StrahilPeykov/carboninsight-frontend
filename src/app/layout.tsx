@@ -3,6 +3,7 @@ import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import { AuthProvider } from "./context/AuthContext";
 import GlobalCompanyChangeHandler from "./components/GlobalCompanyChangeHandler";
+import KeyboardShortcutsProvider from "./components/KeyboardShortcutsProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -29,12 +30,14 @@ export default function RootLayout({
         </a>
 
         <AuthProvider>
-          <GlobalCompanyChangeHandler />
-          <Navbar />
-          <main id="main-content" className="flex-grow" tabIndex={-1}>
-            {children}
-          </main>
-          <Footer />
+          <KeyboardShortcutsProvider>
+            <GlobalCompanyChangeHandler />
+            <Navbar />
+            <main id="main-content" className="flex-grow" tabIndex={-1}>
+              {children}
+            </main>
+            <Footer />
+          </KeyboardShortcutsProvider>
         </AuthProvider>
 
         {/* Consolidated live regions */}

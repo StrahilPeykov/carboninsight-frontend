@@ -6,8 +6,6 @@ import {
   userEnergyEmissionApi,
   UserEnergyEmission
 } from "@/lib/api/userEnergyEmissionApi";
-import { EmissionOverrideFactor } from "@/lib/api/productionEmissionApi";
-
 import { EmissionReference, emissionReferenceApi } from "@/lib/api/emissionReferenceApi";
 import { bomApi, LineItem } from "@/lib/api/bomApi";
 import Button from "@/app/components/ui/Button";
@@ -22,6 +20,7 @@ import {
   DialogPanel,
   DialogTitle,
 } from "@headlessui/react";
+import { LifecycleStage, lifecycleStages, OverrideFactor } from "@/lib/api";
 
 const UserEnergy = forwardRef<TabHandle, DataPassedToTabs>(
   ({ productId: productIdString, onFieldChange }, ref) => {
@@ -33,7 +32,7 @@ const UserEnergy = forwardRef<TabHandle, DataPassedToTabs>(
     const [formData, setFormData] = useState<{
       energy_consumption: string;
       reference: string;
-      override_factors: EmissionOverrideFactor[];
+      override_factors: OverrideFactor[];
       line_items: number[];
     }>({
       energy_consumption: "",
@@ -137,13 +136,17 @@ const UserEnergy = forwardRef<TabHandle, DataPassedToTabs>(
         return;
       }
       if (
-        formData.override_factors.some(
-          factor => factor.lifecycle_stage === "" ||
-            isNaN(factor.co_2_emission_factor_biogenic) ||
-            isNaN(factor.co_2_emission_factor_non_biogenic)
+        formData.override_factors.some(factor =>
+          typeof factor.lifecycle_stage !== "string" || factor.lifecycle_stage.trim() === "" ||
+
+          typeof factor.co_2_emission_factor_biogenic !== "number" ||
+          isNaN(factor.co_2_emission_factor_biogenic) ||
+
+          typeof factor.co_2_emission_factor_non_biogenic !== "number" ||
+          isNaN(factor.co_2_emission_factor_non_biogenic)
         )
       ) {
-        alert("Please fill in all override fields correctly.");
+        alert("Please fill in all override factor fields correctly.");
         return;
       }
 
@@ -213,7 +216,7 @@ const UserEnergy = forwardRef<TabHandle, DataPassedToTabs>(
         override_factors: [
           ...formData.override_factors,
           {
-            lifecycle_stage: "",
+            lifecycle_stage: undefined,
             co_2_emission_factor_biogenic: 1,
             co_2_emission_factor_non_biogenic: 1
           },
@@ -229,7 +232,11 @@ const UserEnergy = forwardRef<TabHandle, DataPassedToTabs>(
     ) => {
       const updatedFactors = [...formData.override_factors];
       if (field === "name") {
-        updatedFactors[index].lifecycle_stage = value;
+        if (lifecycleStages.includes(value)) {
+          updatedFactors[index].lifecycle_stage = value as LifecycleStage;
+        } else {
+          updatedFactors[index].lifecycle_stage = undefined;
+        }
       } else if (field === "biogenic") {
         updatedFactors[index].co_2_emission_factor_biogenic = parseFloat(value);
       } else {
@@ -742,11 +749,11 @@ const UserEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                       <div className="relative mb-3">
                         <Combobox
                           value={
-                            factor.lifecycle_stage
-                              ? lifecycleOptions.find(opt =>
-                              opt.startsWith(factor.lifecycle_stage)
-                            ) || ""
-                              : ""
+                            (
+                              factor.lifecycle_stage
+                                ? lifecycleOptions.find(opt => opt.startsWith(factor.lifecycle_stage ?? ""))
+                                : ""
+                            ) ?? ""
                           }
                           onChange={value => {
                             const enumValue = getLifecycleEnumValue(value);
@@ -928,7 +935,7 @@ const UserEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                       {showFactorsForEmission.override_factors.map((factor, index) => (
                         <tr key={index}>
                           <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                            {lifecycleOptions.find(opt => opt.startsWith(factor.lifecycle_stage)) ||
+                            {lifecycleOptions.find(opt => opt.startsWith(factor.lifecycle_stage ?? "")) ||
                               factor.lifecycle_stage}
                           </td>
                           <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">

@@ -16,7 +16,7 @@ import {
   CreateTransportEmission,
   TransportEmission,
 } from "@/lib/api/transportEmissionApi";
-import { OverrideFactor, LifecycleStage } from "@/lib/api/materialEmissionApi";
+import { OverrideFactor, LifecycleStage } from "@/lib/api/productionEmissionApi";
 import { emissionReferenceApi, EmissionReference } from "@/lib/api/emissionReferenceApi";
 
 export type Material = {
@@ -222,11 +222,12 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
       }
 
       return emission.reference_details.emission_factors.reduce((total, factor) => {
-        const biogenic = Number.isFinite(factor.co_2_emission_factor_biogenic)
-          ? factor.co_2_emission_factor_biogenic
+        const biogenic = Number.isFinite(Number(factor.co_2_emission_factor_biogenic))
+          ? Number(factor.co_2_emission_factor_biogenic)
           : 0;
-        const non_biogenic = Number.isFinite(factor.co_2_emission_factor_non_biogenic)
-          ? factor.co_2_emission_factor_non_biogenic
+
+        const non_biogenic = Number.isFinite(Number(factor.co_2_emission_factor_non_biogenic))
+          ? Number(factor.co_2_emission_factor_non_biogenic)
           : 0;
 
         return total + biogenic + non_biogenic;
@@ -307,7 +308,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
       setIsModalOpen(true);
       setDistance(emission.distance.toString());
       setWeight(emission.weight.toString());
-      setReference(emission.reference.toString());
+      setReference(emission.reference?.toString() ?? "");
       setOverrideEmissons(
         (emission.override_factors || []).map(f => ({
           ...f,
@@ -386,7 +387,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                   <td className="p-2">{emission.distance}</td>
                   <td className="p-2">{emission.weight}</td>
                   <td className="p-2">{sumTotalEmissions(emission)}</td>
-                  <td className="p-2 hidden md:table-cell">{emission.reference_details.name}</td>
+                  <td className="p-2 hidden md:table-cell">{emission.reference_details?.name ?? ""}</td>
                   <td className="p-2 hidden md:table-cell"></td>
                   <td className="p-2">
                     {Number.isFinite(
@@ -511,7 +512,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                                     <DropdownFieldGeneric
                                       name={`lifecycle_stage_${index}`}
                                       label="Lifecycle Stage"
-                                      value={override.lifecycle_stage}
+                                      value={override.lifecycle_stage ?? ""}
                                       required={true}
                                       placeholder="Select lifecycle stage"
                                       options={lifecycleStageChoices.map(

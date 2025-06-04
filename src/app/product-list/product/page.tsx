@@ -372,8 +372,8 @@ export default function ProductClientPage() {
 
             <Button
               onClick={onNext}
-              disabled={activeTab === tabConfig.length - 1 || !productInfoSavedOnce}
-              variant={activeTab === tabConfig.length - 1 || !productInfoSavedOnce ? "outline" : "primary"}
+              disabled={activeTab === tabConfig.length - 1 || (mode == Mode.ADD && !productInfoSavedOnce)}
+              variant={activeTab === tabConfig.length - 1 || (mode == Mode.ADD && !productInfoSavedOnce) ? "outline" : "primary"}
               className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
             >
               Next
@@ -387,7 +387,7 @@ export default function ProductClientPage() {
               }
               className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
             >
-              {mode === Mode.ADD ? "Finish" : "Update Product"}
+              Finish
             </Button>
           </div>
 

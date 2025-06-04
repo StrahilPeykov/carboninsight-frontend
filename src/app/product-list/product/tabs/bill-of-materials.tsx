@@ -771,7 +771,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
                         {selectedProduct && (
                           <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-500 mb-1">
-                              Quantity
+                              Quantity ({selectedProduct.reference_impact_unit})
                             </label>
                             <input
                               type="number"

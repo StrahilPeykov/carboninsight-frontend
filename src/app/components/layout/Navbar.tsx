@@ -250,13 +250,13 @@ export default function Navbar() {
         role="navigation"
         aria-label="Main navigation"
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+          <div className="flex justify-between h-16 items-center">
             {/* Logo and brand */}
-            <div className="flex-shrink-0 flex items-center">
+            <div className="flex-shrink-0 flex items-center min-w-0">
               <Link
                 href="/"
-                className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red rounded-md"
+                className="flex items-center space-x-2 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red rounded-md pr-2 sm:pr-4"
                 aria-label="CarbonInsight - Home"
               >
                 <Image
@@ -264,16 +264,19 @@ export default function Navbar() {
                   alt=""
                   width={32}
                   height={32}
-                  className="hidden dark:block"
+                  className="hidden dark:block flex-shrink-0"
                 />
                 <Image
                   src="/brainport-logo.webp"
                   alt=""
                   width={32}
                   height={32}
-                  className="block dark:hidden"
+                  className="block dark:hidden flex-shrink-0"
                 />
-                <span className="text-xl font-bold ml-1 mr-4">CarbonInsight</span>
+                <span className="text-lg sm:text-xl font-bold truncate">
+                  <span className="sm:hidden">CI</span>
+                  <span className="hidden sm:inline">CarbonInsight</span>
+                </span>
               </Link>
             </div>
 
@@ -318,15 +321,15 @@ export default function Navbar() {
             </div>
 
             {/* Desktop menu */}
-            <div className="hidden md:flex md:items-center md:space-x-4">
+            <div className="hidden md:flex md:items-center md:space-x-2 lg:space-x-4 min-w-0 flex-1 justify-end">
               {isAuthenticated && mounted ? (
                 <>
-                  {/* Main Navigation - hide on smaller desktop screens */}
+                  {/* Main Navigation */}
                   {companyId && (
-                    <nav className="hidden lg:flex lg:items-center lg:space-x-1" role="navigation">
+                    <nav className="hidden md:flex md:items-center md:space-x-1 lg:space-x-2" role="navigation">
                       <Link
                         href="/dashboard"
-                        className={`flex items-center px-3 py-2 rounded-md text-sm font-medium min-h-[44px]
+                        className={`flex items-center px-2 lg:px-3 py-2 rounded-md text-sm font-medium min-h-[44px]
                           ${
                             isActive("/dashboard")
                               ? "bg-red text-white"
@@ -335,12 +338,12 @@ export default function Navbar() {
                         aria-current={isActive("/dashboard") ? "page" : undefined}
                       >
                         <LayoutDashboardIcon size={16} className="mr-1" aria-hidden="true" />
-                        Dashboard
+                        <span className="hidden lg:inline">Dashboard</span>
                       </Link>
 
                       <Link
                         href="/product-list"
-                        className={`flex items-center px-3 py-2 rounded-md text-sm font-medium min-h-[44px]
+                        className={`flex items-center px-2 lg:px-3 py-2 rounded-md text-sm font-medium min-h-[44px]
                           ${
                             isActive("/product-list")
                               ? "bg-red text-white"
@@ -349,27 +352,29 @@ export default function Navbar() {
                         aria-current={isActive("/product-list") ? "page" : undefined}
                       >
                         <Boxes size={16} className="mr-1" aria-hidden="true" />
-                        Products
+                        <span className="hidden lg:inline">Products</span>
                       </Link>
                     </nav>
                   )}
 
                   {/* Company Selector */}
-                  <CleanCompanySelector
-                    companies={allCompanies}
-                    currentCompanyId={companyId}
-                    onCompanySelect={handleCompanySelect}
-                    onCreateCompany={handleCreateCompany}
-                    onCompanySettings={handleCompanySettings}
-                    onManageUsers={handleManageUsers}
-                    onDataSharing={handleDataSharing}
-                    isOpen={isCompanyMenuOpen}
-                    onToggle={toggleCompanyMenu}
-                    onClose={() => setIsCompanyMenuOpen(false)}
-                  />
+                  <div className="flex-shrink-0">
+                    <CleanCompanySelector
+                      companies={allCompanies}
+                      currentCompanyId={companyId}
+                      onCompanySelect={handleCompanySelect}
+                      onCreateCompany={handleCreateCompany}
+                      onCompanySettings={handleCompanySettings}
+                      onManageUsers={handleManageUsers}
+                      onDataSharing={handleDataSharing}
+                      isOpen={isCompanyMenuOpen}
+                      onToggle={toggleCompanyMenu}
+                      onClose={() => setIsCompanyMenuOpen(false)}
+                    />
+                  </div>
 
                   {/* Profile Menu */}
-                  <div className="relative ml-3" ref={profileMenuRef}>
+                  <div className="relative flex-shrink-0" ref={profileMenuRef}>
                     <button
                       ref={profileButtonRef}
                       onClick={toggleProfileMenu}

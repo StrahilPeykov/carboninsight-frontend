@@ -95,7 +95,7 @@ export default function CleanCompanySelector({
       {/* Company Selector Button */}
       <button
         onClick={() => onToggle()}
-        className={`flex items-center px-3 py-2 rounded-md text-sm font-medium h-[44px] transition-all duration-200 w-[200px] border
+        className={`flex items-center px-3 py-2 rounded-md text-sm font-medium h-[44px] transition-all duration-200 w-[120px] sm:w-[160px] lg:w-[200px] border
           ${
             currentCompany
               ? "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
@@ -126,27 +126,44 @@ export default function CleanCompanySelector({
                   className="truncate text-sm font-semibold leading-tight min-w-0"
                   title={currentCompany.name}
                 >
-                  {currentCompany.name}
+                  {/* Responsive company name truncation */}
+                  <span className="sm:hidden">
+                    {currentCompany.name.length > 8 
+                      ? `${currentCompany.name.substring(0, 8)}...` 
+                      : currentCompany.name}
+                  </span>
+                  <span className="hidden sm:inline lg:hidden">
+                    {currentCompany.name.length > 12 
+                      ? `${currentCompany.name.substring(0, 12)}...` 
+                      : currentCompany.name}
+                  </span>
+                  <span className="hidden lg:inline">
+                    {currentCompany.name}
+                  </span>
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight -mt-0.5 truncate">
-                  Current Company
+                  <span className="sm:hidden">Company</span>
+                  <span className="hidden sm:inline">Current Company</span>
                 </div>
               </>
             ) : (
-              <span className="truncate text-sm">Select Company</span>
+              <span className="truncate text-sm">
+                <span className="sm:hidden">Select</span>
+                <span className="hidden sm:inline">Select Company</span>
+              </span>
             )}
           </div>
         </div>
         <ChevronDown
           size={12}
-          className={`ml-2 flex-shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""} text-gray-500`}
+          className={`ml-1 sm:ml-2 flex-shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""} text-gray-500`}
           aria-hidden="true"
         />
       </button>
 
-      {/* Dropdown with clear hierarchy */}
+      {/* Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-800 rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none z-50 border border-gray-200 dark:border-gray-700">
+        <div className="absolute right-0 sm:left-0 mt-2 w-80 max-w-[calc(100vw-1rem)] bg-white dark:bg-gray-800 rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none z-50 border border-gray-200 dark:border-gray-700">
           {/* Clear Header Section */}
           <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 rounded-t-lg">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
@@ -168,7 +185,8 @@ export default function CleanCompanySelector({
                 title="Company Settings"
               >
                 <Settings size={14} className="mb-1" />
-                <span>Settings</span>
+                <span className="hidden sm:inline">Settings</span>
+                <span className="sm:hidden text-[10px]">Set</span>
               </button>
               <button
                 onClick={e => {
@@ -185,7 +203,8 @@ export default function CleanCompanySelector({
                 title="Manage Users"
               >
                 <Users size={14} className="mb-1" />
-                <span>Users</span>
+                <span className="hidden sm:inline">Users</span>
+                <span className="sm:hidden text-[10px]">Use</span>
               </button>
               <button
                 onClick={e => {
@@ -202,7 +221,8 @@ export default function CleanCompanySelector({
                 title="Data Sharing Requests"
               >
                 <Share2 size={14} className="mb-1" />
-                <span>Sharing</span>
+                <span className="hidden sm:inline">Sharing</span>
+                <span className="sm:hidden text-[10px]">Shr</span>
               </button>
               <button
                 onClick={() => {
@@ -213,7 +233,8 @@ export default function CleanCompanySelector({
                 title="Create New Company"
               >
                 <Plus size={14} className="mb-1" />
-                <span>Create</span>
+                <span className="hidden sm:inline">Create</span>
+                <span className="sm:hidden text-[10px]">New</span>
               </button>
             </div>
           </div>

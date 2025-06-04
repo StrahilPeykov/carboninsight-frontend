@@ -5,9 +5,10 @@ import Link from "next/link";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
-import { Building2, BoxesIcon, BarChartIcon, FileTextIcon } from "lucide-react";
+import { Building2, BoxesIcon, Share2 } from "lucide-react";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 import { useRouter } from "next/navigation";
+import { productApi } from "@/lib/api/productApi";
 
 interface CompanyData {
   id: string;
@@ -30,7 +31,7 @@ export default function DashboardPage() {
 
   const [companyCount, setCompanyCount] = useState(0);
   const [productCount, setProductCount] = useState(0);
-  const [dppCount] = useState(0);
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [selectedCompany, setSelectedCompany] = useState<CompanyData | null>(null);
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -124,6 +125,16 @@ export default function DashboardPage() {
           const productsData = await productsResponse.json();
           setProductCount(productsData.length);
 
+          // Fetch product sharing requests and count pending ones
+          try {
+            const sharingRequests = await productApi.getProductSharingRequests(selectedCompanyId);
+            const pendingCount = sharingRequests.filter(request => request.status === "Pending").length;
+            setPendingRequestsCount(pendingCount);
+          } catch (err) {
+            console.error("Error fetching sharing requests:", err);
+            setPendingRequestsCount(0);
+          }
+
           // Generate recent activity based on products
           const recentActivities: ActivityItem[] = [];
 
@@ -194,17 +205,19 @@ export default function DashboardPage() {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <Card className="bg-gradient-to-r from-red-50 to-white dark:from-red-900/20 dark:to-gray-800">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-red-100 dark:bg-red-800">
-              <Building2 className="h-6 w-6 text-red dark:text-red-200" />
+        <Link href="/list-companies" className="block transition-transform hover:scale-105">
+          <Card className="bg-gradient-to-r from-red-50 to-white dark:from-red-900/20 dark:to-gray-800 cursor-pointer hover:shadow-lg">
+            <div className="flex items-center">
+              <div className="p-3 rounded-full bg-red-100 dark:bg-red-800">
+                <Building2 className="h-6 w-6 text-red dark:text-red-200" />
+              </div>
+              <div className="ml-4">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Your Companies</h3>
+                <p className="text-2xl font-semibold">{companyCount}</p>
+              </div>
             </div>
-            <div className="ml-4">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Your Companies</h3>
-              <p className="text-2xl font-semibold">{companyCount}</p>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        </Link>
 
         <Link href="/product-list" className="block transition-transform hover:scale-105">
           <Card className="bg-gradient-to-r from-blue-50 to-white dark:from-blue-900/20 dark:to-gray-800 cursor-pointer hover:shadow-lg">
@@ -220,17 +233,24 @@ export default function DashboardPage() {
           </Card>
         </Link>
 
-        <Card className="bg-gradient-to-r from-green-50 to-white dark:from-green-900/20 dark:to-gray-800">
-          <div className="flex items-center">
-            <div className="p-3 rounded-full bg-green-100 dark:bg-green-800">
-              <FileTextIcon className="h-6 w-6 text-green-600 dark:text-green-200" />
+        <Link href="/product-data-sharing" className="block transition-transform hover:scale-105">
+          <Card className="bg-gradient-to-r from-green-50 to-white dark:from-green-900/20 dark:to-gray-800 cursor-pointer hover:shadow-lg">
+            <div className="flex items-center">
+              <div className="p-3 rounded-full bg-green-100 dark:bg-green-800">
+                <Share2 className="h-6 w-6 text-green-600 dark:text-green-200" />
+              </div>
+              <div className="ml-4">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Pending Requests</h3>
+                <p className="text-2xl font-semibold">{pendingRequestsCount}</p>
+                {pendingRequestsCount > 0 && (
+                  <p className="text-xs text-green-600 dark:text-green-400">
+                    {pendingRequestsCount} awaiting approval
+                  </p>
+                )}
+              </div>
             </div>
-            <div className="ml-4">
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white">Generated DPPs</h3>
-              <p className="text-2xl font-semibold">{dppCount}</p>
-            </div>
-          </div>
-        </Card>
+          </Card>
+        </Link>
       </div>
 
       {/* Main Actions */}

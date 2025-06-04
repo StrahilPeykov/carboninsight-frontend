@@ -90,13 +90,19 @@ export default function Home() {
             Calculate your product carbon footprint and create Digital Product Passports (DPPs) with
             our easy-to-use tool. No technical knowledge required.
           </p>
-          <div className="mt-10 flex justify-center">
-            <div className="mr-4">{getCtaButton()}</div>
-            <Link href="#how-it-works">
-              <Button variant="outline" size="lg">
-                Learn More
-              </Button>
-            </Link>
+          
+          {/* Fixed button spacing */}
+          <div className="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4">
+            <div className="w-full sm:w-auto">
+              {getCtaButton()}
+            </div>
+            <div className="w-full sm:w-auto">
+              <Link href="#how-it-works">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto">
+                  Learn More
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </div>

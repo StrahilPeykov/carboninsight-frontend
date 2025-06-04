@@ -95,7 +95,7 @@ export default function CleanCompanySelector({
       {/* Company Selector Button */}
       <button
         onClick={() => onToggle()}
-        className={`flex items-center px-3 py-2 rounded-md text-sm font-medium h-[44px] transition-all duration-200 min-w-[160px] max-w-[240px] border
+        className={`flex items-center px-3 py-2 rounded-md text-sm font-medium h-[44px] transition-all duration-200 w-[200px] border
           ${
             currentCompany
               ? "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
@@ -123,12 +123,12 @@ export default function CleanCompanySelector({
             {currentCompany ? (
               <>
                 <div
-                  className="truncate text-sm font-semibold leading-tight"
+                  className="truncate text-sm font-semibold leading-tight min-w-0"
                   title={currentCompany.name}
                 >
-                  {truncateCompanyName(currentCompany.name, 16)}
+                  {currentCompany.name}
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight -mt-0.5">
+                <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight -mt-0.5 truncate">
                   Current Company
                 </div>
               </>
@@ -146,7 +146,7 @@ export default function CleanCompanySelector({
 
       {/* Dropdown with clear hierarchy */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none z-50 border border-gray-200 dark:border-gray-700">
+        <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-gray-800 rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none z-50 border border-gray-200 dark:border-gray-700">
           {/* Clear Header Section */}
           <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 rounded-t-lg">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
@@ -271,7 +271,7 @@ export default function CleanCompanySelector({
                     <button
                       key={company.id}
                       onClick={() => handleCompanySelect(company.id)}
-                      className={`w-full flex items-center px-3 py-2.5 text-sm rounded-md transition-colors group ${
+                      className={`w-full flex items-center px-3 py-2.5 text-sm rounded-md transition-colors group min-w-0 ${
                         company.id === currentCompanyId
                           ? "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800"
                           : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
@@ -282,7 +282,10 @@ export default function CleanCompanySelector({
                           size={16}
                           className="mr-3 flex-shrink-0 text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200"
                         />
-                        <span className="truncate font-medium" title={company.name}>
+                        <span 
+                          className="truncate font-medium min-w-0 flex-1" 
+                          title={company.name}
+                        >
                           {company.name}
                         </span>
                       </div>

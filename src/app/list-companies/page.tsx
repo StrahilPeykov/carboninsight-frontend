@@ -91,27 +91,29 @@ export default function ListCompaniesPage() {
       ) : (
         <>
           {/* Header */}
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl truncate">
                 Your Companies
               </h1>
               <p className="mt-2 text-lg text-gray-500 dark:text-gray-400">
                 Select a company to manage products and carbon footprint data
               </p>
             </div>
-            <Link href="/create-company">
-              <Button className="flex items-center gap-2">
-                <Plus className="w-4 h-4" />
-                Add Company
-              </Button>
-            </Link>
+            <div className="flex-shrink-0">
+              <Link href="/create-company">
+                <Button className="flex items-center gap-2 w-full sm:w-auto">
+                  <Plus className="w-4 h-4" />
+                  <span className="whitespace-nowrap">Add Company</span>
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {error && <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md">{error}</div>}
 
           {/* Companies Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {companies.map(company => (
               <Card
                 key={company.id}
@@ -120,14 +122,27 @@ export default function ListCompaniesPage() {
                 {/* Company Info */}
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <h2 className="text-xl font-bold mb-2 truncate">{company.name}</h2>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-1 truncate">
-                        VAT: {company.vat_number}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
-                        Reg: {company.business_registration_number}
-                      </p>
+                    <div className="flex-1 min-w-0 pr-4">
+                      <h2 
+                        className="text-xl font-bold mb-2 truncate min-w-0" 
+                        title={company.name}
+                      >
+                        {company.name}
+                      </h2>
+                      <div className="space-y-1">
+                        <p 
+                          className="text-sm text-gray-500 dark:text-gray-400 break-all" 
+                          title={`VAT: ${company.vat_number}`}
+                        >
+                          <span className="font-medium">VAT:</span> {company.vat_number}
+                        </p>
+                        <p 
+                          className="text-sm text-gray-500 dark:text-gray-400 break-all" 
+                          title={`Reg: ${company.business_registration_number}`}
+                        >
+                          <span className="font-medium">Reg:</span> {company.business_registration_number}
+                        </p>
+                      </div>
                     </div>
                   </div>
 
@@ -136,8 +151,8 @@ export default function ListCompaniesPage() {
                     onClick={() => selectCompany(company.id)}
                     className="w-full flex items-center justify-center gap-2 mb-3"
                   >
-                    <LogIn className="w-4 h-4" />
-                    Select Company
+                    <LogIn className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">Select Company</span>
                   </Button>
 
                   {/* Quick actions */}
@@ -153,11 +168,11 @@ export default function ListCompaniesPage() {
                         }
                         router.push("/manage-user");
                       }}
-                      className="flex items-center justify-center gap-1"
+                      className="flex items-center justify-center gap-1 min-w-0"
                       title="Manage users"
                     >
-                      <Users className="w-3 h-3" />
-                      <span className="hidden lg:inline">Users</span>
+                      <Users className="w-3 h-3 flex-shrink-0" />
+                      <span className="hidden lg:inline truncate">Users</span>
                     </Button>
 
                     <Button
@@ -171,11 +186,11 @@ export default function ListCompaniesPage() {
                         }
                         router.push("/product-list");
                       }}
-                      className="flex items-center justify-center gap-1"
+                      className="flex items-center justify-center gap-1 min-w-0"
                       title="View products"
                     >
-                      <Boxes className="w-3 h-3" />
-                      <span className="hidden lg:inline">Products</span>
+                      <Boxes className="w-3 h-3 flex-shrink-0" />
+                      <span className="hidden lg:inline truncate">Products</span>
                     </Button>
 
                     <Button
@@ -189,11 +204,11 @@ export default function ListCompaniesPage() {
                         }
                         router.push("/product-data-sharing");
                       }}
-                      className="flex items-center justify-center gap-1"
+                      className="flex items-center justify-center gap-1 min-w-0"
                       title="Data sharing"
                     >
-                      <Share2 className="w-3 h-3" />
-                      <span className="hidden lg:inline">Sharing</span>
+                      <Share2 className="w-3 h-3 flex-shrink-0" />
+                      <span className="hidden lg:inline truncate">Sharing</span>
                     </Button>
                   </div>
                 </div>

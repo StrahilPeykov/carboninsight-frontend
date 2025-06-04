@@ -17,12 +17,13 @@ interface Emission {
 interface Product {
   id: number;
   supplier: number;
-  emmision_total: number;
+  emission_total: number;
   name: string;
   description: string;
-  manufacturer: string;
+  manufacturer_name: string;
   sku: string;
   is_public: boolean;
+  reference_impact_unit: string;
 }
 
 export interface LineItem {

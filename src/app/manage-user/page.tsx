@@ -8,6 +8,7 @@ import { Trash } from "lucide-react";
 import { companyApi, AuthenticatedUser } from "@/lib/api/companyApi";
 import { useAuth } from "../context/AuthContext";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
+import { TableRow } from "../components/ui/tableRow";
 
 export default function ManageUserPage() {
   const router = useRouter();
@@ -250,9 +251,8 @@ export default function ManageUserPage() {
                 {!dataLoading &&
                   !loadingError &&
                   users.map(user => (
-                    <tr
+                    <TableRow
                       key={user.username}
-                      className="border-b border-gray-500 hover:bg-gray-500 transition"
                     >
                       <td className="py-3 px-6 text-left whitespace-nowrap">{user.username}</td>
                       <td className="py-3 px-6 text-left">{user.email}</td>
@@ -270,7 +270,7 @@ export default function ManageUserPage() {
                           <Trash size={18} />
                         </button>
                       </td>
-                    </tr>
+                    </TableRow>
                   ))}
               </tbody>
             </table>

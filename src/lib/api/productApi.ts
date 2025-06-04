@@ -1,5 +1,4 @@
 import { apiRequest } from "./apiClient";
-import { Company } from "@/lib/api/companyApi";
 
 export interface Product {
   id: string;
@@ -9,6 +8,7 @@ export interface Product {
   status: string;
   pcf_calculation_method: string;
   emission_total: number;
+  reference_impact_unit: string;
 }
 
 export interface ProductCreateData {

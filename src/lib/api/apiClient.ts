@@ -185,9 +185,16 @@ export function useApi() {
 export function setLocalStorageItem(key: string, value: string): void {
   if (typeof window === "undefined") return;
 
+  // Check if the value is actually changing
+  const currentValue = localStorage.getItem(key);
+  if (currentValue === value) {
+    // Value hasn't changed, no need to dispatch event
+    return;
+  }
+
   localStorage.setItem(key, value);
 
-  // Dispatch custom event for same-tab updates
+  // Only dispatch custom event if value actually changed
   window.dispatchEvent(new CustomEvent("companyChanged", { detail: { key, value } }));
 }
 
@@ -195,10 +202,15 @@ export function setLocalStorageItem(key: string, value: string): void {
 export function removeLocalStorageItem(key: string): void {
   if (typeof window === "undefined") return;
 
+  // Check if there was actually a value to remove
+  const hadValue = localStorage.getItem(key) !== null;
+
   localStorage.removeItem(key);
 
-  // Dispatch custom event for same-tab updates
-  window.dispatchEvent(new CustomEvent("companyChanged", { detail: { key, value: null } }));
+  // Only dispatch event if there was actually a value removed
+  if (hadValue) {
+    window.dispatchEvent(new CustomEvent("companyChanged", { detail: { key, value: null } }));
+  }
 }
 
 // Gets an item from localStorage

@@ -6,7 +6,7 @@ import {
   ForwardRefExoticComponent,
   RefAttributes,
   Suspense,
-  useEffect,
+  useEffect,           /* already here */
 } from "react";
 
 import { TabGroup, TabList, Tab, TabPanels, TabPanel } from "@headlessui/react";
@@ -75,6 +75,11 @@ export default function ProductClientPage() {
   const userEnergyRef = useRef<TabHandle | null>(null);
   const transportationRef = useRef<TabHandle | null>(null);
 
+  /* ---------- NEW REFS FOR AUTO-SCROLLING ---------- */
+  const tabListRef = useRef<HTMLDivElement | null>(null);
+  const tabButtonRefs = useRef<(HTMLElement | null)[]>([]);
+
+
   type TabConfigItem = {
     key: string;
     ref: React.RefObject<TabHandle | null>;
@@ -138,6 +143,29 @@ export default function ProductClientPage() {
   const [productInfoSavedOnce, setProductInfoSavedOnce] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
+  /* --------- AUTO-CENTER ACTIVE STEP ON MOBILE --------- */
+  useEffect(() => {
+    const container = tabListRef.current;
+    const activeBtn = tabButtonRefs.current[activeTab];
+    if (!container || !activeBtn) return;
+    if (container.scrollWidth <= container.clientWidth) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const btnRect = activeBtn.getBoundingClientRect();
+
+    const offset =
+      btnRect.left -
+      containerRect.left -
+      container.clientWidth / 2 +
+      btnRect.width / 2;
+
+    container.scrollTo({
+      left: container.scrollLeft + offset,
+      behavior: "smooth",
+    });
+  }, [activeTab]);
+  /* ----------------------------------------------------- */
+
   const handleAddProduct = () => {
     if (!tabConfig.every(tab => tab.saved)) {
       setTabConfig(cfg =>
@@ -154,7 +182,6 @@ export default function ProductClientPage() {
   };
 
   const onTabSaved = async (tabKey: string) => {
-    // Clear the error banner for the current tab
     setTabConfig(cfg => cfg.map((t, i) => (i == activeTab ? { ...t, errorBannerText: "" } : t)));
     // If it is the first tab, enable all tabs
     if (tabKey === "productInfo") {
@@ -162,9 +189,7 @@ export default function ProductClientPage() {
       setProductInfoSavedOnce(true);
     }
 
-    // set the tab to saved
     setTabConfig(cfg => cfg.map((t, i) => (t.key == tabKey ? { ...t, saved: true } : t)));
-
     return;
   };
 
@@ -211,10 +236,8 @@ export default function ProductClientPage() {
     }
 
     if (!errorMessage) {
-      // Record the tab as saved and move to the next tab
       onTabSaved(tabConfig[activeTab].key);
     } else {
-      // If saving was unsuccessful, show an error banner
       onTabSaveError(errorMessage);
     }
   };
@@ -245,12 +268,22 @@ export default function ProductClientPage() {
           "
         >
           <TabGroup selectedIndex={activeTab} onChange={setActiveTab}>
-            <TabList className="flex relative justify-between mb-10 px-6">
+            {/* Added overflow classes so the stepper scrolls on narrow screens */}
+            <TabList
+              ref={tabListRef}
+              className="flex relative justify-between mb-10 px-6 overflow-x-auto sm:overflow-visible whitespace-nowrap"
+            >
               {tabConfig.map((t, index) => (
-                <div key={t.key} className="relative flex-1 flex justify-center">
+                // Added min-width so each step has room inside the scroll container
+                <div key={t.key} className="relative flex-1 flex justify-center min-w-[120px]">
                   <Tab
+                    as="button" /* ensures ref element is HTMLButtonElement */
                     disabled={t.disabled}
                     className="flex flex-col items-center focus:outline-none group"
+                    /* capture the button element for scrolling */
+                    ref={(el) => {
+                      tabButtonRefs.current[index] = el;
+                    }}
                   >
                     {({ selected }) => (
                       <>

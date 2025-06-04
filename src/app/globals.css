@@ -1,10 +1,5 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @font-face {
   font-family: "Kievit";
   src: url("/font/KievitOT-Regular.otf") format("opentype");
@@ -50,6 +45,11 @@
   --color-foreground: var(--foreground);
   --font-kievit: "Kievit";
   --color-red: #c20016;
+}
+
+:root {
+  --background: #EFEFEF;
+  --foreground: #171717;
 }
 
 @media (prefers-color-scheme: dark) {

@@ -9,6 +9,7 @@ import { productApi, ProductSharingRequest } from "@/lib/api/productApi";
 import { companyApi } from "@/lib/api/companyApi";
 import { useAuth } from "../context/AuthContext";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
+import { TableRow } from "../components/ui/tableRow";
 
 interface DataSharingRequestDisplay {
   id: number;
@@ -279,7 +280,9 @@ export default function ProductDataSharing() {
                 {!dataLoading &&
                   !loadingError &&
                   requests.map(request => (
-                    <tr key={request.id} className="border-b hover:bg-gray-500 transition">
+                    <TableRow 
+                      key={request.id}
+                    >
                       <td className="py-3 px-6 text-left">{request.product_name}</td>
                       <td className="py-3 px-6 text-left">{request.requesting_company_name}</td>
                       <td
@@ -320,7 +323,7 @@ export default function ProductDataSharing() {
                           </button>
                         </div>
                       </td>
-                    </tr>
+                    </TableRow>
                   ))}
               </tbody>
             </table>

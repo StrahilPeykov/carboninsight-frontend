@@ -137,12 +137,13 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
       }
       if (
         formData.override_factors.some(
-          factor => factor.lifecycle_stage === "" ||
+          factor =>
+            factor.lifecycle_stage === "" ||
             isNaN(factor.co_2_emission_factor_biogenic) ||
             isNaN(factor.co_2_emission_factor_non_biogenic)
         )
       ) {
-        alert("Please fill in all override factor fields correctly.");
+        alert("Please fill in all overrides fields correctly.");
         return;
       }
 
@@ -214,7 +215,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
           {
             lifecycle_stage: "",
             co_2_emission_factor_biogenic: 1,
-            co_2_emission_factor_non_biogenic: 1
+            co_2_emission_factor_non_biogenic: 1,
           },
         ],
       });
@@ -353,13 +354,13 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                   )}
                   {emission.override_factors && emission.override_factors.length > 0 && (
                     <>
-                      <div className="text-gray-500">Override Factors:</div>
+                      <div className="text-gray-500">Overrides:</div>
                       <div>
                         <button
                           onClick={() => setShowFactorsForEmission(emission)}
                           className="underline"
                         >
-                          View factors ({emission.override_factors.length})
+                          View override ({emission.override_factors.length})
                         </button>
                       </div>
                     </>
@@ -394,7 +395,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                 <th className="p-2">ID</th>
                 <th className="p-2">Reference</th>
                 <th className="p-2">Energy Consumption (kWh)</th>
-                <th className="p-2">Override Factors</th>
+                <th className="p-2">Overrides</th>
                 <th className="p-2">BOM Items</th>
                 <th className="p-2">Actions</th>
               </tr>
@@ -432,7 +433,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                           onClick={() => setShowFactorsForEmission(emission)}
                           className="underline hover:underline text-sm flex items-center"
                         >
-                          View factor{emission.override_factors.length !== 1 ? "s" : ""} (
+                          View override{emission.override_factors.length !== 1 ? "s" : ""} (
                           {emission.override_factors.length})
                         </button>
                       ) : (
@@ -714,7 +715,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Override Factors
+                      Overrides
                     </label>
                     <button
                       type="button"
@@ -726,7 +727,10 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                   </div>
 
                   {formData.override_factors.map((factor, index) => (
-                    <div key={index} className="mb-4 border p-3 rounded-lg dark:border-gray-700 relative">
+                    <div
+                      key={index}
+                      className="mb-4 border p-3 rounded-lg dark:border-gray-700 relative"
+                    >
                       <button
                         type="button"
                         onClick={() => handleRemoveOverrideFactor(index)}
@@ -743,8 +747,8 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                           value={
                             factor.lifecycle_stage
                               ? lifecycleOptions.find(opt =>
-                              opt.startsWith(factor.lifecycle_stage)
-                            ) || ""
+                                  opt.startsWith(factor.lifecycle_stage)
+                                ) || ""
                               : ""
                           }
                           onChange={value => {
@@ -801,7 +805,9 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                           <input
                             type="number"
                             value={factor.co_2_emission_factor_biogenic}
-                            onChange={e => handleOverrideFactorChange(index, "biogenic", e.target.value)}
+                            onChange={e =>
+                              handleOverrideFactorChange(index, "biogenic", e.target.value)
+                            }
                             min={0}
                             className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                           />
@@ -813,7 +819,9 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                           <input
                             type="number"
                             value={factor.co_2_emission_factor_non_biogenic}
-                            onChange={e => handleOverrideFactorChange(index, "non_biogenic", e.target.value)}
+                            onChange={e =>
+                              handleOverrideFactorChange(index, "non_biogenic", e.target.value)
+                            }
                             min={0}
                             className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                           />
@@ -906,7 +914,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                 as="h3"
                 className="text-lg font-medium leading-6 text-gray-900 dark:text-white"
               >
-                Override Factors
+                Overrides
               </DialogTitle>
 
               <div className="mt-4">
@@ -939,7 +947,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                     </tbody>
                   </table>
                 ) : (
-                  <p className="text-gray-500 dark:text-gray-300">No override factors found.</p>
+                  <p className="text-gray-500 dark:text-gray-300">No overrides found.</p>
                 )}
               </div>
 

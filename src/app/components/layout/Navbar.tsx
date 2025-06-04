@@ -250,7 +250,7 @@ export default function Navbar() {
         role="navigation"
         aria-label="Main navigation"
       >
-        <div className="max-w-7xl mx-auto navbar-container">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             {/* Logo and brand */}
             <div className="flex-shrink-0 flex items-center">
@@ -318,12 +318,12 @@ export default function Navbar() {
             </div>
 
             {/* Desktop menu */}
-            <div className="hidden md:flex md:items-center navbar-actions">
+            <div className="hidden md:flex md:items-center md:space-x-4">
               {isAuthenticated && mounted ? (
                 <>
-                  {/* Main Navigation */}
+                  {/* Main Navigation - hide on smaller desktop screens */}
                   {companyId && (
-                    <nav className="flex items-center space-x-1 mr-4" role="navigation">
+                    <nav className="hidden lg:flex lg:items-center lg:space-x-1" role="navigation">
                       <Link
                         href="/dashboard"
                         className={`flex items-center px-3 py-2 rounded-md text-sm font-medium min-h-[44px]
@@ -373,7 +373,7 @@ export default function Navbar() {
                     <button
                       ref={profileButtonRef}
                       onClick={toggleProfileMenu}
-                      className="navbar-profile-button flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red min-h-[44px] p-2"
+                      className="flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red min-h-[44px] p-2"
                       aria-expanded={isProfileMenuOpen}
                       aria-haspopup="true"
                       aria-label={`User account menu for ${getUserDisplayName()}`}
@@ -390,9 +390,9 @@ export default function Navbar() {
                     </button>
 
                     {isProfileMenuOpen && (
-                      <div className="navbar-profile-menu profile-dropdown rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 dark:ring-gray-700">
+                      <div className="origin-top-right absolute right-2 sm:right-0 mt-2 w-48 max-w-[calc(100vw-2rem)] rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 dark:ring-gray-700 z-50">
                         <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
-                          <p className="font-medium truncate">{getUserDisplayName()}</p>
+                          <p className="font-medium">{getUserDisplayName()}</p>
                           <p className="text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
                         </div>
 
@@ -434,7 +434,7 @@ export default function Navbar() {
                   <Link href="/register" className="py-2 rounded-md text-sm font-bold">
                     <Button size="md">Register</Button>
                   </Link>
-                  <Link href="/login" className="py-2 rounded-md text-sm font-bold ml-2">
+                  <Link href="/login" className="py-2 rounded-md text-sm font-bold">
                     <Button size="md">Login</Button>
                   </Link>
                 </>

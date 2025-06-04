@@ -1,31 +1,28 @@
 import { apiRequest } from "./apiClient";
-import { EmissionOverrideFactor } from "./productionEmissionApi";
+import { EmissionReference } from "./emissionReferenceApi";
+import { OverrideFactor } from "./productionEmissionApi";
 
 export interface UserEnergyEmission {
   id: number;
   energy_consumption: number;
-  reference: number;
-  override_factors: EmissionOverrideFactor[];
-  line_items: number[];
-}
-
-export interface CreateUserEnergyEmission {
-  energy_consumption: number;
-  reference: number;
-  override_factors: EmissionOverrideFactor[];
+  reference?: number | null;
+  reference_details?: EmissionReference;
+  override_factors?: OverrideFactor[];
+  line_items?: number[];
 }
 
 export interface CreateUserEnergyEmissionRequest {
   energy_consumption: number;
   reference?: number | null;
-  override_factors?: EmissionOverrideFactor[];
+  override_factors?: OverrideFactor[];
   line_items?: number[];
 }
 
 export interface UpdateUserEnergyEmission {
   energy_consumption?: number;
-  reference?: number;
-  override_factors?: EmissionOverrideFactor[];
+  reference?: number | null;
+  override_factors?: OverrideFactor[];
+  line_items?: number[];
 }
 
 export const userEnergyEmissionApi = {

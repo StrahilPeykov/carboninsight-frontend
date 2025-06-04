@@ -101,20 +101,20 @@ Thank you for your assistance.`;
               general questions
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
-              <div className="flex items-center space-x-3">
-                <span className="text-lg font-mono text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-800 px-4 py-2 rounded">
-                  {supportEmail}
-                </span>
+            <div className="support-email-container mb-4">
+              <div className="support-email-text">
+                {supportEmail}
+              </div>
+              <div className="flex gap-2 flex-shrink-0">
                 <Button variant="outline" size="sm" onClick={copyEmailToClipboard}>
                   {copiedEmail ? "Copied!" : "Copy"}
                 </Button>
+                <Button onClick={openMailClient} className="flex items-center gap-2">
+                  <Mail size={16} />
+                  <span className="hidden sm:inline">Send Email</span>
+                  <span className="sm:hidden">Send</span>
+                </Button>
               </div>
-
-              <Button onClick={openMailClient} className="flex items-center gap-2">
-                <Mail size={16} />
-                Send Email
-              </Button>
             </div>
 
             <p className="text-sm text-gray-500 dark:text-gray-400">Response time: 24-48 hours</p>

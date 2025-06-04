@@ -95,17 +95,21 @@ export default function CleanCompanySelector({
       {/* Company Selector Button */}
       <button
         onClick={() => onToggle()}
-        className={`flex items-center px-3 py-2 rounded-md text-sm font-medium h-[44px] transition-all duration-200 w-[120px] sm:w-[160px] lg:w-[200px] border
+        className={`flex items-center px-3 py-2 rounded-md text-sm font-medium h-[44px] transition-all duration-200 min-w-0 max-w-full border
           ${
             currentCompany
               ? "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
               : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 border-gray-300 dark:border-gray-600"
           } focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2`}
+        style={{ 
+          width: 'clamp(120px, 20vw, 200px)',
+          maxWidth: '100%'
+        }}
         aria-expanded={isOpen}
         aria-haspopup="true"
         aria-label={`${currentCompany ? `Current company: ${currentCompany.name}. Click to change or manage company.` : "No company selected. Click to select a company."}`}
       >
-        <div className="flex items-center min-w-0 flex-1">
+        <div className="flex items-center min-w-0 flex-1 overflow-hidden">
           {currentCompany?.avatar ? (
             <img
               src={currentCompany.avatar}
@@ -119,27 +123,14 @@ export default function CleanCompanySelector({
               aria-hidden="true"
             />
           )}
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 overflow-hidden">
             {currentCompany ? (
               <>
                 <div
                   className="truncate text-sm font-semibold leading-tight min-w-0"
                   title={currentCompany.name}
                 >
-                  {/* Responsive company name truncation */}
-                  <span className="sm:hidden">
-                    {currentCompany.name.length > 8 
-                      ? `${currentCompany.name.substring(0, 8)}...` 
-                      : currentCompany.name}
-                  </span>
-                  <span className="hidden sm:inline lg:hidden">
-                    {currentCompany.name.length > 12 
-                      ? `${currentCompany.name.substring(0, 12)}...` 
-                      : currentCompany.name}
-                  </span>
-                  <span className="hidden lg:inline">
-                    {currentCompany.name}
-                  </span>
+                  {currentCompany.name}
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 leading-tight -mt-0.5 truncate">
                   <span className="sm:hidden">Company</span>

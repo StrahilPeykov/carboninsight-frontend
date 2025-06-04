@@ -1,19 +1,13 @@
 import { apiRequest } from "./apiClient";
-import { LifecycleStage } from "./materialEmissionApi";
+import { OverrideFactor } from "./productionEmissionApi";
 
 export interface EmissionReference {
   id: number;
   name: string;
-  emission_factors: Partial<Record<LifecycleStage, number>>;
+  emission_factors: OverrideFactor[];
 }
 
 export const emissionReferenceApi = {
-  // Material Emission References
-  getAllMaterialReferences: () => apiRequest<EmissionReference[]>(`/reference/material/`),
-
-  getMaterialReference: (referenceId: number) =>
-    apiRequest<EmissionReference>(`/reference/material/${referenceId}/`),
-
   // Production Energy Emission References
   getAllProductionEnergyReferences: () =>
     apiRequest<EmissionReference[]>(`/reference/production_energy/`),

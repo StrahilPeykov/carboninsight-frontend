@@ -54,7 +54,6 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
     const [newQuantity, setNewQuantity] = useState<string>("1");
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [deleteMaterial, setDeleteMaterial] = useState<Material | null>(null);
-    const [mainProduct, setMainProduct] = useState<Product | null>(null);
     const [addMaterialError, setAddMaterialError] = useState<string | null>(null);
     const [isEstimationMode, setIsEstimationMode] = useState(false);
 
@@ -141,18 +140,6 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
       }
     }, [selectedCompany, searchProduct, currentStep]);
 
-    useEffect(() => {
-      const fetchMain = async () => {
-        try {
-          const prod = await productApi.getProduct(company_pk_string, productId_string);
-          setMainProduct(prod);
-        } catch (e) {
-          console.error("Error loading main product", e);
-        }
-      };
-      fetchMain();
-    }, [company_pk_string, productId_string]);
-
     const handleEdit = (id: number) => {
       const foundMaterial = materials.find((m: Material) => m.id === id);
       if (foundMaterial) {
@@ -163,7 +150,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
     };
 
     const handleUpdateQuantity = async () => {
-      const parsedQuantity = parseInt(newQuantity);
+      const parsedQuantity = parseFloat(newQuantity);
       if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
         alert("Please enter a valid quantity greater than 0");
         return;
@@ -227,7 +214,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
     const handleAddProduct = async () => {
       setAddMaterialError(null);
 
-      const parsedQuantity = parseInt(quantity);
+      const parsedQuantity = parseFloat(quantity);
       if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
         alert("Please enter a valid quantity greater than 0");
         return;
@@ -783,7 +770,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
                             </label>
                             <input
                               type="number"
-                              min="1"
+                              min="0"
                               value={quantity}
                               onChange={e => setQuantity(e.target.value)}
                               className="w-full p-2 border rounded-lg"
@@ -859,7 +846,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
                   <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
                   <input
                     type="number"
-                    min="1"
+                    min="0"
                     value={newQuantity}
                     onChange={e => setNewQuantity(e.target.value)}
                     className="w-full p-2 border rounded-lg"
@@ -874,7 +861,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
                   <Button
                     onClick={handleUpdateQuantity}
                     variant="primary"
-                    disabled={parseInt(newQuantity) <= 0 || newQuantity === ""}
+                    disabled={parseFloat(newQuantity) <= 0 || newQuantity === ""}
                   >
                     Update Quantity
                   </Button>

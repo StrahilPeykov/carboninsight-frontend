@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../ui/Button";
+import ThemeSelector from "../ui/ThemeSelector";
 import {
   ChevronDown,
   SettingsIcon,
@@ -326,7 +327,10 @@ export default function Navbar() {
                 <>
                   {/* Main Navigation */}
                   {companyId && (
-                    <nav className="hidden md:flex md:items-center md:space-x-1 lg:space-x-2" role="navigation">
+                    <nav
+                      className="hidden md:flex md:items-center md:space-x-1 lg:space-x-2"
+                      role="navigation"
+                    >
                       <Link
                         href="/dashboard"
                         className={`flex items-center px-2 lg:px-3 py-2 rounded-md text-sm font-medium min-h-[44px]
@@ -395,12 +399,21 @@ export default function Navbar() {
                     </button>
 
                     {isProfileMenuOpen && (
-                      <div className="origin-top-right absolute right-2 sm:right-0 mt-2 w-48 max-w-[calc(100vw-2rem)] rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 dark:ring-gray-700 z-50">
+                      <div className="origin-top-right absolute right-2 sm:right-0 mt-2 w-56 max-w-[calc(100vw-2rem)] rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-800 dark:ring-gray-700 z-50">
+                        {/* User Info Header */}
                         <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700">
-                          <p className="font-medium">{getUserDisplayName()}</p>
-                          <p className="text-gray-500 dark:text-gray-400 truncate">{user?.email}</p>
+                          <p className="font-medium truncate">{getUserDisplayName()}</p>
+                          <p className="text-gray-500 dark:text-gray-400 truncate text-xs">
+                            {user?.email}
+                          </p>
                         </div>
 
+                        {/* Theme Selection */}
+                        <div className="border-b border-gray-200 dark:border-gray-700">
+                          <ThemeSelector />
+                        </div>
+
+                        {/* Account Links */}
                         <Link
                           href="/account"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 min-h-[44px] flex items-center"
@@ -419,6 +432,7 @@ export default function Navbar() {
                           Support & Help
                         </Link>
 
+                        {/* Sign Out */}
                         <div className="border-t border-gray-200 dark:border-gray-700">
                           <button
                             onClick={() => {
@@ -581,6 +595,11 @@ export default function Navbar() {
                   </button>
                 </div>
 
+                {/* Mobile theme selection */}
+                <div className="border-t border-gray-200 dark:border-gray-700">
+                  <ThemeSelector />
+                </div>
+
                 {/* Keyboard shortcuts info for mobile */}
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-2 px-3 py-2">
                   <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
@@ -604,6 +623,11 @@ export default function Navbar() {
                 >
                   Register
                 </Link>
+
+                {/* Mobile theme selection for non-authenticated users */}
+                <div className="border-t border-gray-200 dark:border-gray-700">
+                  <ThemeSelector />
+                </div>
               </>
             )}
           </div>

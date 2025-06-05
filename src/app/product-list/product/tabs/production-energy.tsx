@@ -504,7 +504,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
         <Dialog
           open={isModalOpen}
           as="div"
-          className="fixed inset-0 z-20 overflow-y-auto"
+          className="fixed inset-0 z-20 pt-12 overflow-y-auto"
           onClose={handleCloseModal}
         >
           <div className="min-h-screen px-4 text-center">

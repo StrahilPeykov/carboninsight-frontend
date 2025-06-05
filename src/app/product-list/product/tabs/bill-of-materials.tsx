@@ -687,10 +687,18 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
                             <div className="text-center py-4">Loading...</div>
                           ) : companies.length > 0 ? (
                             companies.map(company => (
-                              <div
+                              <button
                                 key={company.id}
                                 onClick={() => handleSelectCompany(company)}
-                                className="p-3 border-b hover:bg-gray-50 dark:hover:bg-gray-900 cursor-pointer flex justify-between items-center"
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    handleSelectCompany(company);
+                                  }
+                                }}
+                                className="w-full p-3 border-b hover:bg-gray-50 dark:hover:bg-gray-900 focus:bg-gray-50 dark:focus:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-inset cursor-pointer flex justify-between items-center text-left transition-colors"
+                                type="button"
+                                aria-label={`Select company ${company.name}${company.business_registration_number ? `, registration: ${company.business_registration_number}` : ''}`}
                               >
                                 <div className="overflow-hidden">
                                   <p className="font-medium truncate">{company.name}</p>
@@ -700,8 +708,8 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
                                     </p>
                                   )}
                                 </div>
-                                <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
-                              </div>
+                                <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" aria-hidden="true" />
+                              </button>
                             ))
                           ) : (
                             <div className="text-center py-4 text-gray-500">No companies found</div>

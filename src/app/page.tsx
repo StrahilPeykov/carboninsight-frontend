@@ -169,11 +169,13 @@ export default function Home() {
           <div className="relative grid gap-8 lg:grid-cols-5">
             {/* Step 1 */}
             <div className="relative">
-              <Card className="flex flex-col items-center text-center p-6 h-full">
-                <div className="relative z-10 h-12 w-12 rounded-full bg-red-600 text-white flex items-center justify-center text-xl font-bold mb-4">
+              <Card className="flex flex-col items-center justify-start text-center p-6 h-full">
+                <div className="relative z-10 w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center text-xl font-bold mb-4 mx-auto">
                   1
                 </div>
-                <Building2 className="h-8 w-8 text-gray-400 mb-3" />
+                <div className="w-8 h-8 flex items-center justify-center mb-3 mx-auto">
+                  <Building2 className="h-8 w-8 text-gray-400" />
+                </div>
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Register Company</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Create your company profile and invite team members
@@ -183,11 +185,13 @@ export default function Home() {
 
             {/* Step 2 */}
             <div className="relative">
-              <Card className="flex flex-col items-center text-center p-6 h-full">
-                <div className="relative z-10 h-12 w-12 rounded-full bg-red-600 text-white flex items-center justify-center text-xl font-bold mb-4">
+              <Card className="flex flex-col items-center justify-start text-center p-6 h-full">
+                <div className="relative z-10 w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center text-xl font-bold mb-4 mx-auto">
                   2
                 </div>
-                <FileText className="h-8 w-8 text-gray-400 mb-3" />
+                <div className="w-8 h-8 flex items-center justify-center mb-3 mx-auto">
+                  <FileText className="h-8 w-8 text-gray-400" />
+                </div>
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Add Products</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Enter product details and basic information
@@ -197,11 +201,13 @@ export default function Home() {
 
             {/* Step 3 */}
             <div className="relative">
-              <Card className="flex flex-col items-center text-center p-6 h-full">
-                <div className="relative z-10 h-12 w-12 rounded-full bg-red-600 text-white flex items-center justify-center text-xl font-bold mb-4">
+              <Card className="flex flex-col items-center justify-start text-center p-6 h-full">
+                <div className="relative z-10 w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center text-xl font-bold mb-4 mx-auto">
                   3
                 </div>
-                <Share2 className="h-8 w-8 text-gray-400 mb-3" />
+                <div className="w-8 h-8 flex items-center justify-center mb-3 mx-auto">
+                  <Share2 className="h-8 w-8 text-gray-400" />
+                </div>
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Map Supply Chain</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Add materials, energy use, and transportation data
@@ -211,11 +217,13 @@ export default function Home() {
 
             {/* Step 4 */}
             <div className="relative">
-              <Card className="flex flex-col items-center text-center p-6 h-full">
-                <div className="relative z-10 h-12 w-12 rounded-full bg-red-600 text-white flex items-center justify-center text-xl font-bold mb-4">
+              <Card className="flex flex-col items-center justify-start text-center p-6 h-full">
+                <div className="relative z-10 w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center text-xl font-bold mb-4 mx-auto">
                   4
                 </div>
-                <BarChart3 className="h-8 w-8 text-gray-400 mb-3" />
+                <div className="w-8 h-8 flex items-center justify-center mb-3 mx-auto">
+                  <BarChart3 className="h-8 w-8 text-gray-400" />
+                </div>
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">View Analysis</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   See detailed emission breakdowns and AI insights
@@ -225,11 +233,13 @@ export default function Home() {
 
             {/* Step 5 */}
             <div className="relative">
-              <Card className="flex flex-col items-center text-center p-6 h-full">
-                <div className="relative z-10 h-12 w-12 rounded-full bg-red-600 text-white flex items-center justify-center text-xl font-bold mb-4">
+              <Card className="flex flex-col items-center justify-start text-center p-6 h-full">
+                <div className="relative z-10 w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center text-xl font-bold mb-4 mx-auto">
                   5
                 </div>
-                <FileText className="h-8 w-8 text-gray-400 mb-3" />
+                <div className="w-8 h-8 flex items-center justify-center mb-3 mx-auto">
+                  <FileText className="h-8 w-8 text-gray-400" />
+                </div>
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Export DPPs</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Generate compliant Digital Product Passports

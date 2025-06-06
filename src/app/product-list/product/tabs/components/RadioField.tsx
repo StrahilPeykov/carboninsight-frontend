@@ -4,11 +4,13 @@ import React from "react";
 import { Field, Label, Radio, RadioGroup } from "@headlessui/react";
 import { CircleHelp } from "lucide-react";
 
+// ── Radio option interface ──────────────────────────────────────
 export interface RadioOption {
   label: string;
   value: boolean;
 }
 
+// ── Props for RadioField component ──────────────────────────────
 export interface RadioFieldProps {
   name: string;
   label: string;
@@ -20,6 +22,7 @@ export interface RadioFieldProps {
   onFieldChange: (val: boolean) => void;
 }
 
+// ── RadioField component ────────────────────────────────────────
 export default function RadioField({
   name,
   label,
@@ -30,15 +33,18 @@ export default function RadioField({
   error,
   onFieldChange,
 }: RadioFieldProps) {
-  // keep the tooltip styling here
+  // ── Tooltip styling ───────────────────────────────────
   const tooltipBaseClass =
     "absolute left-full ml-2 top-1/2 transform -translate-y-1/2 " +
     "w-max max-w-xs px-3 py-1.5 text-xs text-white bg-gray-800 rounded-md " +
     "shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10";
 
+  // ── Render ────────────────────────────────────────────
   return (
     <div className="space-y-1">
+      {/* ── Radio group ─────────────────────────────── */}
       <RadioGroup value={value} onChange={onFieldChange} aria-label={label}>
+        {/* ── Label and tooltip ───────────────────── */}
         <div className="flex items-center mb-1">
           <Label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             {label} {required && <span className="text-red-500">*</span>}
@@ -50,6 +56,7 @@ export default function RadioField({
             </div>
           )}
         </div>
+        {/* ── Radio options ───────────────────────── */}
         <div className="flex space-x-6 mt-1">
           {options.map(option => (
             <Field key={String(option.value)} className="flex items-center gap-2">
@@ -72,9 +79,8 @@ export default function RadioField({
         </div>
       </RadioGroup>
 
-      {error && (
-        <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
-      )}
+      {/* ── Error message ─────────────────────────── */}
+      {error && <p className="text-xs text-red-500 dark:text-red-400">{error}</p>}
     </div>
   );
 }

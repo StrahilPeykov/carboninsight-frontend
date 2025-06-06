@@ -23,6 +23,7 @@ import { productApi, Product } from "@/lib/api/productApi";
 import { Mode } from "../enums";
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 
+// ── Material type for table rows ───────────────────────────────
 export type Material = {
   id: number;
   productName: string;
@@ -35,8 +36,10 @@ export type Material = {
   reference_impact_unit: string;
 };
 
+// ── BillOfMaterials Tab: Handles BoM CRUD (Create, Read, Update, Delete) and UI ───────────────
 const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
   ({ productId: productId_string, tabKey, mode, setProductId, onFieldChange }, ref) => {
+    // ── State for modal, steps, selections, and data ─────────────
     const [materials, setMaterials] = useState<Material[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
@@ -57,6 +60,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
     const [addMaterialError, setAddMaterialError] = useState<string | null>(null);
     const [isEstimationMode, setIsEstimationMode] = useState(false);
 
+    // ── Get company ID from localStorage ────────────────────────
     let company_pk_string = localStorage.getItem("selected_company_id");
 
     if (!company_pk_string) {
@@ -66,6 +70,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
 
     const company_pk = parseInt(company_pk_string, 10);
 
+    // ── Helper to parse productId from string ───────────────────
     const productId = () => {
       const id = parseInt(productId_string, 10);
 
@@ -76,8 +81,10 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
       return id;
     };
 
+    // ── Expose saveTab/updateTab to parent ──────────────────────
     useImperativeHandle(ref, () => ({ saveTab, updateTab }));
 
+    // ── Save/Update stubs for parent API ────────────────────────
     const saveTab = async (): Promise<string> => {
       return "";
     };
@@ -86,7 +93,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
       return "";
     };
 
-    // Fetch companies
+    // ── Fetch companies for step 1 ──────────────────────────────
     const fetchCompanies = async (search = "") => {
       setIsLoading(true);
       try {
@@ -102,7 +109,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
       }
     };
 
-    // Fetch products from selected company
+    // ── Fetch products for selected company ─────────────────────
     const fetchProducts = async (companyId: string, search = "") => {
       if (!companyId) return;
       setIsLoading(true);
@@ -119,6 +126,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
       }
     };
 
+    // ── Fetch companies when searching in modal ────────────────
     useEffect(() => {
       if (
         isModalOpen &&
@@ -129,6 +137,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
       }
     }, [isModalOpen, searchCompany]);
 
+    // ── Fetch products when searching in modal ─────────────────
     useEffect(() => {
       // Here is length at least 2 since there are 2 character products (e.g. "TV")
       if (
@@ -149,6 +158,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
       }
     };
 
+    // ── Update quantity for a material ─────────────────────────
     const handleUpdateQuantity = async () => {
       const parsedQuantity = parseFloat(newQuantity);
       if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
@@ -194,6 +204,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
       }
     };
 
+    // ── Modal step 1: Add material (open modal) ────────────────
     const handleAddMaterial = () => {
       setIsModalOpen(true);
       setCurrentStep(1);
@@ -204,6 +215,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
       setSearchProduct("");
     };
 
+    // ── Modal step 1: Select company ───────────────────────────
     const handleSelectCompany = (company: Company) => {
       setSelectedCompany(company);
       setCurrentStep(2);
@@ -211,6 +223,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
       setProducts([]);
     };
 
+    // ── Modal step 2: Add product to BoM ───────────────────────
     const handleAddProduct = async () => {
       setAddMaterialError(null);
 
@@ -308,24 +321,14 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
       }
     };
 
-    useEffect(() => {
-      // Check if we're in step 2 and have either a selected company or estimation mode
-      if (
-        currentStep === 2 &&
-        selectedCompany &&
-        (searchProduct.length >= 2 || searchProduct.length === 0)
-      ) {
-        fetchProducts(selectedCompany.id, searchProduct);
-      }
-    }, [selectedCompany, searchProduct, currentStep]);
-
-    // Fetch all BoM data
+    // ── Fetch all BoM data if editing ───────────────────────────
     useEffect(() => {
       if (mode == Mode.EDIT) {
         fetchBOMItems();
       }
     }, [mode]);
 
+    // ── Fetch all BoM items from API ────────────────────────────
     const fetchBOMItems = async () => {
       try {
         const data = await bomApi.getAllLineItems(company_pk, productId());
@@ -350,6 +353,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
       }
     };
 
+    // ── Info button: open emissions tree in new tab ─────────────
     const handleInfoClick = (materialId: number) => {
       const material = materials.find(m => m.id === materialId);
       if (material) {
@@ -360,6 +364,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
       }
     };
 
+    // ── Request access to a material's emissions ────────────────
     const handleRequestAccess = async (materialId: number) => {
       const material = materials.find(m => m.id === materialId);
       if (material) {
@@ -385,6 +390,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
       }
     };
 
+    // ── Modal close helpers ─────────────────────────────────────
     const closeModal = () => {
       setIsModalOpen(false);
       setAddMaterialError(null);
@@ -395,6 +401,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
       setIsEstimationMode(false);
     };
 
+    // ── Delete modal helpers ────────────────────────────────────
     function openDeleteModal(item: Material) {
       setDeleteMaterial(item);
       setIsDeleteModalOpen(true);
@@ -417,6 +424,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
       }
     }
 
+    // ── Handle estimation mode for reference company ────────────
     const handleEstimationButton = async () => {
       try {
         const referenceCompany = await companyApi.getCompany("reference");
@@ -439,6 +447,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
       }
     };
 
+    // ── Render ─────────────────────────────────────────────────
     return (
       <>
         <div>

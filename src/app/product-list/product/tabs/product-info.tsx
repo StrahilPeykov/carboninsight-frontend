@@ -8,16 +8,20 @@ import { Fieldset, Legend } from "@headlessui/react";
 import DropdownField from "./components/DropdownField";
 import TextareaField from "./components/TextareaField";
 
+// ── ProductInfo Tab: Handles product details form and API integration ──
 const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
   ({ productId, tabKey, mode, setProductId, onFieldChange }, ref) => {
+    // Expose saveTab and updateTab to parent via ref
     useImperativeHandle(ref, () => ({ saveTab, updateTab }));
 
     console.log("mode", mode);
 
+    // ── Get company and auth info from localStorage ──
     const company_pk = localStorage.getItem("selected_company_id") ?? ("" as string);
     const access_token = localStorage.getItem("access_token");
     const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
+    // ── Field definitions and types ──
     interface FieldValues {
       name: string;
       description: string;
@@ -42,7 +46,7 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
     type FieldTitles = FieldErrors;
     type requiredFields = Record<FieldKey, boolean>;
 
-    // State for all tabs
+    // ── State for all fields and errors ──
     const [fieldValues, setFieldValues] = useState<FieldValues>({
       name: "",
       description: "",
@@ -76,7 +80,7 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
       is_public: "",
     });
 
-    // These don't need to be in the state, but are used for rendering
+    // ── Field rendering helpers (placeholders, tooltips, etc.) ──
     const placeholderTexts: FieldPlaceholders = {
       name: "iPhone 5s",
       description: "A mobile phone.",
@@ -92,7 +96,6 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
       pcf_calculation_method: "Select method",
     };
 
-    // These don't need to be in the state, but are used for rendering
     const tooltipTexts: FieldTooltips = {
       name: "Full product name (required).",
       description: "Product description.",
@@ -109,7 +112,6 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
       is_public: "Is this product publicly listed?",
     };
 
-    // These don't need to be in the state, but are used for rendering
     const fieldTypes: FieldTypes = {
       name: "text",
       description: "textarea",
@@ -126,7 +128,6 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
       is_public: "radio",
     };
 
-    // These don't need to be in the state, but are used for rendering
     const fieldTitles: FieldTitles = {
       name: "Product Name",
       description: "Product Description",
@@ -143,7 +144,6 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
       is_public: "Publicly Listed?",
     };
 
-    // These don't need to be in the state, but are used for rendering
     const requiredFields: requiredFields = {
       name: true,
       description: true,
@@ -160,6 +160,7 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
       is_public: true,
     };
 
+    // ── Fetch product data if editing ──
     useEffect(() => {
       fetchProductData(productId).then(responseOk => {
         if (responseOk) {
@@ -168,6 +169,7 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
       });
     }, [productId]);
 
+    // ── Fetch product data from API ──
     const fetchProductData = async (productId: string): Promise<boolean> => {
       try {
         const res = await fetch(API_URL + `/companies/${company_pk}/products/${productId}/`, {
@@ -191,7 +193,7 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
       }
     };
 
-    // Generic onChange
+    // ── Handle field value changes ──
     const handleFieldChange = <K extends FieldKey>(name: K, value: FieldValues[K]): void => {
       setFieldValues(d => ({
         ...d,
@@ -206,7 +208,7 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
       onFieldChange();
     };
 
-    // POST to server, handle 200 vs 400 responses
+    // ── Save new product to server ──
     const saveTab = async (): Promise<string> => {
       try {
         const res = await fetch(API_URL + `/companies/${company_pk}/products/`, {
@@ -226,7 +228,7 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
           return "";
         }
         if (res.status === 400) {
-          // new payload shape: { type, errors: [ { attr, detail, … }, … ] }
+          // new payload shape: { type, errors: [ { attr, detail, … } ] }
           const payload: {
             type: string;
             errors: Array<{ attr: string; detail: string }>;
@@ -234,18 +236,18 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
 
           const flat: Partial<FieldErrors> = {};
           let formError = "";
-          
-          payload.errors.forEach(({ attr, detail }) => {
-          if (attr === "non_field_errors") {
-            formError = detail;
-          } else {
-            flat[attr as FieldKey] = detail;
-          }
-        });
 
-        setFieldErrors(prev => ({ ...prev, ...flat }));
-        // return the non_field_errors if present, otherwise fallback
-        return formError || "Please fix the errors in the form.";
+          payload.errors.forEach(({ attr, detail }) => {
+            if (attr === "non_field_errors") {
+              formError = detail;
+            } else {
+              flat[attr as FieldKey] = detail;
+            }
+          });
+
+          setFieldErrors(prev => ({ ...prev, ...flat }));
+          // return the non_field_errors if present, otherwise fallback
+          return formError || "Please fix the errors in the form.";
         }
         console.error("Unexpected status", res.status);
         return "An unexpected error occurred. Please try again.";
@@ -255,6 +257,7 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
       }
     };
 
+    // ── Update existing product on server ──
     const updateTab = async (): Promise<string> => {
       try {
         const res = await fetch(API_URL + `/companies/${company_pk}/products/${productId}/`, {
@@ -272,7 +275,7 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
           return "";
         }
         if (res.status === 400) {
-          // new payload shape: { type, errors: [ { attr, detail, … }, … ] }
+          // new payload shape: { type, errors: [ { attr, detail, … } ] }
           const payload: {
             type: string;
             errors: Array<{ attr: string; detail: string }>;
@@ -294,9 +297,10 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
       }
     };
 
+    // ── List of all field keys ──
     const fieldKeys = Object.keys(fieldValues) as Array<keyof FieldValues>;
 
-    // Helper function to render a specific field
+    // ── Helper function to render a specific field ──
     function renderField(fieldKey: FieldKey) {
       const common = {
         name: String(fieldKey),
@@ -366,6 +370,7 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
       }
     }
 
+    // ── Render the form layout ──
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
         {/* Left Column */}

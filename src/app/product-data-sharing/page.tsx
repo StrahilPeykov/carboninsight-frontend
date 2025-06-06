@@ -280,9 +280,7 @@ export default function ProductDataSharing() {
                 {!dataLoading &&
                   !loadingError &&
                   requests.map(request => (
-                    <TableRow 
-                      key={request.id}
-                    >
+                    <TableRow key={request.id}>
                       <td className="py-3 px-6 text-left">{request.product_name}</td>
                       <td className="py-3 px-6 text-left">{request.requesting_company_name}</td>
                       <td

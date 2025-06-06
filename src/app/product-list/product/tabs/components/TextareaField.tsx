@@ -4,6 +4,7 @@ import React from "react";
 import { Field, Label, Textarea } from "@headlessui/react";
 import { CircleHelp } from "lucide-react";
 
+// ── Props for TextareaField component ───────────────────────────
 export interface TextareaFieldProps {
   name: string;
   label: string;
@@ -15,6 +16,7 @@ export interface TextareaFieldProps {
   onFieldChange: (val: string) => void;
 }
 
+// ── TextareaField component ────────────────────────────────────
 export default function TextareaField({
   name,
   label,
@@ -25,14 +27,16 @@ export default function TextareaField({
   error,
   onFieldChange,
 }: TextareaFieldProps) {
+  // ── Tooltip styling ───────────────────────────────────
   const tooltipBaseClass =
     "absolute left-full ml-2 top-1/2 transform -translate-y-1/2 " +
     "w-max max-w-xs px-3 py-1.5 text-xs text-white bg-gray-800 rounded-md " +
     "shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10";
 
+  // ── Render ────────────────────────────────────────────
   return (
     <Field>
-      {/* Label + tooltip */}
+      {/* ── Label and tooltip ───────────────────────────── */}
       <div className="flex items-center mb-1">
         <Label
           htmlFor={name}
@@ -48,7 +52,7 @@ export default function TextareaField({
         )}
       </div>
 
-      {/* Textarea */}
+      {/* ── Textarea input ──────────────────────────────── */}
       <Textarea
         id={name}
         name={name}
@@ -60,21 +64,15 @@ export default function TextareaField({
           bg-white dark:bg-gray-800
           text-gray-900 dark:text-gray-100
           border ${
-            error
-              ? "border-red-500 dark:border-red-400"
-              : "border-gray-300 dark:border-gray-600"
+            error ? "border-red-500 dark:border-red-400" : "border-gray-300 dark:border-gray-600"
           }
           px-3 py-2
           focus:ring-green-500 focus:border-green-500
         `}
       />
 
-      {/* Error message */}
-      {error && (
-        <p className="text-xs text-red-500 dark:text-red-400 mt-1">
-          {error}
-        </p>
-      )}
+      {/* ── Error message ──────────────────────────────── */}
+      {error && <p className="text-xs text-red-500 dark:text-red-400 mt-1">{error}</p>}
     </Field>
   );
 }

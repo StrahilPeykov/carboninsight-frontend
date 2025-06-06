@@ -1,11 +1,12 @@
 "use client";
 
+// ── Imports ────────────────────────────────────────────────────────────────
 import React, { forwardRef, useImperativeHandle, useState, useEffect } from "react";
 import { DataPassedToTabs, TabHandle } from "../page";
 import {
   lifecycleStages,
   productionEnergyApi,
-  ProductionEnergyEmission
+  ProductionEnergyEmission,
 } from "@/lib/api/productionEmissionApi";
 import { EmissionReference, emissionReferenceApi } from "@/lib/api/emissionReferenceApi";
 import { bomApi, LineItem } from "@/lib/api/bomApi";
@@ -23,8 +24,10 @@ import {
 } from "@headlessui/react";
 import { LifecycleStage, OverrideFactor } from "@/lib/api";
 
+// ── ProductionEnergy Tab: Handles production energy emissions CRUD ──────────
 const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
   ({ productId: productIdString, onFieldChange }, ref) => {
+    // ── State variables ─────────────────────────────────────────────
     const [emissions, setEmissions] = useState<ProductionEnergyEmission[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,6 +56,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
     const [showBomItemsForEmission, setShowBomItemsForEmission] =
       useState<ProductionEnergyEmission | null>(null);
 
+    // ── Company and product ID helpers ────────────────────────────
     const company_pk_string = localStorage.getItem("selected_company_id");
     if (!company_pk_string) {
       console.error("company_pk is null");
@@ -68,22 +72,23 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
       return id;
     };
 
+    // ── Expose saveTab/updateTab to parent ───────────────────────
     useImperativeHandle(ref, () => ({
       saveTab,
       updateTab,
     }));
 
-    // Save tab function which is called from the parent
+    // ── Save tab function (stub) ─────────────────────────────────
     const saveTab = async (): Promise<string> => {
       return "";
     };
 
-    //  Update tab function which is called from the parent in edit mode
+    // ── Update tab function (stub) ───────────────────────────────
     const updateTab = async (): Promise<string> => {
       return "";
     };
 
-    // Fetch emissions when the component mounts
+    // ── Fetch emissions and BOM items on mount ──────────────────
     useEffect(() => {
       if (productIdString) {
         fetchEmissions();
@@ -91,6 +96,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
       }
     }, [productIdString]);
 
+    // ── Fetch all production energy emissions ────────────────────
     const fetchEmissions = async () => {
       setIsLoading(true);
       try {
@@ -103,6 +109,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
       }
     };
 
+    // ── Open modal for add/edit emission ────────────────────────
     const handleOpenModal = (emission: ProductionEnergyEmission | null = null) => {
       if (emission) {
         setCurrentEmission(emission);
@@ -125,11 +132,13 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
       setIsModalOpen(true);
     };
 
+    // ── Close add/edit modal ─────────────────────────────────────
     const handleCloseModal = () => {
       setIsModalOpen(false);
       setCurrentEmission(null);
     };
 
+    // ── Handle submit for add/edit emission ──────────────────────
     const handleSubmit = async () => {
       const energyConsumption = parseFloat(formData.energy_consumption);
       if (isNaN(energyConsumption) || energyConsumption < 1) {
@@ -137,14 +146,14 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
         return;
       }
       if (
-        formData.override_factors.some(factor =>
-          typeof factor.lifecycle_stage !== "string" || factor.lifecycle_stage.trim() === "" ||
-
-          typeof factor.co_2_emission_factor_biogenic !== "number" ||
-          isNaN(factor.co_2_emission_factor_biogenic) ||
-
-          typeof factor.co_2_emission_factor_non_biogenic !== "number" ||
-          isNaN(factor.co_2_emission_factor_non_biogenic)
+        formData.override_factors.some(
+          factor =>
+            typeof factor.lifecycle_stage !== "string" ||
+            factor.lifecycle_stage.trim() === "" ||
+            typeof factor.co_2_emission_factor_biogenic !== "number" ||
+            isNaN(factor.co_2_emission_factor_biogenic) ||
+            typeof factor.co_2_emission_factor_non_biogenic !== "number" ||
+            isNaN(factor.co_2_emission_factor_non_biogenic)
         )
       ) {
         alert("Please fill in all overrides fields correctly.");
@@ -187,11 +196,13 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
       }
     };
 
+    // ── Confirm delete modal ─────────────────────────────────────
     const handleConfirmDelete = (emissionId: number) => {
       setDeletingEmissionId(emissionId);
       setIsDeleteModalOpen(true);
     };
 
+    // ── Delete emission ──────────────────────────────────────────
     const handleDelete = async () => {
       if (deletingEmissionId === null) return;
 
@@ -210,7 +221,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
       }
     };
 
-    // Add an override factor field
+    // ── Add an override factor field ─────────────────────────────
     const handleAddOverrideFactor = () => {
       setFormData({
         ...formData,
@@ -225,7 +236,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
       });
     };
 
-    // Update an override factor
+    // ── Update an override factor ────────────────────────────────
     const handleOverrideFactorChange = (
       index: number,
       field: "name" | "biogenic" | "non_biogenic",
@@ -250,7 +261,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
       });
     };
 
-    // Remove an override factor
+    // ── Remove an override factor ────────────────────────────────
     const handleRemoveOverrideFactor = (index: number) => {
       const updatedFactors = [...formData.override_factors];
       updatedFactors.splice(index, 1);
@@ -260,6 +271,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
       });
     };
 
+    // ── Fetch BOM line items ─────────────────────────────────────
     const fetchBomLineItems = async () => {
       try {
         const data = await bomApi.getAllLineItems(company_pk, productId());
@@ -269,6 +281,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
       }
     };
 
+    // ── Lifecycle options for override factors ───────────────────
     const lifecycleOptions = [
       "A1 - Raw material supply (and upstream production)",
       "A2 - Cradle-to-gate transport to factory",
@@ -295,11 +308,13 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
       "Other",
     ];
 
+    // ── Helper to get enum value from display string ─────────────
     const getLifecycleEnumValue = (displayString: string | null): string => {
       if (!displayString) return "";
       return displayString.split(" - ")[0];
     };
 
+    // ── Fetch emission references on mount ───────────────────────
     useEffect(() => {
       const fetchReferences = async () => {
         try {
@@ -313,14 +328,16 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
       fetchReferences();
     }, []);
 
+    // ── Render ───────────────────────────────────────────────────
     return (
       <>
+        {/* ── Header ─────────────────────────────────────────────── */}
         <div>
           <h2 className="text-xl font-semibold mb-4">Production Energy</h2>
           <p className="mb-4">Track energy consumption during manufacturing process.</p>
         </div>
 
-        {/* Emissions list - mobile view */}
+        {/* ── Emissions list - mobile view ───────────────────────── */}
         <div className="md:hidden">
           {isLoading ? (
             <div className="text-center py-4">Loading...</div>
@@ -331,6 +348,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
           ) : (
             emissions.map(emission => (
               <div key={emission.id} className="border rounded-lg p-4 mb-4 shadow-sm">
+                {/* ── Emission header and actions ── */}
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="font-medium">Emission #{emission.id}</h3>
                   <div className="flex space-x-2">
@@ -348,6 +366,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                     </button>
                   </div>
                 </div>
+                {/* ── Emission details ── */}
                 <div className="grid grid-cols-2 gap-2 text-sm">
                   <div className="text-gray-500">Energy Consumption:</div>
                   <div>{emission.energy_consumption} kWh</div>
@@ -395,7 +414,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
           )}
         </div>
 
-        {/* Emissions list - desktop view */}
+        {/* ── Emissions list - desktop view ──────────────────────── */}
         <div className="hidden md:block overflow-x-auto">
           <table className="min-w-full text-sm">
             <thead>
@@ -489,7 +508,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
           </table>
         </div>
 
-        {/* Add the Emission button */}
+        {/* ── Add the Emission button ────────────────────────────── */}
         <div className="mt-6">
           <Button
             onClick={() => handleOpenModal()}
@@ -500,7 +519,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
           </Button>
         </div>
 
-        {/* Add/Edit Emission Modal */}
+        {/* ── Add/Edit Emission Modal ────────────────────────────── */}
         <Dialog
           open={isModalOpen}
           as="div"
@@ -533,7 +552,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
               </div>
 
               <div className="space-y-4">
-                {/* Energy Consumption Section */}
+                {/* ── Energy Consumption Section ── */}
                 <div>
                   <label
                     htmlFor="energy_consumption"
@@ -553,7 +572,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                   />
                 </div>
 
-                {/* Reference Section */}
+                {/* ── Reference Section ── */}
                 <div>
                   <label
                     htmlFor="reference"
@@ -562,6 +581,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                     Reference
                   </label>
                   <div className="relative">
+                    {/* Reference Combobox */}
                     <Combobox
                       value={
                         formData.reference
@@ -615,7 +635,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                   </div>
                 </div>
 
-                {/* BOM Line Items Section */}
+                {/* ── BOM Line Items Section ── */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Associated Bill of Materials Items
@@ -719,7 +739,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                   </div>
                 </div>
 
-                {/* Override Factors Section */}
+                {/* ── Override Factors Section ── */}
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -753,11 +773,11 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                       <div className="relative mb-3">
                         <Combobox
                           value={
-                            (
-                              factor.lifecycle_stage
-                                ? lifecycleOptions.find(opt => opt.startsWith(factor.lifecycle_stage ?? ""))
-                                : ""
-                            ) ?? ""
+                            (factor.lifecycle_stage
+                              ? lifecycleOptions.find(opt =>
+                                  opt.startsWith(factor.lifecycle_stage ?? "")
+                                )
+                              : "") ?? ""
                           }
                           onChange={value => {
                             const enumValue = getLifecycleEnumValue(value);
@@ -840,6 +860,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                 </div>
               </div>
 
+              {/* ── Modal Actions ── */}
               <div className="flex justify-end gap-2 mt-6 pt-4 border-t dark:border-t-gray-700">
                 <Button onClick={handleCloseModal} variant="outline">
                   Cancel
@@ -856,7 +877,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
           </div>
         </Dialog>
 
-        {/* Delete Confirmation Modal */}
+        {/* ── Delete Confirmation Modal ───────────────────────────── */}
         {isDeleteModalOpen && (
           <Dialog
             open={isDeleteModalOpen}
@@ -901,7 +922,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
           </Dialog>
         )}
 
-        {/* Override Factors Modal */}
+        {/* ── Override Factors Modal ─────────────────────────────── */}
         <Dialog
           open={!!showFactorsForEmission}
           as="div"
@@ -943,7 +964,9 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                       {showFactorsForEmission.override_factors.map((factor, index) => (
                         <tr key={index}>
                           <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                            {lifecycleOptions.find(opt => opt.startsWith(factor.lifecycle_stage ?? "")) || factor.lifecycle_stage}
+                            {lifecycleOptions.find(opt =>
+                              opt.startsWith(factor.lifecycle_stage ?? "")
+                            ) || factor.lifecycle_stage}
                           </td>
                           <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
                             <div>Bio: {factor.co_2_emission_factor_biogenic}</div>
@@ -971,7 +994,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
           </div>
         </Dialog>
 
-        {/* BOM Items Modal */}
+        {/* ── BOM Items Modal ────────────────────────────────────── */}
         <Dialog
           open={!!showBomItemsForEmission}
           as="div"

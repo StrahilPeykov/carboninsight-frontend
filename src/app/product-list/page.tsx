@@ -55,15 +55,12 @@ export default function ProductListPage() {
 
   // Export
   const [showExportModal, setShowExportModal] = useState(false);
-  const [selectedProductForExport, setSelectedProductForExport] =
-    useState<Product | null>(null);
+  const [selectedProductForExport, setSelectedProductForExport] = useState<Product | null>(null);
 
   // AI advice flow
   const [pendingProductId, setPendingProductId] = useState<string | null>(null);
   const [pendingProductName, setPendingProductName] = useState<string>("");
-  const [aiModalStep, setAiModalStep] = useState<
-    "confirm" | "loading" | "result" | null
-  >(null);
+  const [aiModalStep, setAiModalStep] = useState<"confirm" | "loading" | "result" | null>(null);
   const [aiAdvice, setAiAdvice] = useState<string | null>(null);
   const [userPromptInput, setUserPromptInput] = useState<string>("");
 
@@ -79,7 +76,7 @@ export default function ProductListPage() {
 
   // --- NEW helper: per-row AI button click ---
   const handleAIButtonClick = (productId: string) => {
-    const product = products.find((p) => p.id === productId);
+    const product = products.find(p => p.id === productId);
     setPendingProductId(productId);
     setPendingProductName(product?.name ?? "");
     setAiModalStep("confirm");
@@ -111,17 +108,13 @@ export default function ProductListPage() {
         liveRegion.textContent = "Loading products...";
       }
 
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("access_token")
-          : null;
+      const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
       if (!token) {
         router.push("/login");
         return;
       }
 
-      const searchParam =
-        query.length >= 4 ? `?search=${encodeURIComponent(query)}` : "";
+      const searchParam = query.length >= 4 ? `?search=${encodeURIComponent(query)}` : "";
       const url = `${process.env.NEXT_PUBLIC_API_URL}/companies/${companyId}/products${searchParam}`;
 
       const res = await fetch(url, {
@@ -178,7 +171,7 @@ export default function ProductListPage() {
 
   // Opens the "type-to-confirm" modal
   const handleDelete = (id: string) => {
-    const prod = products.find((p) => p.id === id) ?? null;
+    const prod = products.find(p => p.id === id) ?? null;
     setToDeleteProduct(prod);
     setConfirmInput("");
   };
@@ -188,14 +181,9 @@ export default function ProductListPage() {
     if (!toDeleteProduct) return;
     setIsDeleting(true);
     try {
-      const token =
-        typeof window !== "undefined"
-          ? localStorage.getItem("access_token")
-          : null;
+      const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
       const company_pk =
-        typeof window !== "undefined"
-          ? localStorage.getItem("selected_company_id")
-          : null;
+        typeof window !== "undefined" ? localStorage.getItem("selected_company_id") : null;
       if (!token || !company_pk) {
         router.push("/login");
         return;
@@ -208,7 +196,7 @@ export default function ProductListPage() {
         const errData = await res.json().catch(() => null);
         throw new Error(errData?.detail || "Failed to delete product");
       }
-      setProducts((prev) => prev.filter((p) => p.id !== toDeleteProduct.id));
+      setProducts(prev => prev.filter(p => p.id !== toDeleteProduct.id));
 
       // Announce deletion
       const liveRegion = document.getElementById("status-announcements");
@@ -241,42 +229,31 @@ export default function ProductListPage() {
   };
 
   // AI advice workflow
-  const handleRequestProductAdvice = async (
-    productId: string,
-    prompt: string
-  ) => {
+  const handleRequestProductAdvice = async (productId: string, prompt: string) => {
     const API_URL = process.env.NEXT_PUBLIC_API_URL;
-    const token =
-      typeof window !== "undefined"
-        ? localStorage.getItem("access_token")
-        : null;
+    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
     const company =
-      typeof window !== "undefined"
-        ? localStorage.getItem("selected_company_id")
-        : null;
+      typeof window !== "undefined" ? localStorage.getItem("selected_company_id") : null;
 
     if (!API_URL || !token || !company) return;
 
     try {
       setAiModalStep("loading");
 
-      const res = await fetch(
-        `${API_URL}/companies/${company}/products/${productId}/ai/`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            product_id: productId,
-            user_prompt: prompt,
-          }),
-        }
-      );
+      const res = await fetch(`${API_URL}/companies/${company}/products/${productId}/ai/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          product_id: productId,
+          user_prompt: prompt,
+        }),
+      });
 
       const data = await res.json();
-      const product = products.find((p) => p.id === productId);
+      const product = products.find(p => p.id === productId);
 
       setAiAdvice(data.response);
       setPendingProductName(product?.name ?? "this product");
@@ -291,7 +268,7 @@ export default function ProductListPage() {
   // Row click (AI selection mode)
   const handleProductClick = (id: string) => {
     if (editMode) {
-      const product = products.find((p) => p.id === id);
+      const product = products.find(p => p.id === id);
       setPendingProductId(id);
       setPendingProductName(product?.name ?? "");
       setAiModalStep("confirm");
@@ -319,9 +296,7 @@ export default function ProductListPage() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-600"></div>
-        <span className="ml-4 text-gray-600">
-          Loading company information...
-        </span>
+        <span className="ml-4 text-gray-600">Loading company information...</span>
       </div>
     );
   }
@@ -351,7 +326,7 @@ export default function ProductListPage() {
           type="text"
           placeholder="Search by product, SKU or manufacturer name..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={e => setSearchQuery(e.target.value)}
           className="flex-grow border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         <Button
@@ -362,11 +337,7 @@ export default function ProductListPage() {
         </Button>
       </div>
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md">
-          {error}
-        </div>
-      )}
+      {error && <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md">{error}</div>}
 
       {/* Table card */}
       <Card className="p-4">
@@ -393,7 +364,7 @@ export default function ProductListPage() {
                 </thead>
 
                 <tbody className="text-base">
-                  {paginatedProducts.map((product) => (
+                  {paginatedProducts.map(product => (
                     <TableRow
                       key={product.id}
                       editMode={editMode}
@@ -413,7 +384,7 @@ export default function ProductListPage() {
                             variant="outline"
                             size="sm"
                             className="flex items-center gap-1 text-xs"
-                            onClick={(e) => handleExportClick(product, e)}
+                            onClick={e => handleExportClick(product, e)}
                           >
                             <FileDown className="w-3 h-3" />
                             Export
@@ -424,7 +395,7 @@ export default function ProductListPage() {
                             variant="outline"
                             size="sm"
                             className="flex items-center gap-1 text-xs"
-                            onClick={(e) => {
+                            onClick={e => {
                               e.stopPropagation();
                               handleAIButtonClick(product.id);
                             }}
@@ -438,7 +409,7 @@ export default function ProductListPage() {
                             variant="outline"
                             size="sm"
                             className="flex items-center gap-1 text-xs"
-                            onClick={(e) => {
+                            onClick={e => {
                               e.stopPropagation();
                               handleEdit(product.id);
                             }}
@@ -451,7 +422,7 @@ export default function ProductListPage() {
                             variant="outline"
                             size="sm"
                             className="flex items-center gap-1 text-xs"
-                            onClick={(e) => {
+                            onClick={e => {
                               e.stopPropagation();
                               handleDelete(product.id);
                             }}
@@ -482,8 +453,8 @@ export default function ProductListPage() {
                             <div className="text-gray-500">
                               <p className="text-lg font-medium">No products yet</p>
                               <p className="text-sm mt-1">
-                                Start by adding your first product to calculate its
-                                carbon footprint.
+                                Start by adding your first product to calculate its carbon
+                                footprint.
                               </p>
                             </div>
                             <Link href="/product-list/product">
@@ -500,7 +471,7 @@ export default function ProductListPage() {
 
             {/* Phone only stacked list */}
             <div className="sm:hidden space-y-4">
-              {paginatedProducts.map((product) => (
+              {paginatedProducts.map(product => (
                 <div
                   key={product.id}
                   className="border rounded-md p-4 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
@@ -525,7 +496,7 @@ export default function ProductListPage() {
                       variant="outline"
                       size="sm"
                       className="flex items-center gap-1 text-xs"
-                      onClick={(e) => handleExportClick(product, e)}
+                      onClick={e => handleExportClick(product, e)}
                     >
                       <FileDown className="w-3 h-3" />
                       Export
@@ -536,7 +507,7 @@ export default function ProductListPage() {
                       variant="outline"
                       size="sm"
                       className="flex items-center gap-1 text-xs"
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
                         handleAIButtonClick(product.id);
                       }}
@@ -546,7 +517,7 @@ export default function ProductListPage() {
                     </Button>
 
                     <button
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
                         handleEdit(product.id);
                       }}
@@ -555,7 +526,7 @@ export default function ProductListPage() {
                       <Edit className="w-4 h-4 text-blue-500" />
                     </button>
                     <button
-                      onClick={(e) => {
+                      onClick={e => {
                         e.stopPropagation();
                         handleDelete(product.id);
                       }}
@@ -572,21 +543,16 @@ export default function ProductListPage() {
               {paginatedProducts.length === 0 && !dataLoading && (
                 <div className="text-center py-8">
                   {searchQuery.length > 0 && searchQuery.length < 4 ? (
-                    <p className="text-gray-500">
-                      Please enter at least 4 characters to search.
-                    </p>
+                    <p className="text-gray-500">Please enter at least 4 characters to search.</p>
                   ) : searchQuery.length >= 4 ? (
-                    <p className="text-gray-500">
-                      No products found matching "{searchQuery}".
-                    </p>
+                    <p className="text-gray-500">No products found matching "{searchQuery}".</p>
                   ) : (
                     <div className="space-y-4">
                       <Boxes className="mx-auto h-12 w-12 text-gray-400" />
                       <div className="text-gray-500">
                         <p className="text-lg font-medium">No products yet</p>
                         <p className="text-sm mt-1">
-                          Start by adding your first product to calculate its carbon
-                          footprint.
+                          Start by adding your first product to calculate its carbon footprint.
                         </p>
                       </div>
                       <Link href="/product-list/product">
@@ -600,25 +566,21 @@ export default function ProductListPage() {
 
             {/* Pagination */}
             {products.length > 0 && (
-              <nav
-                className="flex justify-between items-center mt-4"
-                aria-label="Pagination"
-              >
+              <nav className="flex justify-between items-center mt-4" aria-label="Pagination">
                 <div className="flex items-center gap-2">
                   <Button
                     className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
                   >
                     Previous
                   </Button>
                   <span className="text-sm" aria-current="page">
-                    Page {currentPage} of{" "}
-                    {Math.ceil(products.length / rowsPerPage)}
+                    Page {currentPage} of {Math.ceil(products.length / rowsPerPage)}
                   </span>
                   <Button
                     className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-                    onClick={() => setCurrentPage((p) => p + 1)}
+                    onClick={() => setCurrentPage(p => p + 1)}
                     disabled={currentPage * rowsPerPage >= products.length}
                   >
                     Next
@@ -632,7 +594,7 @@ export default function ProductListPage() {
                     id="rows-per-page"
                     className="border rounded px-2 py-1 text-sm ml-2 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={rowsPerPage}
-                    onChange={(e) => {
+                    onChange={e => {
                       setRowsPerPage(Number(e.target.value));
                       setCurrentPage(1);
                     }}
@@ -665,8 +627,8 @@ export default function ProductListPage() {
             aiModalStep === "confirm"
               ? "Send product data to AI?"
               : aiModalStep === "loading"
-              ? "Generating AI Advice..."
-              : `AI Advice for ${pendingProductName}`
+                ? "Generating AI Advice..."
+                : `AI Advice for ${pendingProductName}`
           }
           onClose={() => {
             setAiModalStep(null);
@@ -678,9 +640,8 @@ export default function ProductListPage() {
           {aiModalStep === "confirm" && (
             <>
               <p className="text-sm text-gray-800 dark:text-gray-300 whitespace-pre-line mb-2">
-                You're about to share product data for{" "}
-                <strong>{pendingProductName}</strong> with our AI system to
-                receive tailored carbon reduction recommendations.{"\n\n"}
+                You're about to share product data for <strong>{pendingProductName}</strong> with
+                our AI system to receive tailored carbon reduction recommendations.{"\n\n"}
                 By clicking <strong>Ask AI</strong>, you consent to this use.{"\n\n"}
                 You may also enter a specific question below to guide the response.{"\n\n"}
                 <strong>No personal or sensitive data will be stored.</strong>
@@ -688,7 +649,7 @@ export default function ProductListPage() {
 
               <textarea
                 value={userPromptInput}
-                onChange={(e) => setUserPromptInput(e.target.value)}
+                onChange={e => setUserPromptInput(e.target.value)}
                 placeholder="Ask a specific question about this product..."
                 className="w-full border rounded px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 rows={4}
@@ -713,14 +674,9 @@ export default function ProductListPage() {
           )}
 
           {aiModalStep === "loading" && (
-            <div
-              className="flex flex-col items-center justify-center py-8"
-              role="status"
-            >
+            <div className="flex flex-col items-center justify-center py-8" role="status">
               <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mb-4" />
-              <p className="text-sm text-gray-600">
-                AI is thinking, please wait...
-              </p>
+              <p className="text-sm text-gray-600">AI is thinking, please wait...</p>
             </div>
           )}
 
@@ -750,8 +706,7 @@ export default function ProductListPage() {
             </p>
             <ul className="list-disc list-inside text-sm text-gray-600 dark:text-gray-400 space-y-1">
               <li>
-                Permanently delete{" "}
-                <strong>{toDeleteProduct.name}</strong> and remove it from your
+                Permanently delete <strong>{toDeleteProduct.name}</strong> and remove it from your
                 company.
               </li>
             </ul>

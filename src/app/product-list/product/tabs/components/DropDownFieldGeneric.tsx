@@ -10,11 +10,13 @@ import {
 } from "@headlessui/react";
 import { CircleHelp, ChevronDown } from "lucide-react";
 
+// ── Dropdown option interface ───────────────────────────────────────────────
 export interface DropdownOption {
   value: string;
   display_name: string;
 }
 
+// ── Props for DropdownFieldGeneric component ────────────────────────────────
 export interface DropdownFieldProps {
   name: string;
   label?: string; // Make label optional
@@ -28,6 +30,7 @@ export interface DropdownFieldProps {
   onFieldChange: (val: string) => void;
 }
 
+// ── DropdownFieldGeneric component ──────────────────────────────────────────
 export default function DropdownFieldGeneric({
   name,
   label,
@@ -40,9 +43,11 @@ export default function DropdownFieldGeneric({
   options,
   onFieldChange,
 }: DropdownFieldProps) {
+  // ── State variables ─────────────────────────────────────────────
   const [query, setQuery] = useState("");
   const [selectedOptionDisplayName, setSelectedOptionDisplayName] = useState("");
 
+  // ── Update selected display name when value or options change ──
   useEffect(() => {
     if (!value) {
       setSelectedOptionDisplayName("");
@@ -53,18 +58,22 @@ export default function DropdownFieldGeneric({
     setSelectedOptionDisplayName(selected?.display_name || "");
   }, [options, value]);
 
+  // ── Filter options based on query ──────────────────────────────
   const filteredOptions =
     query === ""
       ? options
       : options.filter(option => option.display_name.toLowerCase().includes(query.toLowerCase()));
 
+  // ── Tooltip styling ────────────────────────────────────────────
   const tooltipBaseClass =
     "absolute left-full ml-2 top-1/2 transform -translate-y-1/2 " +
     "w-max max-w-xs px-3 py-1.5 text-xs text-white bg-gray-800 rounded-md " +
     "shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10";
 
+  // ── Render ────────────────────────────────────────────────────
   return (
     <div className="space-y-1 overflow-visible">
+      {/* ── Label and tooltip ─────────────────────────────── */}
       {(label || tooltip) && (
         <div className="flex items-center mb-1">
           {label && (
@@ -84,6 +93,7 @@ export default function DropdownFieldGeneric({
         </div>
       )}
 
+      {/* ── Combobox for dropdown ────────────────────────── */}
       <Combobox
         value={selectedOptionDisplayName || null}
         onChange={selectedDisplayName => {
@@ -122,6 +132,7 @@ export default function DropdownFieldGeneric({
             </ComboboxButton>
           </div>
 
+          {/* ── Dropdown options ─────────────────────────── */}
           <ComboboxOptions
             className={`
               absolute z-50 mt-1 w-full overflow-auto rounded-md
@@ -149,9 +160,8 @@ export default function DropdownFieldGeneric({
         </div>
       </Combobox>
 
-      {error && (
-        <p className="text-xs text-red-500 dark:text-red-400">{error}</p>
-      )}
+      {/* ── Error message ────────────────────────────────── */}
+      {error && <p className="text-xs text-red-500 dark:text-red-400">{error}</p>}
     </div>
   );
 }

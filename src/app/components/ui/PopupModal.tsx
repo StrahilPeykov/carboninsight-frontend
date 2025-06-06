@@ -5,13 +5,13 @@ import ReactDOM from "react-dom";
 import Button from "./Button";
 
 interface PopupModalProps {
-    title: string;
-    confirmationRequiredText?: string;
-    confirmLabel?: string;
-    onConfirm?: () => void;
-    onClose: () => void;
-    showCancel?: boolean;
-    children: ReactNode;
+  title: string;
+  confirmationRequiredText?: string;
+  confirmLabel?: string;
+  onConfirm?: () => void;
+  onClose: () => void;
+  showCancel?: boolean;
+  children: ReactNode;
 }
 
 export default function PopupModal({
@@ -202,7 +202,7 @@ export default function PopupModal({
             <footer className="flex justify-end space-x-2 mt-4">
               {showCancel && (
                 <Button variant="outline" onClick={onClose}>
-                    Cancel
+                  Cancel
                 </Button>
               )}
               <Button

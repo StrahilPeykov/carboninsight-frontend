@@ -8,7 +8,9 @@ import { useAuth } from "../context/AuthContext";
 import { Building2, BoxesIcon, Share2 } from "lucide-react";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 import { useRouter } from "next/navigation";
+import AuditLog from "../components/ui/AuditLog";
 import { productApi } from "@/lib/api/productApi";
+import { auditLogApi, LogItem } from "@/lib/api/auditLogApi";
 
 interface CompanyData {
   id: string;
@@ -34,6 +36,7 @@ export default function DashboardPage() {
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [selectedCompany, setSelectedCompany] = useState<CompanyData | null>(null);
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
+  const [logItems, setLogItems] = useState<LogItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
@@ -128,7 +131,9 @@ export default function DashboardPage() {
           // Fetch product sharing requests and count pending ones
           try {
             const sharingRequests = await productApi.getProductSharingRequests(selectedCompanyId);
-            const pendingCount = sharingRequests.filter(request => request.status === "Pending").length;
+            const pendingCount = sharingRequests.filter(
+              request => request.status === "Pending"
+            ).length;
             setPendingRequestsCount(pendingCount);
           } catch (err) {
             console.error("Error fetching sharing requests:", err);
@@ -154,6 +159,14 @@ export default function DashboardPage() {
           });
 
           setRecentActivity(recentActivities);
+
+          // Load audit log items
+          try {
+            const auditLogItems = await auditLogApi.getCompanyAuditLogs(parseInt(selectedCompanyId));
+            setLogItems(auditLogItems);
+          } catch (err) {
+            console.error("Error fetching audit logs:", err);
+          }
         }
 
         setError(null);
@@ -192,8 +205,9 @@ export default function DashboardPage() {
     <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="mb-8">
         <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-          Welcome, {user?.first_name && user?.last_name 
-            ? `${user.first_name} ${user.last_name}` 
+          Welcome,{" "}
+          {user?.first_name && user?.last_name
+            ? `${user.first_name} ${user.last_name}`
             : user?.first_name || user?.username}
         </h1>
         <p className="mt-2 text-lg text-gray-500 dark:text-gray-400">
@@ -212,7 +226,9 @@ export default function DashboardPage() {
                 <Building2 className="h-6 w-6 text-red dark:text-red-200" />
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Your Companies</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                  Your Companies
+                </h3>
                 <p className="text-2xl font-semibold">{companyCount}</p>
               </div>
             </div>
@@ -240,7 +256,9 @@ export default function DashboardPage() {
                 <Share2 className="h-6 w-6 text-green-600 dark:text-green-200" />
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Pending Requests</h3>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                  Pending Requests
+                </h3>
                 <p className="text-2xl font-semibold">{pendingRequestsCount}</p>
                 {pendingRequestsCount > 0 && (
                   <p className="text-xs text-green-600 dark:text-green-400">
@@ -298,7 +316,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent Activity */}
-      <Card>
+      <Card className="mb-10">
         <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
         {recentActivity.length > 0 ? (
           <ul className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -321,6 +339,12 @@ export default function DashboardPage() {
           <p className="text-gray-500 dark:text-gray-400">No recent activity</p>
         )}
       </Card>
+
+      {/* Audit log of company */}
+      <caption className="sr-only">
+        Table showing the audit log of the company.
+      </caption>
+      <AuditLog caption="AuditLog" logItems={logItems}/>
     </div>
   );
 }

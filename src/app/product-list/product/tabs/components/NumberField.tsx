@@ -4,6 +4,7 @@ import React from "react";
 import { Input } from "@headlessui/react";
 import { CircleHelp } from "lucide-react";
 
+// ── Props for NumberField component ─────────────────────────────
 export interface NumberFieldProps {
   name: string;
   label: string;
@@ -18,6 +19,7 @@ export interface NumberFieldProps {
   onFieldChange: (val: string) => void; // <-- change to string
 }
 
+// ── NumberField component ──────────────────────────────────────
 export default function NumberField({
   name,
   label,
@@ -31,13 +33,16 @@ export default function NumberField({
   max,
   onFieldChange,
 }: NumberFieldProps) {
+  // ── Tooltip styling ───────────────────────────────────
   const tooltipBaseClass =
     "absolute left-full ml-2 top-1/2 transform -translate-y-1/2 " +
     "w-max max-w-xs px-3 py-1.5 text-xs text-white bg-gray-800 rounded-md " +
     "shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10";
 
+  // ── Render ────────────────────────────────────────────
   return (
     <div className="space-y-1">
+      {/* ── Label and tooltip ───────────────────────────── */}
       <div className="flex items-center mb-1">
         <label
           htmlFor={name}
@@ -53,6 +58,7 @@ export default function NumberField({
         )}
       </div>
 
+      {/* ── Number input field ──────────────────────────── */}
       <Input
         id={name}
         name={name}
@@ -68,20 +74,15 @@ export default function NumberField({
           bg-white dark:bg-gray-800
           text-gray-900 dark:text-gray-100
           border ${
-            error
-              ? "border-red-500 dark:border-red-400"
-              : "border-gray-300 dark:border-gray-600"
+            error ? "border-red-500 dark:border-red-400" : "border-gray-300 dark:border-gray-600"
           }
           px-3 focus:ring-green-500 focus:border-green-500
           data-[focus]:border-green-500 data-[focus]:ring-green-500
         `}
       />
 
-      {error && (
-        <p className="text-xs text-red-500 dark:text-red-400">
-          {error}
-        </p>
-      )}
+      {/* ── Error message ──────────────────────────────── */}
+      {error && <p className="text-xs text-red-500 dark:text-red-400">{error}</p>}
     </div>
   );
 }

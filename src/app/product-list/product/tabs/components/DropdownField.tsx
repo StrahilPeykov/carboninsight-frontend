@@ -10,11 +10,13 @@ import {
 } from "@headlessui/react";
 import { CircleHelp, ChevronDown, Loader2 } from "lucide-react";
 
+// ── Dropdown option interface ───────────────────────────────────────────────
 export interface DropdownOption {
   value: string;
   display_name: string;
 }
 
+// ── Props for DropdownField component ──────────────────────────────────────
 export interface DropdownFieldProps {
   name: string;
   label: string;
@@ -28,6 +30,7 @@ export interface DropdownFieldProps {
   onFieldChange: (val: string) => void; // This expects a string
 }
 
+// ── DropdownField component ────────────────────────────────────────────────
 export default function DropdownField({
   name,
   label,
@@ -40,6 +43,7 @@ export default function DropdownField({
   companyId,
   onFieldChange,
 }: DropdownFieldProps) {
+  // ── State variables ─────────────────────────────────────────────
   const [options, setOptions] = useState<DropdownOption[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -47,6 +51,7 @@ export default function DropdownField({
   const [selectedOptionDisplayName, setSelectedOptionDisplayName] = useState("");
   // value stands for the selected value
 
+  // ── Fetch options from API on mount ────────────────────────────
   useEffect(() => {
     const fetchOptions = async () => {
       if (isLoading || options.length > 0) return;
@@ -56,6 +61,7 @@ export default function DropdownField({
         if (!access_token) {
           throw new Error("No access token found");
         }
+        // Fetch OPTIONS for the products endpoint to get choices for the field
         const res = await fetch(`${apiUrl}/companies/${companyId}/products/`, {
           method: "OPTIONS",
           headers: {
@@ -83,16 +89,19 @@ export default function DropdownField({
     fetchOptions();
   }, []);
 
+  // ── Update display name when options or value changes ──────────
   useEffect(() => {
     console.log("options", options);
     setSelectedOptionDisplayName(options.find(o => o.value === value)?.display_name || "");
   }, [options, value]);
 
+  // ── Filter options based on query ──────────────────────────────
   const filteredOptions =
     query === ""
       ? options
       : options.filter(option => option.display_name.toLowerCase().includes(query.toLowerCase()));
 
+  // ── Tooltip styling ────────────────────────────────────────────
   const tooltipBaseClass =
     "absolute left-full ml-2 top-1/2 transform -translate-y-1/2 " +
     "w-max max-w-xs px-3 py-1.5 text-xs text-white bg-gray-800 rounded-md " +
@@ -100,8 +109,10 @@ export default function DropdownField({
 
   // 1) Derive the selected object from your string `value` prop:
 
-return (
+  // ── Render ────────────────────────────────────────────────────
+  return (
     <div className="space-y-1">
+      {/* ── Label and tooltip ─────────────────────────────── */}
       <div className="flex items-center mb-1">
         <label
           htmlFor={name}
@@ -117,6 +128,7 @@ return (
         )}
       </div>
 
+      {/* ── Loading state ─────────────────────────────────── */}
       {isLoading ? (
         <div
           className="
@@ -130,12 +142,11 @@ return (
           <Loader2 className="h-5 w-5 text-gray-400 dark:text-gray-500 animate-spin" />
         </div>
       ) : (
+        // ── Combobox for dropdown ──────────────────────────
         <Combobox
           value={selectedOptionDisplayName}
           onChange={selectedItem => {
-            onFieldChange(
-              options.find(o => o.display_name === selectedItem)?.value || ""
-            );
+            onFieldChange(options.find(o => o.display_name === selectedItem)?.value || "");
             setSelectedOptionDisplayName(selectedItem || "");
           }}
           virtual={{ options: filteredOptions.map(o => o.display_name) }}
@@ -162,6 +173,7 @@ return (
               </ComboboxButton>
             </div>
 
+            {/* ── Dropdown options ─────────────────────────── */}
             <ComboboxOptions
               className="
                 absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md
@@ -190,6 +202,7 @@ return (
         </Combobox>
       )}
 
+      {/* ── Error message ────────────────────────────────── */}
       {error && <p className="text-xs text-red-500 dark:text-red-400">{error}</p>}
     </div>
   );

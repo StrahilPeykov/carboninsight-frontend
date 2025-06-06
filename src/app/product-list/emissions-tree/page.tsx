@@ -8,6 +8,8 @@ import { EmissionsTable } from "./EmissionsTable";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
 import { Suspense } from "react";
 import { companyApi } from "@/lib/api/companyApi";
+import AuditLog from "@/app/components/ui/AuditLog";
+import { auditLogApi, LogItem } from "@/lib/api/auditLogApi";
 
 interface CompanyData {
   id: string;
@@ -81,6 +83,7 @@ function EmissionsTreePageContent() {
   const [product, setProduct] = useState<Product | null>(null);
   const [manufacturer, setManufacturer] = useState("");
   const [supplier, setSupplier] = useState<CompanyData | null>(null);
+  const [logItems, setLogItems] = useState<LogItem[]>([]);
   const searchParams = useSearchParams();
 
   const productId = searchParams.get("id");
@@ -147,6 +150,16 @@ function EmissionsTreePageContent() {
         }
         if (productData.manufacturer_name) {
           setManufacturer(productData.manufacturer_name);
+        }
+
+        // Load audit log items
+        if (companyId && productId) {
+          try {
+            const auditLogItems = await auditLogApi.getProductAuditLogs(parseInt(companyId), parseInt(productId));
+            setLogItems(auditLogItems);
+          } catch (err) {
+            console.error("Error fetching audit logs:", err);
+          }
         }
 
         setSupplier(supplierData);
@@ -220,7 +233,7 @@ function EmissionsTreePageContent() {
           </div>
         </Card>
       )}
-      <Card>
+      <Card className="mb-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Emissions Breakdown</h2>
         </div>
@@ -233,6 +246,12 @@ function EmissionsTreePageContent() {
           </div>
         )}
       </Card>
+
+      {/* Audit log of company */}
+      <caption className="sr-only">
+        Table showing the audit log of the company.
+      </caption>
+      <AuditLog caption="AuditLog" logItems={logItems}/>
     </div>
   );
 }

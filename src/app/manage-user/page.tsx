@@ -251,9 +251,7 @@ export default function ManageUserPage() {
                 {!dataLoading &&
                   !loadingError &&
                   users.map(user => (
-                    <TableRow
-                      key={user.username}
-                    >
+                    <TableRow key={user.username}>
                       <td className="py-3 px-6 text-left whitespace-nowrap">{user.username}</td>
                       <td className="py-3 px-6 text-left">{user.email}</td>
                       <td className="py-3 px-6 text-left">{user.first_name}</td>

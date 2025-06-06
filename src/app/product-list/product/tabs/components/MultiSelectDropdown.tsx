@@ -5,11 +5,13 @@ import { Listbox, Transition } from "@headlessui/react";
 import { Check, ChevronDown, X } from "lucide-react";
 import clsx from "clsx";
 
+// ── Dropdown option interface ───────────────────────────────────────────────
 export interface DropdownOption {
   value: string;
   display_name: string;
 }
 
+// ── Props for MultiSelectDropdown component ────────────────────────────────
 interface MultiSelectDropdownProps {
   label: string;
   options: DropdownOption[];
@@ -18,6 +20,7 @@ interface MultiSelectDropdownProps {
   placeholder?: string;
 }
 
+// ── MultiSelectDropdown component ──────────────────────────────────────────
 export default function MultiSelectDropdown({
   label,
   options,
@@ -25,6 +28,7 @@ export default function MultiSelectDropdown({
   onChange,
   placeholder = "Select options",
 }: MultiSelectDropdownProps) {
+  // ── Toggle selection of an option ──────────────────────────────
   const handleToggle = (value: string) => {
     if (selectedValues.includes(value)) {
       onChange(selectedValues.filter(v => v !== value));
@@ -33,16 +37,21 @@ export default function MultiSelectDropdown({
     }
   };
 
+  // ── Clear all selected options ────────────────────────────────
   const clearAll = () => onChange([]);
 
+  // ── Render ───────────────────────────────────────────────────
   return (
     <div className="w-full">
+      {/* ── Label ────────────────────────────────────────── */}
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         {label}
       </label>
 
+      {/* ── Listbox for multi-select ────────────────────── */}
       <Listbox value={selectedValues} onChange={onChange} multiple>
         <div className="relative">
+          {/* ── Button to open dropdown ───────────────────── */}
           <Listbox.Button
             className="
               relative w-full cursor-default rounded-md
@@ -67,6 +76,7 @@ export default function MultiSelectDropdown({
             </span>
           </Listbox.Button>
 
+          {/* ── Dropdown options with transition ───────────── */}
           <Transition
             as={Fragment}
             leave="transition ease-in duration-100"
@@ -88,12 +98,8 @@ export default function MultiSelectDropdown({
                     <li
                       className={clsx(
                         "cursor-default select-none relative py-2 pl-10 pr-4",
-                        active
-                          ? "bg-red-100 dark:bg-red"
-                          : "",
-                        selected
-                          ? "font-medium text-gray-900 dark:text-gray-100"
-                          : "font-normal"
+                        active ? "bg-red-100 dark:bg-red" : "",
+                        selected ? "font-medium text-gray-900 dark:text-gray-100" : "font-normal"
                       )}
                       onClick={() => handleToggle(option.value)}
                     >
@@ -112,6 +118,7 @@ export default function MultiSelectDropdown({
         </div>
       </Listbox>
 
+      {/* ── Selected tags and clear button ───────────────── */}
       {selectedValues.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-2">
           {selectedValues.map(value => {

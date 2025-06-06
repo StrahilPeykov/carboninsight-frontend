@@ -1,6 +1,6 @@
 "use client";
 
-import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 
 interface KeyboardShortcutsProviderProps {
   children: React.ReactNode;

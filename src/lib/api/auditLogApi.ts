@@ -2,7 +2,12 @@ import { apiRequest } from "./apiClient";
 
 export type ContentTypeLabel = "core";
 
-export type ContentTypeModel = "company" | "product" | "productionenergyemission" | "transportemission" | "userenergyemission";
+export type ContentTypeModel =
+  | "company"
+  | "product"
+  | "productionenergyemission"
+  | "transportemission"
+  | "userenergyemission";
 
 /* 
     Defines the type of action that was performed:
@@ -11,7 +16,7 @@ export type ContentTypeModel = "company" | "product" | "productionenergyemission
     2: delete.
     3: access.
 */
-export type AuditLogAction = 0 | 1 | 2 | 3; 
+export type AuditLogAction = 0 | 1 | 2 | 3;
 export const AuditLogActionDefinition: Record<AuditLogAction, string> = {
   0: "Create",
   1: "Update",
@@ -38,5 +43,5 @@ export const auditLogApi = {
     apiRequest<LogItem[]>(`/companies/${companyId}/audit/`),
 
   getProductAuditLogs: (companyId: number, productId: number) =>
-    apiRequest<LogItem[]>(`/companies/${companyId}/products/${productId}/audit/`)
+    apiRequest<LogItem[]>(`/companies/${companyId}/products/${productId}/audit/`),
 };

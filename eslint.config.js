@@ -17,7 +17,6 @@ export default [
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "module",
-      jsx: true,
       parserOptions: {
         ecmaFeatures: {
           jsx: true,

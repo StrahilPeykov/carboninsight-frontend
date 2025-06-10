@@ -271,6 +271,13 @@ export default function ProductClientPage() {
           text-gray-900 dark:text-gray-100
         "
       >
+        {/* Page Title */}
+        <div className="text-center mb-12">
+          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
+            {mode === Mode.ADD ? "Add Product" : "Edit Product"}
+          </h1>
+        </div>
+
         <Card
           className="
             overflow-visible
@@ -279,12 +286,6 @@ export default function ProductClientPage() {
             shadow-sm dark:shadow-none
           "
         >
-          {/* Page Title */}
-          <div className="text-center mb-12">
-            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
-              {mode === Mode.ADD ? "Add Product" : "Edit Product"}
-            </h1>
-          </div>
 
           {/* Stepper Tabs */}
           <TabGroup selectedIndex={activeTab} onChange={setActiveTab}>
@@ -369,13 +370,17 @@ export default function ProductClientPage() {
           )}
 
           {/* Navigation Buttons */}
-          <div className="flex justify-end space-x-4 mt-6">
+          <div
+            className="
+              flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 mt-6
+            "
+          >
             <div className="flex flex-1">
               <Button
                 onClick={onBack}
                 disabled={activeTab === 0}
                 variant={activeTab === 0 ? "outline" : "primary"}
-                className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+                className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 w-full sm:w-auto"
               >
                 Back
               </Button>
@@ -386,7 +391,7 @@ export default function ProductClientPage() {
                 onClick={onSaveTab}
                 disabled={tabConfig[activeTab].saved}
                 variant={tabConfig[activeTab].saved ? "outline" : "primary"}
-                className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+                className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 w-full sm:w-auto"
               >
                 Save
               </Button>
@@ -402,7 +407,7 @@ export default function ProductClientPage() {
                   ? "outline"
                   : "primary"
               }
-              className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+              className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 w-full sm:w-auto"
             >
               Next
             </Button>
@@ -411,7 +416,7 @@ export default function ProductClientPage() {
               onClick={handleAddProduct}
               disabled={false}
               variant={!productInfoSavedOnce ? "outline" : "primary"}
-              className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
+              className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 w-full sm:w-auto"
             >
               Finish
             </Button>

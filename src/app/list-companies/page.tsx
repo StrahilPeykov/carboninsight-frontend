@@ -123,24 +123,22 @@ export default function ListCompaniesPage() {
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1 min-w-0 pr-4">
-                      <h2 
-                        className="text-xl font-bold mb-2 truncate min-w-0" 
-                        title={company.name}
-                      >
+                      <h2 className="text-xl font-bold mb-2 truncate min-w-0" title={company.name}>
                         {company.name}
                       </h2>
                       <div className="space-y-1">
-                        <p 
-                          className="text-sm text-gray-500 dark:text-gray-400 break-all" 
+                        <p
+                          className="text-sm text-gray-500 dark:text-gray-400 break-all"
                           title={`VAT: ${company.vat_number}`}
                         >
                           <span className="font-medium">VAT:</span> {company.vat_number}
                         </p>
-                        <p 
-                          className="text-sm text-gray-500 dark:text-gray-400 break-all" 
+                        <p
+                          className="text-sm text-gray-500 dark:text-gray-400 break-all"
                           title={`Reg: ${company.business_registration_number}`}
                         >
-                          <span className="font-medium">Reg:</span> {company.business_registration_number}
+                          <span className="font-medium">Reg:</span>{" "}
+                          {company.business_registration_number}
                         </p>
                       </div>
                     </div>

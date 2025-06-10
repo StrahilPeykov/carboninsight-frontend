@@ -1,11 +1,6 @@
 "use client";
 
-import React, {
-  forwardRef,
-  useImperativeHandle,
-  useState,
-  useEffect,
-} from "react";
+import React, { forwardRef, useImperativeHandle, useState, useEffect } from "react";
 import { DataPassedToTabs, TabHandle } from "../page";
 import {
   transportEmissionApi,
@@ -78,10 +73,12 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
     const [bomLineItems, setBomLineItems] = useState<LineItem[]>([]);
     const [bomLineItemQuery, setBomLineItemQuery] = useState("");
 
-    const [lifecycleChoices, setLifecycleChoices] = useState<{
-      value: string;
-      display_name: string;
-    }[]>([]);
+    const [lifecycleChoices, setLifecycleChoices] = useState<
+      {
+        value: string;
+        display_name: string;
+      }[]
+    >([]);
 
     const [showOverridesForEmission, setShowOverridesForEmission] =
       useState<TransportEmission | null>(null);
@@ -111,10 +108,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
     const fetchEmissions = async () => {
       setIsLoading(true);
       try {
-        const data = await transportEmissionApi.getAllTransportEmissions(
-          company_pk,
-          productId()
-        );
+        const data = await transportEmissionApi.getAllTransportEmissions(company_pk, productId());
         setEmissions(data);
       } catch (error) {
         console.error("Error fetching transport emissions:", error);
@@ -155,8 +149,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
           };
         };
         const choices =
-          schema.actions.POST.override_factors?.child?.children?.lifecycle_stage
-            ?.choices ?? [];
+          schema.actions.POST.override_factors?.child?.children?.lifecycle_stage?.choices ?? [];
         setLifecycleChoices(choices);
       } catch (error) {
         console.error("Error fetching lifecycle stage choices:", error);
@@ -182,13 +175,11 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
           weight: emission.weight.toString(),
           reference: Number(emission.reference).toString(),
           override_factors:
-            emission.override_factors?.map((f) => ({
+            emission.override_factors?.map(f => ({
               id: f.id,
               lifecycle_stage: f.lifecycle_stage,
-              co_2_emission_factor_biogenic:
-                f.co_2_emission_factor_biogenic ?? 0,
-              co_2_emission_factor_non_biogenic:
-                f.co_2_emission_factor_non_biogenic ?? 0,
+              co_2_emission_factor_biogenic: f.co_2_emission_factor_biogenic ?? 0,
+              co_2_emission_factor_non_biogenic: f.co_2_emission_factor_non_biogenic ?? 0,
             })) ?? [],
           line_items: emission.line_items ?? [],
         });
@@ -217,28 +208,18 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
 
     // Sum total emission factor for an emission
     const sumBioAndNonBioEmissions = (emission: TransportEmission): number => {
-      if (
-        !emission.reference_details ||
-        !emission.reference_details.emission_factors
-      ) {
+      if (!emission.reference_details || !emission.reference_details.emission_factors) {
         return 0;
       }
-      return emission.reference_details.emission_factors.reduce(
-        (total, factor) => {
-          const biogenic = Number.isFinite(
-            factor.co_2_emission_factor_biogenic
-          ) 
-            ? Number(factor.co_2_emission_factor_biogenic)
-            : 0;
-          const non_biogenic = Number.isFinite(
-            factor.co_2_emission_factor_non_biogenic
-          )
-            ? Number(factor.co_2_emission_factor_non_biogenic)
-            : 0;
-          return total + biogenic + non_biogenic;
-        },
-        0
-      );
+      return emission.reference_details.emission_factors.reduce((total, factor) => {
+        const biogenic = Number.isFinite(factor.co_2_emission_factor_biogenic)
+          ? Number(factor.co_2_emission_factor_biogenic)
+          : 0;
+        const non_biogenic = Number.isFinite(factor.co_2_emission_factor_non_biogenic)
+          ? Number(factor.co_2_emission_factor_non_biogenic)
+          : 0;
+        return total + biogenic + non_biogenic;
+      }, 0);
     };
 
     const sumOverrideEmissions = (emission: TransportEmission): number => {
@@ -280,7 +261,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
       }
       if (
         formData.override_factors.some(
-          (factor) =>
+          factor =>
             !factor.lifecycle_stage ||
             typeof factor.co_2_emission_factor_biogenic !== "number" ||
             isNaN(factor.co_2_emission_factor_biogenic) ||
@@ -294,32 +275,26 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
 
       setIsSubmitting(true);
       try {
-        const referenceId = formData.reference
-          ? parseInt(formData.reference, 10)
-          : 0;
+        const referenceId = formData.reference ? parseInt(formData.reference, 10) : 0;
         const payloadBase = {
           distance: distanceNum,
           weight: weightNum,
           reference: referenceId,
-          override_factors: formData.override_factors.map((f) =>
+          override_factors: formData.override_factors.map(f =>
             f.id
               ? {
                   id: f.id,
                   lifecycle_stage: f.lifecycle_stage,
                   co_2_emission_factor_biogenic: f.co_2_emission_factor_biogenic,
-                  co_2_emission_factor_non_biogenic:
-                    f.co_2_emission_factor_non_biogenic,
+                  co_2_emission_factor_non_biogenic: f.co_2_emission_factor_non_biogenic,
                 }
               : {
                   lifecycle_stage: f.lifecycle_stage,
                   co_2_emission_factor_biogenic: f.co_2_emission_factor_biogenic,
-                  co_2_emission_factor_non_biogenic:
-                    f.co_2_emission_factor_non_biogenic,
+                  co_2_emission_factor_non_biogenic: f.co_2_emission_factor_non_biogenic,
                 }
           ),
-          line_items: formData.line_items.length
-            ? formData.line_items
-            : undefined,
+          line_items: formData.line_items.length ? formData.line_items : undefined,
         } as CreateTransportEmission & { override_factors: any[]; line_items?: number[] };
 
         if (currentEmission) {
@@ -332,11 +307,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
           );
         } else {
           // Create new
-          await transportEmissionApi.createTransportEmission(
-            company_pk,
-            productId(),
-            payloadBase
-          );
+          await transportEmissionApi.createTransportEmission(company_pk, productId(), payloadBase);
         }
 
         // Refresh list and close modal
@@ -364,9 +335,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
           productId(),
           deletingEmissionId
         );
-        setEmissions(
-          emissions.filter((e) => e.id !== deletingEmissionId)
-        );
+        setEmissions(emissions.filter(e => e.id !== deletingEmissionId));
         setIsDeleteModalOpen(false);
         onFieldChange();
       } catch (error) {
@@ -392,30 +361,29 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
     // Update override fields
     const handleOverrideFactorChange = (
       index: number,
-      field: 'lifecycle_stage' | 'biogenic' | 'non_biogenic',
-      raw: string            // 👈 the string from the <input>
+      field: "lifecycle_stage" | "biogenic" | "non_biogenic",
+      raw: string // 👈 the string from the <input>
     ) => {
       const updated = [...formData.override_factors];
 
       switch (field) {
-        case 'lifecycle_stage':
+        case "lifecycle_stage":
           updated[index].lifecycle_stage = raw as LifecycleStage;
           break;
 
-        case 'biogenic':
+        case "biogenic":
           updated[index].co_2_emission_factor_biogenic =
-            raw.trim() === '' ? undefined : Number(raw);
+            raw.trim() === "" ? undefined : Number(raw);
           break;
 
-        case 'non_biogenic':
+        case "non_biogenic":
           updated[index].co_2_emission_factor_non_biogenic =
-            raw.trim() === '' ? undefined : Number(raw);
+            raw.trim() === "" ? undefined : Number(raw);
           break;
       }
 
       setFormData({ ...formData, override_factors: updated });
     };
-
 
     // Remove override factor
     const handleRemoveOverrideFactor = (index: number) => {
@@ -433,7 +401,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
       !formData.weight.trim() ||
       !formData.reference ||
       formData.override_factors.some(
-        (f) =>
+        f =>
           !f.lifecycle_stage ||
           isNaN(Number(f.co_2_emission_factor_biogenic)) ||
           isNaN(Number(f.co_2_emission_factor_non_biogenic))
@@ -443,9 +411,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
       <>
         {/* Header */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">
-            Transportation Emissions
-          </h2>
+          <h2 className="text-xl font-semibold mb-4">Transportation Emissions</h2>
           <p className="mb-4">Add or manage transportation emissions.</p>
         </div>
 
@@ -454,15 +420,10 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
           {isLoading ? (
             <div className="text-center py-4">Loading…</div>
           ) : emissions.length === 0 ? (
-            <div className="text-center text-gray-500 py-4">
-              No transport emissions added yet.
-            </div>
+            <div className="text-center text-gray-500 py-4">No transport emissions added yet.</div>
           ) : (
-            emissions.map((emission) => (
-              <div
-                key={emission.id}
-                className="border rounded-lg p-4 mb-4 shadow-sm"
-              >
+            emissions.map(emission => (
+              <div key={emission.id} className="border rounded-lg p-4 mb-4 shadow-sm">
                 <div className="flex justify-between items-center mb-2">
                   <h3 className="font-medium">Emission #{emission.id}</h3>
                   <div className="flex space-x-2">
@@ -490,10 +451,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                   <div>{emission.weight} kg</div>
 
                   <div className="text-gray-500">Reference:</div>
-                  <div>
-                    {emission.reference_details?.name ??
-                      emission.reference}
-                  </div>
+                  <div>{emission.reference_details?.name ?? emission.reference}</div>
 
                   <div className="text-gray-500">Emission Factor:</div>
                   <div>{sumBioAndNonBioEmissions(emission).toFixed(3)}</div>
@@ -504,18 +462,14 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                       const total = computeTotalEmissions(emission);
                       return Number.isFinite(total) ? total.toFixed(3) : "—";
                     })()}
-
                   </div>
 
-                  {emission.override_factors &&
-                    emission.override_factors.length > 0 ? (
+                  {emission.override_factors && emission.override_factors.length > 0 ? (
                     <>
                       <div className="text-gray-500">Overrides:</div>
                       <div>
                         <button
-                          onClick={() =>
-                            setShowOverridesForEmission(emission)
-                          }
+                          onClick={() => setShowOverridesForEmission(emission)}
                           className="underline"
                         >
                           View ({emission.override_factors.length})
@@ -529,7 +483,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                       <div className="text-gray-500">BOM Items:</div>
                       <div>
                         <button
-                          onClick={(e) => {
+                          onClick={e => {
                             e.stopPropagation();
                             setShowBomItemsForEmission(emission);
                           }}
@@ -565,24 +519,18 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
             <tbody>
               {isLoading ? (
                 <tr>
-                  <td
-                    colSpan={9}
-                    className="text-center py-4 text-gray-500"
-                  >
+                  <td colSpan={9} className="text-center py-4 text-gray-500">
                     Loading…
                   </td>
                 </tr>
               ) : emissions.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={9}
-                    className="text-center py-4 text-gray-500"
-                  >
+                  <td colSpan={9} className="text-center py-4 text-gray-500">
                     No transport emissions added yet.
                   </td>
                 </tr>
               ) : (
-                emissions.map((emission) => (
+                emissions.map(emission => (
                   <tr
                     key={emission.id}
                     className="border-b hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -591,8 +539,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                     <td className="p-2">{emission.distance}</td>
                     <td className="p-2">{emission.weight}</td>
                     <td className="p-2">
-                      {emission.reference_details?.name ??
-                        emission.reference}
+                      {emission.reference_details?.name ?? emission.reference}
                     </td>
                     <td className="p-2">{sumBioAndNonBioEmissions(emission).toFixed(3)}</td>
                     <td className="p-2">
@@ -602,12 +549,9 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                       })()}
                     </td>
                     <td className="p-2">
-                      {emission.override_factors &&
-                        emission.override_factors.length > 0 ? (
+                      {emission.override_factors && emission.override_factors.length > 0 ? (
                         <button
-                          onClick={() =>
-                            setShowOverridesForEmission(emission)
-                          }
+                          onClick={() => setShowOverridesForEmission(emission)}
                           className="underline hover:underline text-sm"
                         >
                           View ({emission.override_factors.length})
@@ -617,10 +561,9 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                       )}
                     </td>
                     <td className="p-2">
-                      {emission.line_items &&
-                      emission.line_items.length > 0 ? (
+                      {emission.line_items && emission.line_items.length > 0 ? (
                         <button
-                          onClick={(e) => {
+                          onClick={e => {
                             e.stopPropagation();
                             setShowBomItemsForEmission(emission);
                           }}
@@ -677,10 +620,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
         >
           <div className="min-h-screen px-4 text-center">
             <div className="fixed inset-0 bg-black/50" />
-            <span
-              className="inline-block h-screen align-middle"
-              aria-hidden="true"
-            >
+            <span className="inline-block h-screen align-middle" aria-hidden="true">
               &#8203;
             </span>
             <DialogPanel className="relative inline-block w-full max-w-lg p-6 my-8 overflow-visible text-left align-middle bg-white dark:bg-gray-800 shadow-xl rounded-lg z-30">
@@ -689,9 +629,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                   as="h3"
                   className="text-lg font-semibold text-gray-900 dark:text-white"
                 >
-                  {currentEmission
-                    ? "Edit Transport Emission"
-                    : "Add Transport Emission"}
+                  {currentEmission ? "Edit Transport Emission" : "Add Transport Emission"}
                 </DialogTitle>
                 <button
                   onClick={handleCloseModal}
@@ -717,7 +655,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                     min="0"
                     step="0.01"
                     value={formData.distance ?? ""}
-                    onChange={(e) =>
+                    onChange={e =>
                       setFormData({
                         ...formData,
                         distance: e.target.value,
@@ -742,7 +680,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                     min="0"
                     step="0.01"
                     value={formData.weight ?? ""}
-                    onChange={(e) =>
+                    onChange={e =>
                       setFormData({
                         ...formData,
                         weight: e.target.value,
@@ -765,10 +703,8 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                     <Combobox
                       value={
                         formData.reference
-                          ? references.find(
-                              (ref) =>
-                                ref.id.toString() === formData.reference
-                            )?.name || ""
+                          ? references.find(ref => ref.id.toString() === formData.reference)
+                              ?.name || ""
                           : ""
                       }
                       onChange={(value: string | null) => {
@@ -779,9 +715,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                           });
                           return;
                         }
-                        const selected = references.find(
-                          (ref) => ref.name === value
-                        );
+                        const selected = references.find(ref => ref.name === value);
                         setFormData({
                           ...formData,
                           reference: selected ? selected.id.toString() : "",
@@ -792,31 +726,22 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                         <ComboboxInput
                           className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 dark:text-white focus:ring-0 bg-white dark:bg-gray-700"
                           displayValue={(val: string) => val}
-                          onChange={(e) =>
-                            setReferenceQuery(e.target.value)
-                          }
+                          onChange={e => setReferenceQuery(e.target.value)}
                           placeholder="Select a reference"
                         />
                         <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
-                          <ChevronDown
-                            className="h-5 w-5 text-gray-400"
-                            aria-hidden="true"
-                          />
+                          <ChevronDown className="h-5 w-5 text-gray-400" aria-hidden="true" />
                         </ComboboxButton>
                       </div>
                       <div className="relative w-full">
                         <ComboboxOptions className="absolute z-[200] max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
                           {references
                             .filter(
-                              (ref) =>
+                              ref =>
                                 referenceQuery === "" ||
-                                ref.name
-                                  .toLowerCase()
-                                  .includes(
-                                    referenceQuery.toLowerCase()
-                                  )
+                                ref.name.toLowerCase().includes(referenceQuery.toLowerCase())
                             )
-                            .map((ref) => (
+                            .map(ref => (
                               <ComboboxOption
                                 key={ref.id}
                                 value={ref.name}
@@ -838,29 +763,20 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                   </label>
                   {formData.line_items.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-2">
-                      {formData.line_items.map((itemId) => {
-                        const item = bomLineItems.find(
-                          (i) => i.id === itemId
-                        );
+                      {formData.line_items.map(itemId => {
+                        const item = bomLineItems.find(i => i.id === itemId);
                         return (
                           <div
                             key={itemId}
                             className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md text-sm flex items-center gap-1"
                           >
-                            <span>
-                              {item
-                                ? item.line_item_product.name
-                                : `Item #${itemId}`}
-                            </span>
+                            <span>{item ? item.line_item_product.name : `Item #${itemId}`}</span>
                             <button
                               type="button"
                               onClick={() => {
                                 setFormData({
                                   ...formData,
-                                  line_items:
-                                    formData.line_items.filter(
-                                      (id) => id !== itemId
-                                    ),
+                                  line_items: formData.line_items.filter(id => id !== itemId),
                                 });
                               }}
                               className="text-gray-500 hover:text-red-500"
@@ -876,16 +792,10 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                     <Combobox
                       value=""
                       onChange={(value: any) => {
-                        if (
-                          value &&
-                          !formData.line_items.includes(value)
-                        ) {
+                        if (value && !formData.line_items.includes(value)) {
                           setFormData({
                             ...formData,
-                            line_items: [
-                              ...formData.line_items,
-                              value,
-                            ],
+                            line_items: [...formData.line_items, value],
                           });
                         }
                       }}
@@ -894,34 +804,26 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                         <ComboboxInput
                           className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 dark:text-white focus:ring-0 bg-white dark:bg-gray-700"
                           displayValue={() => bomLineItemQuery}
-                          onChange={(e) =>
-                            setBomLineItemQuery(e.target.value)
-                          }
+                          onChange={e => setBomLineItemQuery(e.target.value)}
                           placeholder="Select BOM items to associate"
                         />
                         <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
-                          <ChevronDown
-                            className="h-5 w-5 text-gray-400"
-                            aria-hidden="true"
-                          />
+                          <ChevronDown className="h-5 w-5 text-gray-400" aria-hidden="true" />
                         </ComboboxButton>
                       </div>
                       <div className="relative w-full">
                         <ComboboxOptions className="absolute z-[200] max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
                           {bomLineItems.length === 0 ? (
                             <div className="relative cursor-default select-none py-2 px-4 text-gray-700 dark:text-gray-300">
-                              No BOM items available. Add items in the Bill
-                              of Materials tab first.
+                              No BOM items available. Add items in the Bill of Materials tab first.
                             </div>
                           ) : bomLineItems.filter(
-                              (item) =>
+                              item =>
                                 !formData.line_items.includes(item.id) &&
                                 (bomLineItemQuery === "" ||
                                   item.line_item_product.name
                                     .toLowerCase()
-                                    .includes(
-                                      bomLineItemQuery.toLowerCase()
-                                    ))
+                                    .includes(bomLineItemQuery.toLowerCase()))
                             ).length === 0 ? (
                             <div className="relative cursor-default select-none py-2 px-4 text-gray-700 dark:text-gray-300">
                               {bomLineItemQuery === ""
@@ -931,16 +833,14 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                           ) : (
                             bomLineItems
                               .filter(
-                                (item) =>
+                                item =>
                                   !formData.line_items.includes(item.id) &&
                                   (bomLineItemQuery === "" ||
                                     item.line_item_product.name
                                       .toLowerCase()
-                                      .includes(
-                                        bomLineItemQuery.toLowerCase()
-                                      ))
+                                      .includes(bomLineItemQuery.toLowerCase()))
                               )
-                              .map((item) => (
+                              .map(item => (
                                 <ComboboxOption
                                   key={item.id}
                                   value={item.id}
@@ -993,23 +893,17 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                         <Combobox
                           value={
                             factor.lifecycle_stage
-                              ? lifecycleChoices.find(
-                                  (opt) =>
-                                    opt.value === factor.lifecycle_stage
-                                )?.display_name || ""
+                              ? lifecycleChoices.find(opt => opt.value === factor.lifecycle_stage)
+                                  ?.display_name || ""
                               : ""
                           }
                           onChange={(value: string | null) => {
                             if (!value) {
-                              handleOverrideFactorChange(
-                                index,
-                                "lifecycle_stage",
-                                ""
-                              );
+                              handleOverrideFactorChange(index, "lifecycle_stage", "");
                               return;
                             }
                             const selected = lifecycleChoices.find(
-                              (opt) => opt.display_name === value
+                              opt => opt.display_name === value
                             );
                             handleOverrideFactorChange(
                               index,
@@ -1022,24 +916,19 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                             <ComboboxInput
                               className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 dark:text-white focus:ring-0 bg-white dark:bg-gray-700"
                               displayValue={(val: string) => val || ""}
-                              onChange={(e) => {
+                              onChange={e => {
                                 // reuse for filtering
                                 const query = e.target.value;
-                                setLifecycleChoices((orig) =>
-                                  orig.filter((opt) =>
-                                    opt.display_name
-                                      .toLowerCase()
-                                      .includes(query.toLowerCase())
+                                setLifecycleChoices(orig =>
+                                  orig.filter(opt =>
+                                    opt.display_name.toLowerCase().includes(query.toLowerCase())
                                   )
                                 );
                               }}
                               placeholder="Select lifecycle stage"
                             />
                             <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
-                              <ChevronDown
-                                className="h-5 w-5 text-gray-400"
-                                aria-hidden="true"
-                              />
+                              <ChevronDown className="h-5 w-5 text-gray-400" aria-hidden="true" />
                             </ComboboxButton>
                           </div>
                           <div className="relative w-full">
@@ -1075,14 +964,10 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                           value={
                             Number.isFinite(factor.co_2_emission_factor_biogenic)
                               ? factor.co_2_emission_factor_biogenic
-                              : ''
+                              : ""
                           }
-                          onChange={(e) =>
-                            handleOverrideFactorChange(
-                              index,
-                              "biogenic",
-                              e.target.value
-                            )
+                          onChange={e =>
+                            handleOverrideFactorChange(index, "biogenic", e.target.value)
                           }
                           className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                           required
@@ -1100,14 +985,10 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                           value={
                             Number.isFinite(factor.co_2_emission_factor_non_biogenic)
                               ? factor.co_2_emission_factor_non_biogenic
-                              : ''
+                              : ""
                           }
-                          onChange={(e) =>
-                            handleOverrideFactorChange(
-                              index,
-                              "non_biogenic",
-                              e.target.value
-                            )
+                          onChange={e =>
+                            handleOverrideFactorChange(index, "non_biogenic", e.target.value)
                           }
                           className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                           required
@@ -1145,28 +1026,20 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
           >
             <div className="min-h-screen px-4 text-center">
               <div className="fixed inset-0 bg-black/50" />
-              <span
-                className="inline-block h-screen align-middle"
-                aria-hidden="true"
-              >
+              <span className="inline-block h-screen align-middle" aria-hidden="true">
                 &#8203;
               </span>
               <DialogPanel className="relative inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle bg-white dark:bg-gray-800 shadow-xl rounded-lg z-30">
                 <DialogTitle className="flex items-center gap-3 mb-4 text-red">
                   <AlertCircle className="w-6 h-6" />
-                  <span className="text-lg font-semibold">
-                    Confirm Deletion
-                  </span>
+                  <span className="text-lg font-semibold">Confirm Deletion</span>
                 </DialogTitle>
                 <p className="mb-6">
-                  Are you sure you want to delete this transport emission?
-                  This action cannot be undone.
+                  Are you sure you want to delete this transport emission? This action cannot be
+                  undone.
                 </p>
                 <div className="flex justify-end gap-2">
-                  <Button
-                    onClick={() => setIsDeleteModalOpen(false)}
-                    variant="outline"
-                  >
+                  <Button onClick={() => setIsDeleteModalOpen(false)} variant="outline">
                     Cancel
                   </Button>
                   <Button
@@ -1191,10 +1064,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
         >
           <div className="min-h-screen px-4 text-center">
             <div className="fixed inset-0 bg-black/50" />
-            <span
-              className="inline-block h-screen align-middle"
-              aria-hidden="true"
-            >
+            <span className="inline-block h-screen align-middle" aria-hidden="true">
               &#8203;
             </span>
             <DialogPanel className="relative inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle bg-white dark:bg-gray-800 shadow-xl rounded-lg z-30">
@@ -1222,31 +1092,24 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {showOverridesForEmission.override_factors.map(
-                        (factor, idx) => (
-                          <tr key={idx}>
-                            <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                              {
-                                lifecycleChoices.find(
-                                  (c) => c.value === factor.lifecycle_stage
-                                )?.display_name ?? factor.lifecycle_stage
-                              }
-                            </td>
-                            <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                              {factor.co_2_emission_factor_biogenic}
-                            </td>
-                            <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                              {factor.co_2_emission_factor_non_biogenic}
-                            </td>
-                          </tr>
-                        )
-                      )}
+                      {showOverridesForEmission.override_factors.map((factor, idx) => (
+                        <tr key={idx}>
+                          <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
+                            {lifecycleChoices.find(c => c.value === factor.lifecycle_stage)
+                              ?.display_name ?? factor.lifecycle_stage}
+                          </td>
+                          <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
+                            {factor.co_2_emission_factor_biogenic}
+                          </td>
+                          <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
+                            {factor.co_2_emission_factor_non_biogenic}
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 ) : (
-                  <p className="text-gray-500 dark:text-gray-300">
-                    No overrides found.
-                  </p>
+                  <p className="text-gray-500 dark:text-gray-300">No overrides found.</p>
                 )}
               </div>
               <div className="mt-6">
@@ -1271,10 +1134,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
         >
           <div className="min-h-screen px-4 text-center">
             <div className="fixed inset-0 bg-black/50" />
-            <span
-              className="inline-block h-screen align-middle"
-              aria-hidden="true"
-            >
+            <span className="inline-block h-screen align-middle" aria-hidden="true">
               &#8203;
             </span>
             <DialogPanel className="relative inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle bg-white dark:bg-gray-800 shadow-xl rounded-lg z-30">
@@ -1285,8 +1145,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                 Associated BOM Items
               </DialogTitle>
               <div className="mt-4">
-                {showBomItemsForEmission?.line_items &&
-                bomLineItems.length > 0 ? (
+                {showBomItemsForEmission?.line_items && bomLineItems.length > 0 ? (
                   <div className="overflow-y-auto max-h-96">
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                       <thead>
@@ -1303,19 +1162,15 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                        {showBomItemsForEmission.line_items.map((itemId) => {
-                          const item = bomLineItems.find(
-                            (i) => i.id === itemId
-                          );
+                        {showBomItemsForEmission.line_items.map(itemId => {
+                          const item = bomLineItems.find(i => i.id === itemId);
                           return (
                             <tr key={itemId}>
                               <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
                                 {itemId}
                               </td>
                               <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
-                                {item
-                                  ? item.line_item_product.name
-                                  : "Unknown Item"}
+                                {item ? item.line_item_product.name : "Unknown Item"}
                               </td>
                               <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
                                 {item ? item.quantity : "-"}
@@ -1327,9 +1182,7 @@ const Transportation = forwardRef<TabHandle, DataPassedToTabs>(
                     </table>
                   </div>
                 ) : (
-                  <p className="text-gray-500 dark:text-gray-300">
-                    No BOM items found.
-                  </p>
+                  <p className="text-gray-500 dark:text-gray-300">No BOM items found.</p>
                 )}
               </div>
               <div className="mt-6">

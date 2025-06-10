@@ -19,11 +19,6 @@ interface CompanyData {
   business_registration_number: string;
 }
 
-interface ActivityItem {
-  date: string;
-  action: string;
-}
-
 export default function DashboardPage() {
   const { user, isLoading, requireAuth } = useAuth();
   const router = useRouter();
@@ -35,7 +30,6 @@ export default function DashboardPage() {
   const [productCount, setProductCount] = useState(0);
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [selectedCompany, setSelectedCompany] = useState<CompanyData | null>(null);
-  const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [logItems, setLogItems] = useState<LogItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
@@ -140,29 +134,11 @@ export default function DashboardPage() {
             setPendingRequestsCount(0);
           }
 
-          // Generate recent activity based on products
-          const recentActivities: ActivityItem[] = [];
-
-          // Add company selection activity
-          recentActivities.push({
-            date: new Date().toISOString().split("T")[0],
-            action: `Selected company: ${companyData.name}`,
-          });
-
-          // Add recent product activities (up to 3 most recent products)
-          const sortedProducts = [...productsData].sort((a, b) => b.id - a.id).slice(0, 3);
-          sortedProducts.forEach(product => {
-            recentActivities.push({
-              date: new Date(Date.now() - Math.random() * 5 * 86400000).toISOString().split("T")[0],
-              action: `Added product: ${product.name}`,
-            });
-          });
-
-          setRecentActivity(recentActivities);
-
           // Load audit log items
           try {
-            const auditLogItems = await auditLogApi.getCompanyAuditLogs(parseInt(selectedCompanyId));
+            const auditLogItems = await auditLogApi.getCompanyAuditLogs(
+              parseInt(selectedCompanyId)
+            );
             setLogItems(auditLogItems);
           } catch (err) {
             console.error("Error fetching audit logs:", err);
@@ -282,7 +258,7 @@ export default function DashboardPage() {
             <Link href="/list-companies" className="block">
               <Button className="w-full flex justify-between items-center">
                 <span>View Companies</span>
-                <Building2 className="h-4 w-4" />
+                <Building2 className="ml-2 h-4 w-4" />
               </Button>
             </Link>
             <Link href="/create-company" className="block">
@@ -303,7 +279,7 @@ export default function DashboardPage() {
             <Link href="/product-list" className="block">
               <Button className="w-full flex justify-between items-center">
                 <span>View Products</span>
-                <BoxesIcon className="h-4 w-4" />
+                <BoxesIcon className="ml-2 h-4 w-4" />
               </Button>
             </Link>
             <Link href="/product-list/product" className="block">
@@ -315,36 +291,8 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Recent Activity */}
-      <Card className="mb-10">
-        <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-        {recentActivity.length > 0 ? (
-          <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-            {recentActivity.map((activity, index) => (
-              <li key={index} className="py-3">
-                <div className="flex space-x-3">
-                  <div className="flex-1 space-y-1">
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(activity.date).toLocaleDateString()}
-                    </p>
-                    <p className="text-sm font-medium text-gray-900 dark:text-white">
-                      {activity.action}
-                    </p>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-500 dark:text-gray-400">No recent activity</p>
-        )}
-      </Card>
-
       {/* Audit log of company */}
-      <caption className="sr-only">
-        Table showing the audit log of the company.
-      </caption>
-      <AuditLog caption="AuditLog" logItems={logItems}/>
+      <AuditLog caption="A table displaying the auditlog of a company." logItems={logItems} />
     </div>
   );
 }

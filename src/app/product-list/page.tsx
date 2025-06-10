@@ -359,7 +359,7 @@ export default function ProductListPage() {
                     <th className="p-2">Product name</th>
                     <th className="p-2">SKU</th>
                     <th className="p-2">PCF</th>
-                    <th className="p-2">Actions</th>
+                    <th className="p-2 text-right">Actions</th>
                   </tr>
                 </thead>
 
@@ -378,7 +378,7 @@ export default function ProductListPage() {
                         <Info className="w-4 h-4 text-gray-400" />
                       </td>
                       <td className="p-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-end gap-2">
                           {/* Export */}
                           <Button
                             variant="outline"

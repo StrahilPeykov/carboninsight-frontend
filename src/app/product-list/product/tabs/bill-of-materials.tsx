@@ -686,15 +686,15 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
                               <button
                                 key={company.id}
                                 onClick={() => handleSelectCompany(company)}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter' || e.key === ' ') {
+                                onKeyDown={e => {
+                                  if (e.key === "Enter" || e.key === " ") {
                                     e.preventDefault();
                                     handleSelectCompany(company);
                                   }
                                 }}
                                 className="w-full p-3 border-b hover:bg-gray-50 dark:hover:bg-gray-900 focus:bg-gray-50 dark:focus:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-inset cursor-pointer flex justify-between items-center text-left transition-colors"
                                 type="button"
-                                aria-label={`Select company ${company.name}${company.business_registration_number ? `, registration: ${company.business_registration_number}` : ''}`}
+                                aria-label={`Select company ${company.name}${company.business_registration_number ? `, registration: ${company.business_registration_number}` : ""}`}
                               >
                                 <div className="overflow-hidden">
                                   <p className="font-medium truncate">{company.name}</p>
@@ -704,7 +704,10 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
                                     </p>
                                   )}
                                 </div>
-                                <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" aria-hidden="true" />
+                                <ChevronRight
+                                  className="w-5 h-5 text-gray-400 flex-shrink-0"
+                                  aria-hidden="true"
+                                />
                               </button>
                             ))
                           ) : (
@@ -835,7 +838,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
                   <h3 className="text-lg font-semibold">Edit Material Quantity</h3>
                   <button
                     onClick={() => setIsEditModalOpen(false)}
-                    className="p-1 rounded-full hover:bg-gray-100"
+                    className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900"
                   >
                     <X className="w-5 h-5" />
                   </button>

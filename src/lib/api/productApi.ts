@@ -1,14 +1,26 @@
 import { apiRequest } from "./apiClient";
+import { OverrideFactor } from "./productionEmissionApi";
 
 export interface Product {
   id: string;
-  company_name: string;
-  name: string;
-  sku: string;
-  status: string;
-  pcf_calculation_method: string;
+  supplier: number;
   emission_total: number;
+  emission_total_biogenic: number;
+  emission_total_non_biogenic: number;
+  override_factors: OverrideFactor[];
+  name: string;
+  description: string;
+  manufacturer_name: string;
+  manufacturer_country: string;
+  manufacturer_city: string;
+  manufacturer_street: string;
+  manufacturer_zip_code: string;
+  year_of_construction: number;
+  family: string;
+  sku: string;
   reference_impact_unit: string;
+  pcf_calculation_method: string;
+  is_public: boolean;
 }
 
 export interface ProductCreateData {
@@ -27,6 +39,45 @@ export interface ProductSharingRequest {
   created_at: string;
   product: number;
   requester: number;
+}
+
+interface Mention {
+  mention_class: MentionClass;
+  message: string;
+}
+
+type MentionClass = "Information" | "Warning" | "Error";
+
+type EmissionSplit = {
+  biogenic: number;
+  non_biogenic: number;
+};
+
+export interface EmissionTrace {
+  label: string;
+  reference_impact_unit: string;
+  methodology: string;
+  emissions_subtotal: Record<string, EmissionSplit>;
+  children: {
+    emission_trace: EmissionTrace;
+    quantity: number;
+  }[];
+  mentions: Mention[];
+  total: number;
+  source:
+    | "Product"
+    | "ProductReference"
+    | "TransportEmission"
+    | "TransportEmissionReference"
+    | "Material"
+    | "MaterialReference"
+    | "UserEnergy"
+    | "UserEnergyReference"
+    | "ProductionEnergy"
+    | "ProductionEnergyReference"
+    | "Other"
+    | "OtherReference";
+  pcf_calculation_method: string;
 }
 
 export const productApi = {

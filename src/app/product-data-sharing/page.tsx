@@ -10,6 +10,7 @@ import { companyApi } from "@/lib/api/companyApi";
 import { useAuth } from "../context/AuthContext";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 import { TableRow } from "../components/ui/tableRow";
+import { Column, OurTable } from "../components/ui/OurTable";
 
 interface DataSharingRequestDisplay {
   id: number;
@@ -168,6 +169,58 @@ export default function ProductDataSharing() {
     );
   }
 
+  // We define the columns that will be used in the table.
+  // key: is the key of the actual datatype.
+  // label: the header label we will display.
+  // render: modifications we will do to the rendering of the value.
+  const columns: Column<DataSharingRequestDisplay>[] = [
+    { key: "product_name", label: "Product Name" },
+    { key: "requesting_company_name", label: "Requesting Company" },
+    {
+      key: "status",
+      label: "Status",
+      render: (value: unknown) => {
+        const colorClass =
+          value === "Accepted"
+            ? "text-green-500"
+            : value === "Pending"
+              ? "text-yellow-500"
+              : value === "Rejected"
+                ? "text-red-500"
+                : "text-gray-500";
+
+        return <span className={colorClass}>{String(value)}</span>;
+      },
+    },
+    { key: "formatted_date", label: "Request Date" },
+    {
+      key: "actions",
+      label: "Actions",
+      render: (_value, request) => (
+        <div className="flex justify-end items-center gap-4">
+          <button
+            className="text-green-500 hover:text-green-700"
+            onClick={() => {
+              setRequestToApprove(request.id.toString());
+              setApprovingModal(true);
+            }}
+          >
+            <Check size={24} />
+          </button>
+          <button
+            className="text-red-500 hover:text-red-700"
+            onClick={() => {
+              setRequestToDeny(request.id.toString());
+              setDenyModal(true);
+            }}
+          >
+            <Trash size={24} />
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Confirmation modal for approving */}
@@ -233,100 +286,33 @@ export default function ProductDataSharing() {
         </div>
       )}
 
-      <div className="flex flex-col justify-self-center items-center gap-8">
-        <div className="font-bold text-4xl text-center w-auto">Manage Data Requests</div>
+      <div className="w-full flex flex-col justify-self-center">
+        <h1 className="text-3xl font-semibold mb-2">Manage Data Sharing Requests</h1>
+        <h2 className="text-md mb-4 dark:text-gray-400 mb-6">
+          Approve or deny data sharing requests from other companies here. This gives them access to
+          the emission data related to that product.
+        </h2>
 
         {/* Status messages */}
-        {approveMessage && <div className="text-green-500 rounded-md">{approveMessage}</div>}
-        {approveError && <div className="text-red-500 rounded-md">{approveError}</div>}
-        {denyMessage && <div className="text-green-500 rounded-md">{denyMessage}</div>}
-        {denyError && <div className="text-red-500 rounded-md">{denyError}</div>}
+        {approveMessage && <div className="text-green-500 rounded-md mb-6">{approveMessage}</div>}
+        {approveError && <div className="text-red-500 rounded-md mb-6">{approveError}</div>}
+        {denyMessage && <div className="text-green-500 rounded-md mb-6">{denyMessage}</div>}
+        {denyError && <div className="text-red-500 rounded-md mb-6">{denyError}</div>}
 
         {/* Table */}
-        <Card className="max-w-[90vw]">
-          <div className="overflow-x-auto">
-            <table className="min-w-full table-auto">
-              <thead className="border-b text-xl">
-                <tr>
-                  <th className="py-3 px-6 text-left">Product Name</th>
-                  <th className="py-3 px-6 text-left">Requesting Company</th>
-                  <th className="py-3 px-6 text-left">Status</th>
-                  <th className="py-3 px-6 text-left">Request Date</th>
-                  <th className="py-3 px-6 text-left">Action</th>
-                </tr>
-              </thead>
-              <tbody className="text-lg">
-                {dataLoading && (
-                  <tr>
-                    <td colSpan={5} className="py-3 px-6 text-center">
-                      Loading requests...
-                    </td>
-                  </tr>
-                )}
-                {loadingError && (
-                  <tr>
-                    <td colSpan={5} className="py-3 px-6 text-center text-red-500">
-                      Error: {loadingError}
-                    </td>
-                  </tr>
-                )}
-                {!dataLoading && !loadingError && requests.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="py-5 text-center">
-                      This company currently has no data sharing requests.
-                    </td>
-                  </tr>
-                )}
-                {!dataLoading &&
-                  !loadingError &&
-                  requests.map(request => (
-                    <TableRow key={request.id}>
-                      <td className="py-3 px-6 text-left">{request.product_name}</td>
-                      <td className="py-3 px-6 text-left">{request.requesting_company_name}</td>
-                      <td
-                        className={`py-3 px-6 text-left ${
-                          request.status === "Accepted"
-                            ? "text-green-500"
-                            : request.status === "Pending"
-                              ? "text-yellow-500"
-                              : request.status === "Rejected"
-                                ? "text-red-500"
-                                : "text-gray-500"
-                        }`}
-                      >
-                        {request.status}
-                      </td>
-                      <td className="py-3 px-6 text-left">
-                        {request.formatted_date ?? "No date found"}
-                      </td>
-                      <td className="py-3 px-6">
-                        <div className="flex justify-center items-center gap-4">
-                          <button
-                            className="text-green-500 hover:text-green-700"
-                            onClick={() => {
-                              setRequestToApprove(request.id.toString());
-                              setApprovingModal(true);
-                            }}
-                          >
-                            <Check size={24} />
-                          </button>
-                          <button
-                            className="text-red-500 hover:text-red-700"
-                            onClick={() => {
-                              setRequestToDeny(request.id.toString());
-                              setDenyModal(true);
-                            }}
-                          >
-                            <Trash size={24} />
-                          </button>
-                        </div>
-                      </td>
-                    </TableRow>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+        {dataLoading ? (
+          <div className="text-center py-6">Data loading...</div>
+        ) : loadingError ? (
+          <div className="text-red-500 text-center py-6">{loadingError}</div>
+        ) : requests.length === 0 ? (
+          <div className="text-center py-6">No data sharing requests found.</div>
+        ) : (
+          <OurTable
+            caption="A table displaying the data sharing requests of this company."
+            items={requests}
+            columns={columns}
+          />
+        )}
       </div>
     </div>
   );

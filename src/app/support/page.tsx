@@ -102,9 +102,7 @@ Thank you for your assistance.`;
             </p>
 
             <div className="support-email-container mb-4">
-              <div className="support-email-text">
-                {supportEmail}
-              </div>
+              <div className="support-email-text">{supportEmail}</div>
               <div className="flex gap-2 flex-shrink-0">
                 <Button variant="outline" size="sm" onClick={copyEmailToClipboard}>
                   {copiedEmail ? "Copied!" : "Copy"}

@@ -101,9 +101,9 @@ export default function CleanCompanySelector({
               ? "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
               : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 border-gray-300 dark:border-gray-600"
           } focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2`}
-        style={{ 
-          width: 'clamp(120px, 20vw, 200px)',
-          maxWidth: '100%'
+        style={{
+          width: "clamp(120px, 20vw, 200px)",
+          maxWidth: "100%",
         }}
         aria-expanded={isOpen}
         aria-haspopup="true"
@@ -294,10 +294,7 @@ export default function CleanCompanySelector({
                           size={16}
                           className="mr-3 flex-shrink-0 text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200"
                         />
-                        <span 
-                          className="truncate font-medium min-w-0 flex-1" 
-                          title={company.name}
-                        >
+                        <span className="truncate font-medium min-w-0 flex-1" title={company.name}>
                           {company.name}
                         </span>
                       </div>
@@ -333,8 +330,6 @@ export default function CleanCompanySelector({
           {companies.length === 0 && (
             <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 rounded-b-lg">
               <div className="text-center">
-                <Building2 size={32} className="mx-auto mb-3 text-gray-400" />
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">No companies yet</p>
                 <button
                   onClick={() => {
                     onCreateCompany();

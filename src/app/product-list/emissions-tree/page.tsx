@@ -10,64 +10,13 @@ import { Suspense } from "react";
 import { companyApi } from "@/lib/api/companyApi";
 import AuditLog from "@/app/components/ui/AuditLog";
 import { auditLogApi, LogItem } from "@/lib/api/auditLogApi";
+import { productApi, EmissionTrace, Product } from "@/lib/api/productApi";
 
 interface CompanyData {
   id: string;
   name: string;
   vat_number: string;
   business_registration_number: string;
-}
-
-interface Mention {
-  mention_class: MentionClass;
-  message: string;
-}
-
-type MentionClass = "Information" | "Warning" | "Error";
-
-export interface EmissionTrace {
-  total: number;
-  label: string;
-  reference_impact_unit: "g" | "kg" | "t" | "ml" | "l" | "m3" | "m2" | "pc" | "kWh" | "Other";
-  source:
-    | "Product"
-    | "ProductReference"
-    | "TransportEmission"
-    | "TransportEmissionReference"
-    | "Material"
-    | "MaterialReference"
-    | "UserEnergy"
-    | "UserEnergyReference"
-    | "ProductionEnergy"
-    | "ProductionEnergyReference"
-    | "Other"
-    | "OtherReference";
-  methodology: string;
-  emissions_subtotal: { [key: string]: number };
-  children: {
-    emission_trace: EmissionTrace;
-    quantity: number;
-  }[];
-  mentions: Mention[];
-}
-
-interface Product {
-  id: number;
-  supplier: number;
-  emission_total: number;
-  name: string;
-  description: string;
-  manufacturer_name: string;
-  manufacturer_country: string;
-  manufacturer_city: string;
-  manufacturer_street: string;
-  manufacturer_zip_code: string;
-  year_of_construction: number;
-  family: string;
-  sku: string;
-  reference_impact_unit: string;
-  pcf_calculation_method: string;
-  is_public: boolean;
 }
 
 function EmissionsTreePageContent() {
@@ -141,6 +90,7 @@ function EmissionsTreePageContent() {
         if (!productResponse.ok) throw new Error("Failed to fetch product");
 
         const productData = await productResponse.json();
+        console.log("Fetched product data:", productData);
 
         let supplierData = null;
         let manufacturerData = null;
@@ -155,7 +105,10 @@ function EmissionsTreePageContent() {
         // Load audit log items
         if (companyId && productId) {
           try {
-            const auditLogItems = await auditLogApi.getProductAuditLogs(parseInt(companyId), parseInt(productId));
+            const auditLogItems = await auditLogApi.getProductAuditLogs(
+              parseInt(companyId),
+              parseInt(productId)
+            );
             setLogItems(auditLogItems);
           } catch (err) {
             console.error("Error fetching audit logs:", err);
@@ -208,10 +161,7 @@ function EmissionsTreePageContent() {
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Product details</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-8">
-            <div>
-              <span className="font-semibold">Product Name:</span> {product.name}
-            </div>
+          <div className="grid md:grid-rows-4 md:grid-flow-col gap-y-2 gap-x-8">
             <div>
               <span className="font-semibold">SKU:</span> {product.sku}
             </div>
@@ -222,7 +172,16 @@ function EmissionsTreePageContent() {
               <span className="font-semibold">Supplier:</span> {supplier?.name}
             </div>
             <div>
-              <span className="font-semibold">Emissions:</span> {product.emission_total} kg CO2e
+              <span className="font-semibold">Total emissions:</span> {product.emission_total} kg
+              CO2e
+            </div>
+            <div>
+              <span className="font-semibold">Biogenic emissions:</span>{" "}
+              {product.emission_total_biogenic} kg CO2e
+            </div>
+            <div>
+              <span className="font-semibold">Non-biogenic emissions:</span>{" "}
+              {product.emission_total_non_biogenic} kg CO2e
             </div>
             <div>
               <span className="font-semibold">Public:</span> {product.is_public ? "Yes" : "No"}
@@ -248,10 +207,7 @@ function EmissionsTreePageContent() {
       </Card>
 
       {/* Audit log of company */}
-      <caption className="sr-only">
-        Table showing the audit log of the company.
-      </caption>
-      <AuditLog caption="AuditLog" logItems={logItems}/>
+      <AuditLog caption="A table displayingthe auditlog of a product." logItems={logItems} />
     </div>
   );
 }

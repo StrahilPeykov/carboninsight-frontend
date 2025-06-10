@@ -98,17 +98,17 @@ const ProductInfo = forwardRef<TabHandle, DataPassedToTabs>(
 
     const tooltipTexts: FieldTooltips = {
       name: "Full product name (required).",
-      description: "Product description.",
+      description: "Product description (required).",
       manufacturer_name: "Manufacturer name (required).",
       manufacturer_country: "Select country of manufacturer (required).",
-      manufacturer_city: "City of manufacturer.",
-      manufacturer_street: "Street address of manufacturer.",
-      manufacturer_zip_code: "ZIP code of manufacturer.",
-      year_of_construction: "Year this product was constructed.",
-      family: "Product family or category.",
+      manufacturer_city: "City of manufacturer (required).",
+      manufacturer_street: "Street address of manufacturer (required).",
+      manufacturer_zip_code: "ZIP code of manufacturer (required).",
+      year_of_construction: "Year this product was constructed (required).",
+      family: "Product family or category (required).",
       sku: "Stock Keeping Unit (required).",
-      reference_impact_unit: "Unit for impact reference, e.g. g.",
-      pcf_calculation_method: "Calculation method, e.g. EN 15804.",
+      reference_impact_unit: "Unit for impact reference, e.g. g (required).",
+      pcf_calculation_method: "Calculation method, e.g. EN 15804 (required).",
       is_public: "Is this product publicly listed?",
     };
 

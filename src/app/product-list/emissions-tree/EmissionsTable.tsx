@@ -13,32 +13,7 @@ import {
   Edit,
   Info,
 } from "lucide-react";
-
-export interface EmissionTrace {
-  total: number;
-  label: string;
-  reference_impact_unit: "g" | "kg" | "t" | "ml" | "l" | "m3" | "m2" | "pc" | "kWh" | "Other";
-  source:
-    | "Product"
-    | "ProductReference"
-    | "TransportEmission"
-    | "TransportEmissionReference"
-    | "Material"
-    | "MaterialReference"
-    | "UserEnergy"
-    | "UserEnergyReference"
-    | "ProductionEnergy"
-    | "ProductionEnergyReference"
-    | "Other"
-    | "OtherReference";
-  methodology: string;
-  emissions_subtotal: { [key: string]: number };
-  children: {
-    emission_trace: EmissionTrace;
-    quantity: number;
-  }[];
-  mentions: { mention_class: "Information" | "Warning" | "Error"; message: string }[];
-}
+import { EmissionTrace } from "@/lib/api/productApi";
 
 export interface EmissionsTableProps {
   emissions: EmissionTrace;
@@ -48,6 +23,7 @@ interface EmissionTreeItemProps {
   emission: EmissionTrace;
   depth: number;
   quantity: number;
+  unit: string;
   isChild: boolean;
   path: string;
   openMap: OpenMap;
@@ -71,7 +47,7 @@ export const Tooltip: FC<TooltipProps> = ({ content, children }) => (
         <RadixTooltip.Content
           side="bottom"
           align="center"
-          className="z-50 rounded bg-gray-800 text-white text-xs px-3 py-1 shadow-lg"
+          className="z-50 rounded bg-gray-100 dark:bg-gray-900 text-white text-xs px-3 py-1 shadow-lg"
           sideOffset={6}
         >
           {content}
@@ -137,6 +113,7 @@ export const EmissionTreeItem: FC<EmissionTreeItemProps> = ({
   emission,
   depth = 0,
   quantity = 1,
+  unit,
   isChild = false,
   path,
   openMap,
@@ -177,30 +154,35 @@ export const EmissionTreeItem: FC<EmissionTreeItemProps> = ({
             {emission.label}
           </div>
         </td>
-        <td className="px-2 py-2 text-sm text-gray-500 dark:text-gray-400">
-          {emission.methodology}
+        <td className="px-2 py-2 text-sm text-gray-900 dark:text-white">{emission.methodology}</td>
+        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden-when-closed">
+          {quantity ? `${quantity} ${unit}` : ""}
         </td>
-        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 hidden-when-closed">
-          {quantity}
-        </td>
-        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
           {emissionValue !== undefined && Number.isFinite(emissionValue)
-            ? emissionValue.toFixed(2)
+            ? emissionValue.toFixed(3)
             : ""}
           {"\u00A0"}
-          <Tooltip
-            content={
-              <div>
-                {Object.entries(emission.emissions_subtotal).map(([stage, factor]) => (
-                  <p key={stage} className="mb-0.5">
-                    {stage}: {factor}
-                  </p>
-                ))}
-              </div>
-            }
-          >
-            <Info className="w-4 h-4 text-gray-400" />
-          </Tooltip>
+          {Object.keys(emission.emissions_subtotal || {}).length > 0 && (
+            <Tooltip
+              content={
+                <div>
+                  {Object.entries(emission.emissions_subtotal).map(([stage, factor]) => (
+                    <div key={stage} className="mb-1">
+                      <p className="font-semibold text-gray-900 dark:text-white">{stage}</p>
+                      <p className="text-sm text-gray-900 dark:text-white">
+                        Bio: {factor.biogenic.toFixed(2)}
+                        <br />
+                        Non-bio: {factor.non_biogenic.toFixed(2)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              }
+            >
+              <Info className="w-4 h-4 text-gray-400" />
+            </Tooltip>
+          )}
         </td>
       </tr>
       {isOpen &&
@@ -210,6 +192,7 @@ export const EmissionTreeItem: FC<EmissionTreeItemProps> = ({
             emission={child.emission_trace}
             depth={depth + 1}
             quantity={child.quantity}
+            unit={child.emission_trace.reference_impact_unit}
             isChild={true}
             path={`${key}/${idx}`}
             openMap={openMap}
@@ -263,39 +246,29 @@ export const EmissionsTable: FC<EmissionsTableProps> = ({ emissions }) => {
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 overflow-visible">
-        <thead className="bg-gray-50 dark:bg-gray-800">
+      <table className="min-w-full divide-y overflow-visible">
+        <thead className="border-b text-black dark:text-white">
           <tr>
-            <th
-              scope="col"
-              className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400"
-            >
+            <th scope="col" className="p-2 text-left text-sm font-medium">
               Label
             </th>
-            <th
-              scope="col"
-              className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400"
-            >
+            <th scope="col" className="p-2 text-left text-sm font-medium">
               Methodology
             </th>
-            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">
-              Quantity
-            </th>
-            <th
-              scope="col"
-              className="px-2 py-2 text-left text-xs font-medium text-gray-500 tracking-wider dark:text-gray-400"
-            >
-              EMISSIONS (kg CO2e)
+            <th className="p-2 text-left text-sm font-medium">Quantity</th>
+            <th scope="col" className="p-2 text-left text-sm font-medium">
+              Emissions (kg CO2e)
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
+        <tbody className="divide-y dark:divide-white">
           {emissions.children.map((child, index) => (
             <EmissionTreeItem
               key={getNodeKey(child.emission_trace.label, `${index}`)}
               emission={child.emission_trace}
               depth={0}
               quantity={child.quantity}
+              unit={child.emission_trace.reference_impact_unit}
               isChild={false}
               path={`${index}`}
               openMap={openMap}

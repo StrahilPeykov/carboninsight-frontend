@@ -62,14 +62,9 @@ export default function RadioField({
             <Field key={String(option.value)} className="flex items-center gap-2">
               <Radio
                 value={option.value}
-                className="
-                  group flex size-4 items-center justify-center rounded-full
-                  border-2 border-gray-300 dark:border-gray-600
-                  bg-white dark:bg-gray-800
-                  data-[checked]:border-green-600 data-[checked]:bg-green-600
-                "
+                className="group flex size-5 items-center justify-center rounded-full border bg-white data-checked:bg-red-500"
               >
-                <span className="invisible size-2 rounded-full bg-white group-data-[checked]:visible" />
+                <span className="invisible size-2 rounded-full bg-white group-data-checked:visible" />
               </Radio>
               <Label className="text-gray-700 dark:text-gray-100 cursor-pointer">
                 {option.label}

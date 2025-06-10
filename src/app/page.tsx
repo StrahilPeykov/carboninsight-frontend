@@ -6,6 +6,7 @@ import Button from "./components/ui/Button";
 import Card from "./components/ui/Card";
 import { useAuth } from "./context/AuthContext";
 import { companyApi } from "@/lib/api/companyApi";
+import { Building2, BarChart3, FileText, Share2, Shield, ArrowRight } from "lucide-react";
 
 export default function Home() {
   const { isAuthenticated } = useAuth();
@@ -48,7 +49,7 @@ export default function Home() {
     if (!mounted || !isAuthenticated) {
       return (
         <Link href="/login">
-          <Button size="lg">Login to Get Started</Button>
+          <Button size="lg">Get Started</Button>
         </Link>
       );
     }
@@ -72,7 +73,7 @@ export default function Home() {
 
     return (
       <Link href="/list-companies">
-        <Button size="lg">Go to Companies</Button>
+        <Button size="lg">Go to Dashboard</Button>
       </Link>
     );
   };
@@ -83,23 +84,27 @@ export default function Home() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
           <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
-            <span className="block">Carbon Footprint Calculator</span>
-            <span className="block text-red">for SMEs</span>
+            <span className="block">CarbonInsight</span>
+            <span className="block text-red text-3xl sm:text-4xl mt-2">
+              Digital Product Passports Made Simple
+            </span>
           </h1>
-          <p className="mt-3 max-w-md mx-auto text-base text-gray-500 dark:text-gray-400 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-            Calculate your product carbon footprint and create Digital Product Passports (DPPs) with
-            our easy-to-use tool. No technical knowledge required.
+          <p className="mt-6 max-w-2xl mx-auto text-lg text-gray-600 dark:text-gray-400 sm:text-xl">
+            Calculate your product's carbon footprint across the entire supply chain and generate
+            industry-compliant Digital Product Passports. Designed for manufacturers who want to
+            lead in sustainability.
           </p>
-          
+
+<<<<<<< HEAD
+=======
           {/* Fixed button spacing */}
+>>>>>>> main
           <div className="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4">
-            <div className="w-full sm:w-auto">
-              {getCtaButton()}
-            </div>
+            <div className="w-full sm:w-auto">{getCtaButton()}</div>
             <div className="w-full sm:w-auto">
               <Link href="#how-it-works">
                 <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                  Learn More
+                  See How It Works
                 </Button>
               </Link>
             </div>
@@ -107,6 +112,14 @@ export default function Home() {
         </div>
       </div>
 
+<<<<<<< HEAD
+      {/* Key Benefits */}
+      <div className="mt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid gap-8 md:grid-cols-3">
+          <Card className="text-center p-6">
+            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <BarChart3 className="h-6 w-6 text-red-600 dark:text-red-400" />
+=======
       {/* How It Works Section */}
       <div id="how-it-works" className="mt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center">
@@ -120,28 +133,52 @@ export default function Home() {
 
         <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           <Card className="flex flex-col items-center text-center p-6">
-            <div className="h-12 w-12 rounded-md bg-red flex items-center justify-center text-white text-xl font-bold mb-4">
-              1
+            <div className="flex flex-col items-center">
+              <div className="h-12 w-12 rounded-md bg-red flex items-center justify-center text-white text-xl font-bold mb-4">
+                1
+              </div>
+>>>>>>> main
             </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Create Company</h3>
-            <p className="mt-2 text-base text-gray-500 dark:text-gray-400">
-              Register your company and set up your organization profile
+            <h3 className="text-lg font-semibold mb-2">Complete Carbon Analysis</h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              Track emissions from materials, production, transportation, and usage in one
+              integrated platform
             </p>
           </Card>
 
+<<<<<<< HEAD
+          <Card className="text-center p-6">
+            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <Shield className="h-6 w-6 text-red-600 dark:text-red-400" />
+=======
           <Card className="flex flex-col items-center text-center p-6">
-            <div className="h-12 w-12 rounded-md bg-red flex items-center justify-center text-white text-xl font-bold mb-4">
-              2
+            <div className="flex flex-col items-center">
+              <div className="h-12 w-12 rounded-md bg-red flex items-center justify-center text-white text-xl font-bold mb-4">
+                2
+              </div>
+>>>>>>> main
             </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Add Products</h3>
-            <p className="mt-2 text-base text-gray-500 dark:text-gray-400">
-              Input your product information and manufacturing details
+            <h3 className="text-lg font-semibold mb-2">Regulatory Compliance</h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              Generate DPPs that meet EU regulations and industry standards including AAS and SCSN
             </p>
           </Card>
 
+<<<<<<< HEAD
+          <Card className="text-center p-6">
+            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center mx-auto mb-4">
+              <Share2 className="h-6 w-6 text-red-600 dark:text-red-400" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Supply Chain Collaboration</h3>
+            <p className="text-gray-600 dark:text-gray-400">
+              Securely share and request emission data across your value chain for complete
+              transparency
+=======
           <Card className="flex flex-col items-center text-center p-6">
-            <div className="h-12 w-12 rounded-md bg-red flex items-center justify-center text-white text-xl font-bold mb-4">
-              3
+            <div className="flex flex-col items-center">
+              <div className="h-12 w-12 rounded-md bg-red flex items-center justify-center text-white text-xl font-bold mb-4">
+                3
+              </div>
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Supply Chain</h3>
             <p className="mt-2 text-base text-gray-500 dark:text-gray-400">
@@ -150,58 +187,236 @@ export default function Home() {
           </Card>
 
           <Card className="flex flex-col items-center text-center p-6">
-            <div className="h-12 w-12 rounded-md bg-red flex items-center justify-center text-white text-xl font-bold mb-4">
-              4
+            <div className="flex flex-col items-center">
+              <div className="h-12 w-12 rounded-md bg-red flex items-center justify-center text-white text-xl font-bold mb-4">
+                4
+              </div>
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white">Results & DPP</h3>
             <p className="mt-2 text-base text-gray-500 dark:text-gray-400">
               Receive your carbon footprint results and digital product passport
+>>>>>>> main
             </p>
           </Card>
         </div>
       </div>
 
-      {/* Benefits Section */}
-      <div className="mt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
+      {/* How It Works Section */}
+      <div id="how-it-works" className="mt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-12">
           <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
-            Benefits
+            From Setup to Digital Product Passport in 5 Steps
           </h2>
           <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500 dark:text-gray-400">
-            Why use our carbon footprint calculator
+            Our guided process makes carbon footprint calculation straightforward
           </p>
         </div>
 
-        <div className="mt-12 grid gap-8 md:grid-cols-3">
-          <Card className="p-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-              No Technical Knowledge Required
-            </h3>
-            <p className="mt-2 text-base text-gray-500 dark:text-gray-400">
-              Our tool is designed for non-technical users, with a simple interface that guides you
-              through each step
-            </p>
-          </Card>
+        {/* Process Steps */}
+        <div className="relative">
+          {/* Connection Line - Hidden on mobile */}
+          <div className="hidden lg:block absolute top-24 left-1/2 transform -translate-x-1/2 w-full max-w-5xl">
+            <div className="relative h-1 bg-gray-200 dark:bg-gray-700">
+              <div className="absolute inset-0 bg-gradient-to-r from-red-200 via-red-400 to-red-600 dark:from-red-800 dark:via-red-600 dark:to-red-400"></div>
+            </div>
+          </div>
 
-          <Card className="p-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-              Compliant Digital Product Passports
-            </h3>
-            <p className="mt-2 text-base text-gray-500 dark:text-gray-400">
-              Generate DPPs in Asset Administration Shell (AAS) format, compliant with industry
-              standards
-            </p>
-          </Card>
+          <div className="relative grid gap-8 lg:grid-cols-5">
+            {/* Step 1 */}
+            <div className="relative">
+              <Card className="flex flex-col items-center justify-start text-center p-6 h-full">
+                <div className="relative z-10 w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center text-xl font-bold mb-4 mx-auto">
+                  1
+                </div>
+                <div className="w-8 h-8 flex items-center justify-center mb-3 mx-auto">
+                  <Building2 className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  Create Company
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Set up your company profile and invite team members
+                </p>
+              </Card>
+            </div>
 
-          <Card className="p-6">
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-              AI-Powered Reduction Advice
-            </h3>
-            <p className="mt-2 text-base text-gray-500 dark:text-gray-400">
-              Receive personalized recommendations to reduce your carbon footprint across your
-              supply chain
+            {/* Step 2 */}
+            <div className="relative">
+              <Card className="flex flex-col items-center justify-start text-center p-6 h-full">
+                <div className="relative z-10 w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center text-xl font-bold mb-4 mx-auto">
+                  2
+                </div>
+                <div className="w-8 h-8 flex items-center justify-center mb-3 mx-auto">
+                  <FileText className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  Add Products
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Enter your product information and specifications
+                </p>
+              </Card>
+            </div>
+
+            {/* Step 3 */}
+            <div className="relative">
+              <Card className="flex flex-col items-center justify-start text-center p-6 h-full">
+                <div className="relative z-10 w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center text-xl font-bold mb-4 mx-auto">
+                  3
+                </div>
+                <div className="w-8 h-8 flex items-center justify-center mb-3 mx-auto">
+                  <Share2 className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  Input Data
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Add materials, energy, and transportation data
+                </p>
+              </Card>
+            </div>
+
+            {/* Step 4 */}
+            <div className="relative">
+              <Card className="flex flex-col items-center justify-start text-center p-6 h-full">
+                <div className="relative z-10 w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center text-xl font-bold mb-4 mx-auto">
+                  4
+                </div>
+                <div className="w-8 h-8 flex items-center justify-center mb-3 mx-auto">
+                  <BarChart3 className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  Analyze Results
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Review emissions breakdown and AI recommendations
+                </p>
+              </Card>
+            </div>
+
+            {/* Step 5 */}
+            <div className="relative">
+              <Card className="flex flex-col items-center justify-start text-center p-6 h-full">
+                <div className="relative z-10 w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center text-xl font-bold mb-4 mx-auto">
+                  5
+                </div>
+                <div className="w-8 h-8 flex items-center justify-center mb-3 mx-auto">
+                  <FileText className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  Export DPP
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Generate your Digital Product Passport
+                </p>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Complete Lifecycle Coverage */}
+      <div className="mt-20 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Card className="p-8">
+          <h2 className="text-2xl font-semibold mb-6 text-center">
+            Everything You Need for Carbon Transparency
+          </h2>
+
+          <p className="text-center text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto">
+            CarbonInsight provides a complete solution for understanding and optimizing your
+            product's environmental impact. From raw materials to end-of-life, get the insights you
+            need.
+          </p>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="space-y-6">
+              <div className="flex items-start">
+                <ArrowRight className="h-5 w-5 text-red-600 mr-3 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                    Comprehensive Data Tracking
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    Capture every aspect of your product's lifecycle - from bill of materials and
+                    production energy to transportation routes and usage patterns. Our platform
+                    adapts to your specific manufacturing processes.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start">
+                <ArrowRight className="h-5 w-5 text-red-600 mr-3 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                    AI-Powered Optimization
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    Get personalized recommendations for reducing your carbon footprint. Our AI
+                    analyzes your specific data to identify practical improvements that make both
+                    environmental and business sense.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="flex items-start">
+                <ArrowRight className="h-5 w-5 text-red-600 mr-3 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                    Supply Chain Integration
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    Connect with suppliers and customers to build complete emission profiles.
+                    Request data, share results, and collaborate on sustainability goals while
+                    maintaining full control over your information.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start">
+                <ArrowRight className="h-5 w-5 text-red-600 mr-3 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                    Export in Any Format
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">
+                    Generate Digital Product Passports that meet your needs - whether it's AAS for
+                    technical integration, SCSN for supply chain partners, or traditional PDFs and
+                    spreadsheets for reporting.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 text-center">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Built for SMEs • Designed for simplicity • Ready for regulations
             </p>
-          </Card>
+          </div>
+        </Card>
+      </div>
+
+      {/* CTA Section */}
+      <div className="mt-20 py-16 mb-12">
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-extrabold text-gray-900 dark:text-white">
+            Ready to Start Your Sustainability Journey?
+          </h2>
+          <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
+            Join forward-thinking manufacturers using CarbonInsight to meet sustainability goals and
+            stay ahead of regulations.
+          </p>
+          <div className="mt-8">
+            {!isAuthenticated ? (
+              <Link href="/register">
+                <Button size="lg">Create Free Account</Button>
+              </Link>
+            ) : (
+              getCtaButton()
+            )}
+          </div>
         </div>
       </div>
     </div>

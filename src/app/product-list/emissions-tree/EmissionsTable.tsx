@@ -49,6 +49,7 @@ export const Tooltip: FC<TooltipProps> = ({ content, children }) => (
           align="center"
           className="z-50 rounded bg-gray-100 dark:bg-gray-900 text-white text-xs px-3 py-1 shadow-lg"
           sideOffset={6}
+          role="tooltip"
         >
           {content}
           <RadixTooltip.Arrow className="fill-gray-800" />
@@ -59,24 +60,26 @@ export const Tooltip: FC<TooltipProps> = ({ content, children }) => (
 );
 
 function getSourceIcon(source: string) {
+  const iconProps = { size: 16, "aria-hidden": true as const };
+  
   switch (source) {
     case "Product":
     case "ProductReference":
-      return <Building2 size={16} />;
+      return <Building2 {...iconProps} />;
     case "TransportEmission":
     case "TransportEmissionReference":
-      return <Truck size={16} />;
+      return <Truck {...iconProps} />;
     case "Material":
     case "MaterialReference":
-      return <Box size={16} />;
+      return <Box {...iconProps} />;
     case "UserEnergy":
     case "UserEnergyReference":
-      return <Users size={16} />;
+      return <Users {...iconProps} />;
     case "ProductionEnergy":
     case "ProductionEnergyReference":
-      return <BarChart size={16} />;
+      return <BarChart {...iconProps} />;
     default:
-      return <Edit size={16} />;
+      return <Edit {...iconProps} />;
   }
 }
 
@@ -100,6 +103,23 @@ function getSourceColor(source: string) {
     default:
       return "#6b7280"; // gray-500
   }
+}
+
+function getSourceLabel(source: string): string {
+  const sourceLabels: Record<string, string> = {
+    "Product": "Product emission",
+    "ProductReference": "Product reference emission", 
+    "TransportEmission": "Transportation emission",
+    "TransportEmissionReference": "Transportation reference emission",
+    "Material": "Material emission",
+    "MaterialReference": "Material reference emission",
+    "UserEnergy": "User energy emission",
+    "UserEnergyReference": "User energy reference emission",
+    "ProductionEnergy": "Production energy emission",
+    "ProductionEnergyReference": "Production energy reference emission",
+  };
+  
+  return sourceLabels[source] || "Other emission";
 }
 
 type OpenMap = Record<string, boolean>;
@@ -126,6 +146,8 @@ export const EmissionTreeItem: FC<EmissionTreeItemProps> = ({
   const emissionValue = emission.total;
   const hasChildren = (emission.children?.length + emission.mentions?.length) > 0;
   const childrenId = `children-${key.replace(/[^a-zA-Z0-9]/g, '-')}`;
+  const labelId = `label-${key.replace(/[^a-zA-Z0-9]/g, '-')}`;
+  const sourceLabel = getSourceLabel(emission.source);
 
   const handleClick = () => {
     if (isOpen) {
@@ -133,6 +155,13 @@ export const EmissionTreeItem: FC<EmissionTreeItemProps> = ({
       toggleRow(key, false);
     } else {
       toggleRow(key, true);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleClick();
     }
   };
 
@@ -149,97 +178,128 @@ export const EmissionTreeItem: FC<EmissionTreeItemProps> = ({
           role="gridcell"
           className="px-2 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white"
           style={{ paddingLeft: `${depth * 25}px` }}
+          headers="label-header"
         >
           <div className="px-2 flex items-center">
             {hasChildren && (
               <button 
-                onClick={handleClick} 
-                className="mr-2"
+                onClick={handleClick}
+                onKeyDown={handleKeyDown}
+                className="mr-2 p-1 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
                 aria-label={`${isOpen ? 'Collapse' : 'Expand'} ${emission.label} emissions breakdown`}
                 aria-controls={hasChildren ? childrenId : undefined}
                 aria-expanded={isOpen}
+                type="button"
               >
-                {isOpen ? <SquareMinus size={16} /> : <SquarePlus size={16} />}
+                {isOpen ? <SquareMinus size={16} aria-hidden="true" /> : <SquarePlus size={16} aria-hidden="true" />}
               </button>
             )}
-            <span style={{ color: getSourceColor(emission.source) }} aria-hidden="true">
+            <span 
+              style={{ color: getSourceColor(emission.source) }} 
+              aria-label={sourceLabel}
+              title={sourceLabel}
+            >
               {getSourceIcon(emission.source)}
             </span>
-            {"\u00A0"}
-            {emission.label}
+            <span className="ml-2" id={labelId}>
+              {emission.label}
+            </span>
           </div>
         </td>
-        <td role="gridcell" className="px-2 py-2 text-sm text-gray-900 dark:text-white">
+        <td 
+          role="gridcell" 
+          className="px-2 py-2 text-sm text-gray-900 dark:text-white"
+          headers="methodology-header"
+        >
           {emission.methodology}
         </td>
-        <td role="gridcell" className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden-when-closed">
+        <td 
+          role="gridcell" 
+          className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+          headers="quantity-header"
+        >
           {quantity ? `${quantity} ${unit}` : ""}
         </td>
-        <td role="gridcell" className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-          {emissionValue !== undefined && Number.isFinite(emissionValue)
-            ? emissionValue.toFixed(3)
-            : ""}
-          {"\u00A0"}
-          {Object.keys(emission.emissions_subtotal || {}).length > 0 && (
-            <Tooltip
-              content={
-                <div>
-                  {Object.entries(emission.emissions_subtotal).map(([stage, factor]) => (
-                    <div key={stage} className="mb-1">
-                      <p className="font-semibold text-gray-900 dark:text-white">{stage}</p>
-                      <p className="text-sm text-gray-900 dark:text-white">
-                        Bio: {factor.biogenic.toFixed(2)}
-                        <br />
-                        Non-bio: {factor.non_biogenic.toFixed(2)}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              }
-            >
-              <Info className="w-4 h-4 text-gray-400" aria-label="Show emissions breakdown by lifecycle stage" />
-            </Tooltip>
-          )}
+        <td 
+          role="gridcell" 
+          className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white"
+          headers="emissions-header"
+        >
+          <div className="flex items-center gap-2">
+            <span aria-label={`${emissionValue} kilograms CO2 equivalent`}>
+              {emissionValue !== undefined && Number.isFinite(emissionValue)
+                ? emissionValue.toFixed(3)
+                : ""}
+              {emissionValue !== undefined && Number.isFinite(emissionValue) && " kg CO₂e"}
+            </span>
+            {Object.keys(emission.emissions_subtotal || {}).length > 0 && (
+              <Tooltip
+                content={
+                  <div role="tooltip">
+                    <div className="font-semibold mb-2">Emissions by Lifecycle Stage:</div>
+                    {Object.entries(emission.emissions_subtotal).map(([stage, factor]) => (
+                      <div key={stage} className="mb-1">
+                        <p className="font-semibold text-gray-900 dark:text-white">{stage}</p>
+                        <p className="text-sm text-gray-900 dark:text-white">
+                          Biogenic: {factor.biogenic.toFixed(2)} kg CO₂e
+                          <br />
+                          Non-biogenic: {factor.non_biogenic.toFixed(2)} kg CO₂e
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                }
+              >
+                <Info className="w-4 h-4 text-gray-400" aria-label="Show emissions breakdown by lifecycle stage" />
+              </Tooltip>
+            )}
+          </div>
         </td>
       </tr>
       {isOpen && (
-        <tr role="group" id={childrenId} aria-labelledby={`label-${key.replace(/[^a-zA-Z0-9]/g, '-')}`}>
-          <td colSpan={4} className="p-0">
-            {emission.children?.map((child, idx) => (
-              <table key={getNodeKey(child.emission_trace.label, `${key}/${idx}`)} className="w-full">
-                <tbody>
-                  <EmissionTreeItem
-                    emission={child.emission_trace}
-                    depth={depth + 1}
-                    quantity={child.quantity}
-                    unit={child.emission_trace.reference_impact_unit}
-                    isChild={true}
-                    path={`${key}/${idx}`}
-                    openMap={openMap}
-                    anyRowOpen={anyRowOpen}
-                    toggleRow={toggleRow}
-                    closeDescendants={closeDescendants}
-                  />
-                </tbody>
-              </table>
-            ))}
-            {emission.mentions?.map((mention, idx) => (
-              <div 
-                key={`mention-${key}-${idx}`} 
+        <>
+          {emission.children?.map((child, idx) => (
+            <EmissionTreeItem
+              key={getNodeKey(child.emission_trace.label, `${key}/${idx}`)}
+              emission={child.emission_trace}
+              depth={depth + 1}
+              quantity={child.quantity}
+              unit={child.emission_trace.reference_impact_unit}
+              isChild={true}
+              path={`${key}/${idx}`}
+              openMap={openMap}
+              anyRowOpen={anyRowOpen}
+              toggleRow={toggleRow}
+              closeDescendants={closeDescendants}
+            />
+          ))}
+          {emission.mentions?.map((mention, idx) => (
+            <tr key={`mention-${key}-${idx}`} role="row">
+              <td 
+                colSpan={4} 
                 className="py-2 text-sm font-medium text-gray-900 dark:text-white"
-                style={{ paddingLeft: `${(depth + 1) * 25}px` }}
+                style={{ paddingLeft: `${(depth + 1) * 25 + 20}px` }}
                 role="note"
                 aria-label={`${mention.mention_class} message`}
               >
                 <div className="flex items-center">
-                  <span className="px-2 font-bold">{mention.mention_class}:</span>
-                  {"\u00A0"}
-                  {mention.message}
+                  <span 
+                    className={`px-2 py-1 rounded text-xs font-bold mr-2 ${
+                      mention.mention_class === 'Error' 
+                        ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        : mention.mention_class === 'Warning'
+                        ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                        : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                    }`}
+                  >
+                    {mention.mention_class}
+                  </span>
+                  <span>{mention.message}</span>
                 </div>
-              </div>
-            ))}
-          </td>
-        </tr>
+              </td>
+            </tr>
+          ))}
+        </>
       )}
     </>
   );
@@ -269,7 +329,7 @@ export const EmissionsTable: FC<EmissionsTableProps> = ({ emissions }) => {
   const anyRowOpen = Object.values(openMap).some(Boolean);
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto" role="region" aria-label="Product emissions breakdown table">
       <table 
         role="treegrid" 
         aria-label="Product emissions breakdown with expandable categories"
@@ -277,17 +337,33 @@ export const EmissionsTable: FC<EmissionsTableProps> = ({ emissions }) => {
       >
         <thead className="border-b text-black dark:text-white">
           <tr role="row">
-            <th scope="col" className="p-2 text-left text-sm font-medium">
+            <th 
+              scope="col" 
+              id="label-header"
+              className="p-2 text-left text-sm font-medium"
+            >
               Label
             </th>
-            <th scope="col" className="p-2 text-left text-sm font-medium">
+            <th 
+              scope="col" 
+              id="methodology-header"
+              className="p-2 text-left text-sm font-medium"
+            >
               Methodology
             </th>
-            <th scope="col" className="p-2 text-left text-sm font-medium">
+            <th 
+              scope="col" 
+              id="quantity-header"
+              className="p-2 text-left text-sm font-medium"
+            >
               Quantity
             </th>
-            <th scope="col" className="p-2 text-left text-sm font-medium">
-              Emissions (kg CO2e)
+            <th 
+              scope="col" 
+              id="emissions-header"
+              className="p-2 text-left text-sm font-medium"
+            >
+              Emissions (kg CO₂e)
             </th>
           </tr>
         </thead>

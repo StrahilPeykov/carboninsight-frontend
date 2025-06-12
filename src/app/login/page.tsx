@@ -193,85 +193,85 @@ export default function LoginPage() {
         )}
 
         <form ref={formRef} onSubmit={handleSubmit} className="space-y-6" noValidate>
-          <div>
-            <label
-              htmlFor="username"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              Email{" "}
-              <span className="text-red-500" aria-label="required">
-                *
+          <fieldset className="space-y-6">
+            <legend className="sr-only">Login credentials</legend>
+            
+            <div>
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                Email{" "}
+                <span className="text-red-500" aria-label="required">*</span>
+              </label>
+              <input
+                id="username"
+                name="username"
+                type="email"
+                autoComplete="username email"
+                inputMode="email"
+                required
+                aria-required="true"
+                aria-invalid={!!(fieldErrors.username || (error && !isAccountBlocked))}
+                aria-describedby={[
+                  "email-hint",
+                  fieldErrors.username ? "username-error" : null,
+                  error && !isAccountBlocked ? "general-error" : null,
+                  isAccountBlocked ? "blocked-account-error" : null,
+                ].filter(Boolean).join(" ")}
+                value={formData.username}
+                onChange={handleChange}
+                disabled={isLoading}
+                className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                placeholder="your@email.com"
+              />
+              <span id="email-hint" className="sr-only">
+                Enter your registered email address
               </span>
-            </label>
-            <input
-              id="username"
-              name="username"
-              type="email"
-              autoComplete="username email"
-              inputMode="email"
-              required
-              aria-required="true"
-              aria-invalid={!!(fieldErrors.username || (error && !isAccountBlocked))}
-              aria-describedby={[
-                "email-hint",
-                fieldErrors.username ? "username-error" : null,
-                error && !isAccountBlocked ? "general-error" : null,
-                isAccountBlocked ? "blocked-account-error" : null,
-              ].filter(Boolean).join(" ")}
-              value={formData.username}
-              onChange={handleChange}
-              disabled={isLoading}
-              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-              placeholder="your@email.com"
-            />
-            <span id="email-hint" className="sr-only">
-              Enter your registered email address
-            </span>
-            {fieldErrors.username && (
-              <p id="username-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
-                {fieldErrors.username}
-              </p>
-            )}
-          </div>
+              {fieldErrors.username && (
+                <p id="username-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
+                  {fieldErrors.username}
+                </p>
+              )}
+            </div>
 
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              Password{" "}
-              <span className="text-red-500" aria-label="required">
-                *
+            <div>
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
+                Password{" "}
+                <span className="text-red-500" aria-label="required">*</span>
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                aria-required="true"
+                aria-invalid={!!(fieldErrors.password || (error && !isAccountBlocked))}
+                aria-describedby={[
+                  "password-hint",
+                  fieldErrors.password ? "password-error" : null,
+                  error && !isAccountBlocked ? "general-error" : null,
+                  isAccountBlocked ? "blocked-account-error" : null,
+                ].filter(Boolean).join(" ")}
+                value={formData.password}
+                onChange={handleChange}
+                disabled={isLoading}
+                className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+              <span id="password-hint" className="sr-only">
+                Enter your password
               </span>
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              aria-required="true"
-              aria-invalid={!!(fieldErrors.password || (error && !isAccountBlocked))}
-              aria-describedby={[
-                "password-hint",
-                fieldErrors.password ? "password-error" : null,
-                error && !isAccountBlocked ? "general-error" : null,
-                isAccountBlocked ? "blocked-account-error" : null,
-              ].filter(Boolean).join(" ")}
-              value={formData.password}
-              onChange={handleChange}
-              disabled={isLoading}
-              className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
-            />
-            <span id="password-hint" className="sr-only">
-              Enter your password
-            </span>
-            {fieldErrors.password && (
-              <p id="password-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
-                {fieldErrors.password}
-              </p>
-            )}
-          </div>
+              {fieldErrors.password && (
+                <p id="password-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
+                  {fieldErrors.password}
+                </p>
+              )}
+            </div>
+          </fieldset>
 
           <div className="flex items-center justify-between">
             <div className="text-sm">

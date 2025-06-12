@@ -29,7 +29,7 @@ interface ExportModalProps {
 }
 
 export default function ExportModal({ isOpen, onClose, product, companyId }: ExportModalProps) {
-  const [selectedFormat, setSelectedFormat] = useState<ExportFormat>("pdf");
+  const [selectedFormat, setSelectedFormat] = useState<ExportFormat>("zip");
   const [isExporting, setIsExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -165,7 +165,7 @@ export default function ExportModal({ isOpen, onClose, product, companyId }: Exp
               onClick={handleClose}
               aria-label="Close export modal"
               disabled={isExporting}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              className="hover:bg-gray-100 dark:hover:bg-gray-900"
             >
               <X className="h-5 w-5" aria-hidden="true" />
             </Button>

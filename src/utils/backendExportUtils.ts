@@ -9,7 +9,8 @@ export type ExportFormat =
   | "scsn_pcf_xml" // SCSN PCF XML (partial)
   | "scsn_full_xml" // SCSN full XML (complete)
   | "csv" // CSV export for spreadsheet import
-  | "xlsx"; // Excel export
+  | "xlsx" // Excel export
+  | "zip"; // ZIP export
 
 interface Product {
   id: string;
@@ -53,6 +54,7 @@ export async function exportProduct(
     aas_json: `products/${productId}/export/aas_json`,
     scsn_pcf_xml: `products/${productId}/export/scsn_pcf_xml`,
     scsn_full_xml: `products/${productId}/export/scsn_full_xml`,
+    zip: `products/${productId}/export/zip`,
     csv: "products/export/csv", // Company-level export
     xlsx: "products/export/xlsx", // Company-level export
   };
@@ -63,6 +65,7 @@ export async function exportProduct(
     aas_json: "application/json",
     scsn_pcf_xml: "application/xml",
     scsn_full_xml: "application/xml",
+    zip: "application/zip",
     csv: "text/csv",
     xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   };
@@ -73,6 +76,7 @@ export async function exportProduct(
     aas_json: "json",
     scsn_pcf_xml: "xml",
     scsn_full_xml: "xml",
+    zip: "zip",
     csv: "csv",
     xlsx: "xlsx",
   };
@@ -395,6 +399,11 @@ export function getExportFormats(): Array<{
   description: string;
 }> {
   return [
+    {
+      value: "zip",
+      label: "ZIP Export",
+      description: "ZIP archive of all files of the product",
+    },
     {
       value: "pdf",
       label: "PDF Report",

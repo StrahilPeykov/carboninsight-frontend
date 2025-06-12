@@ -95,10 +95,6 @@ export default function Home() {
             lead in sustainability.
           </p>
 
-<<<<<<< HEAD
-=======
-          {/* Fixed button spacing */}
->>>>>>> main
           <div className="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4">
             <div className="w-full sm:w-auto">{getCtaButton()}</div>
             <div className="w-full sm:w-auto">
@@ -112,32 +108,12 @@ export default function Home() {
         </div>
       </div>
 
-<<<<<<< HEAD
       {/* Key Benefits */}
       <div className="mt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid gap-8 md:grid-cols-3">
           <Card className="text-center p-6">
             <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center mx-auto mb-4">
               <BarChart3 className="h-6 w-6 text-red-600 dark:text-red-400" />
-=======
-      {/* How It Works Section */}
-      <div id="how-it-works" className="mt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
-            How It Works
-          </h2>
-          <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500 dark:text-gray-400">
-            Our simple 4-step process helps you calculate your product carbon footprint
-          </p>
-        </div>
-
-        <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="flex flex-col items-center text-center p-6">
-            <div className="flex flex-col items-center">
-              <div className="h-12 w-12 rounded-md bg-red flex items-center justify-center text-white text-xl font-bold mb-4">
-                1
-              </div>
->>>>>>> main
             </div>
             <h3 className="text-lg font-semibold mb-2">Complete Carbon Analysis</h3>
             <p className="text-gray-600 dark:text-gray-400">
@@ -146,17 +122,9 @@ export default function Home() {
             </p>
           </Card>
 
-<<<<<<< HEAD
           <Card className="text-center p-6">
             <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center mx-auto mb-4">
               <Shield className="h-6 w-6 text-red-600 dark:text-red-400" />
-=======
-          <Card className="flex flex-col items-center text-center p-6">
-            <div className="flex flex-col items-center">
-              <div className="h-12 w-12 rounded-md bg-red flex items-center justify-center text-white text-xl font-bold mb-4">
-                2
-              </div>
->>>>>>> main
             </div>
             <h3 className="text-lg font-semibold mb-2">Regulatory Compliance</h3>
             <p className="text-gray-600 dark:text-gray-400">
@@ -164,7 +132,6 @@ export default function Home() {
             </p>
           </Card>
 
-<<<<<<< HEAD
           <Card className="text-center p-6">
             <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center mx-auto mb-4">
               <Share2 className="h-6 w-6 text-red-600 dark:text-red-400" />
@@ -173,29 +140,6 @@ export default function Home() {
             <p className="text-gray-600 dark:text-gray-400">
               Securely share and request emission data across your value chain for complete
               transparency
-=======
-          <Card className="flex flex-col items-center text-center p-6">
-            <div className="flex flex-col items-center">
-              <div className="h-12 w-12 rounded-md bg-red flex items-center justify-center text-white text-xl font-bold mb-4">
-                3
-              </div>
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Supply Chain</h3>
-            <p className="mt-2 text-base text-gray-500 dark:text-gray-400">
-              Connect with your suppliers or use default emission factors
-            </p>
-          </Card>
-
-          <Card className="flex flex-col items-center text-center p-6">
-            <div className="flex flex-col items-center">
-              <div className="h-12 w-12 rounded-md bg-red flex items-center justify-center text-white text-xl font-bold mb-4">
-                4
-              </div>
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white">Results & DPP</h3>
-            <p className="mt-2 text-base text-gray-500 dark:text-gray-400">
-              Receive your carbon footprint results and digital product passport
->>>>>>> main
             </p>
           </Card>
         </div>

@@ -393,3 +393,24 @@ html.dark .support-email-text {
   max-width: 100%;
   overflow: hidden;
 }
+
+/* ...existing code... */
+
+@keyframes hue-rotate {
+  from {
+    filter: hue-rotate(0deg);
+  }
+  to {
+    filter: hue-rotate(360deg);
+  }
+}
+
+.animate-hue {
+  animation: hue-rotate 10s linear infinite;
+}
+
+.animate-hue-fast {
+  animation: hue-rotate 5s linear infinite;
+}
+
+

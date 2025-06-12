@@ -387,49 +387,48 @@ export default function ProductListPage() {
                             onClick={e => handleExportClick(product, e)}
                           >
                             <FileDown className="w-3 h-3" />
-                            Export
+                            <span>Export</span>
                           </Button>
 
-                          {/* AI advice per-row */}
+                          {/* Ask AI */}
                           <Button
                             variant="outline"
                             size="sm"
-                            className="flex items-center gap-1 text-xs"
+                            className="group flex items-center gap-1 text-xs hover:bg-gradient-to-r from-purple-500 to-blue-500 hover:text-white"
                             onClick={e => {
                               e.stopPropagation();
                               handleAIButtonClick(product.id);
                             }}
                           >
-                            <Sparkles className="w-3 h-3 text-purple-500" />
+                            <Sparkles className="w-3 h-3 text-purple-500 group-hover:text-white" />
                             Ask AI
                           </Button>
 
                           {/* Edit */}
                           <Button
-                            variant="outline"
                             size="sm"
-                            className="flex items-center gap-1 text-xs"
+                            className="flex items-center gap-1 text-xs !bg-blue-500 !border-blue-500 !text-white"
                             onClick={e => {
                               e.stopPropagation();
                               handleEdit(product.id);
                             }}
                           >
-                            <Edit className="w-4 h-4 text-blue-500" />
+                            <Edit className="w-4 h-4 text-white" />
                           </Button>
 
                           {/* Delete */}
                           <Button
-                            variant="outline"
                             size="sm"
-                            className="flex items-center gap-1 text-xs"
+                            className="flex items-center gap-1 text-xs !bg-red-500 !border-red-500 !text-white"
                             onClick={e => {
                               e.stopPropagation();
                               handleDelete(product.id);
                             }}
                             disabled={isDeleting}
                           >
-                            <Trash className="w-4 h-4 text-red-500" />
+                            <Trash className="w-4 h-4 text-white" />
                           </Button>
+
                         </div>
                       </td>
                     </TableRow>
@@ -492,28 +491,34 @@ export default function ProductListPage() {
                     </p>
                   </div>
                   <div className="flex justify-end gap-2 mt-3">
+                    {/* Export */}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex items-center gap-1 text-xs"
+                      /* group = lets icons & label inherit the hover state if you want */
+                      className="group flex items-center gap-1 text-xs transition-colors
+                      motion-safe:hover:animate-hue
+                      motion-safe:active:animate-hue-fast"
                       onClick={e => handleExportClick(product, e)}
                     >
                       <FileDown className="w-3 h-3" />
-                      Export
+                      <span>Export</span>
                     </Button>
 
-                    {/* AI advice per-row (mobile) */}
+                    {/* Ask AI */}
                     <Button
                       variant="outline"
                       size="sm"
-                      className="flex items-center gap-1 text-xs"
+                      className="group flex items-center gap-1 text-xs transition-colors
+                      motion-safe:hover:animate-hue
+                      motion-safe:active:animate-hue-fast"
                       onClick={e => {
                         e.stopPropagation();
                         handleAIButtonClick(product.id);
                       }}
                     >
-                      <Sparkles className="w-4 h-4 text-purple-500" />
-                      Ask AI
+                      <Sparkles className="w-3 h-3 text-purple-500" />
+                      <span>Ask&nbsp;AI</span>
                     </Button>
 
                     <button
@@ -662,7 +667,7 @@ export default function ProductListPage() {
                       await handleRequestProductAdvice(
                         pendingProductId,
                         userPromptInput ||
-                          "Please analyze this product and suggest solutions to reduce carbon footprint. (in 150 words)"
+                        "Please analyze this product and suggest solutions to reduce carbon footprint. (in 150 words)"
                       );
                     }
                   }}

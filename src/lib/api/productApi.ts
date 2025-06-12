@@ -4,6 +4,7 @@ import { OverrideFactor } from "./productionEmissionApi";
 export interface Product {
   id: string;
   supplier: number;
+  supplier_name: string;
   emission_total: number;
   emission_total_biogenic: number;
   emission_total_non_biogenic: number;
@@ -95,6 +96,10 @@ export const productApi = {
   // Get a specific product
   getProduct: (companyId: string, productId: string) =>
     apiRequest<Product>(`/companies/${companyId}/products/${productId}/`),
+
+  // Get emission traces for a product
+  getProductEmissionTrace: (companyId: string, productId: string) =>
+    apiRequest<EmissionTrace>(`/companies/${companyId}/products/${productId}/emission_traces/`),
 
   // Create a new product
   createProduct: (companyId: string, data: ProductCreateData) =>

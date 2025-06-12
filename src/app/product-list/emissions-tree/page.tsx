@@ -7,17 +7,9 @@ import { useAuth } from "../../context/AuthContext";
 import { EmissionsTable } from "./EmissionsTable";
 import LoadingSkeleton from "../../components/ui/LoadingSkeleton";
 import { Suspense } from "react";
-import { companyApi } from "@/lib/api/companyApi";
 import AuditLog from "@/app/components/ui/AuditLog";
 import { auditLogApi, LogItem } from "@/lib/api/auditLogApi";
 import { productApi, EmissionTrace, Product } from "@/lib/api/productApi";
-
-interface CompanyData {
-  id: string;
-  name: string;
-  vat_number: string;
-  business_registration_number: string;
-}
 
 function EmissionsTreePageContent() {
   const { isLoading, requireAuth } = useAuth();
@@ -30,8 +22,6 @@ function EmissionsTreePageContent() {
   const [error, setError] = useState("");
   const [emissions, setEmissions] = useState<EmissionTrace | null>(null);
   const [product, setProduct] = useState<Product | null>(null);
-  const [manufacturer, setManufacturer] = useState("");
-  const [supplier, setSupplier] = useState<CompanyData | null>(null);
   const [logItems, setLogItems] = useState<LogItem[]>([]);
   const searchParams = useSearchParams();
 
@@ -52,54 +42,32 @@ function EmissionsTreePageContent() {
           return;
         }
 
-        // const companyId = localStorage.getItem("selected_company_id");
-
         let companyId = searchParams.get("cid");
 
         if (!companyId) {
           companyId = localStorage.getItem("selected_company_id");
         }
 
-        const emissionTraceResponse = await fetch(
-          `${API_URL}/companies/${companyId}/products/${productId}/emission_traces/`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
+        // Load emission traces
+        if (companyId && productId) {
+          try {
+            const emissionData = await productApi.getProductEmissionTrace(companyId, productId);
+            setEmissions(emissionData);
+          } catch (err) {
+            console.error("Error fetching emission traces:", err);
+            setError("Failed to emission traces");
           }
-        );
-
-        if (!emissionTraceResponse.ok) throw new Error("Failed to fetch emission trace");
-
-        const emissionData = await emissionTraceResponse.json();
-        setEmissions(emissionData);
-
-        const productResponse = await fetch(
-          `${API_URL}/companies/${companyId}/products/${productId}/`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (!productResponse.ok) throw new Error("Failed to fetch product");
-
-        const productData = await productResponse.json();
-        console.log("Fetched product data:", productData);
-
-        let supplierData = null;
-        let manufacturerData = null;
-
-        if (productData.supplier) {
-          supplierData = await companyApi.getCompany(productData.supplier);
         }
-        if (productData.manufacturer_name) {
-          setManufacturer(productData.manufacturer_name);
+
+        // Load product data
+        if (companyId && productId) {
+          try {
+            const productData = await productApi.getProduct(companyId, productId);
+            setProduct(productData);
+          } catch (err) {
+            console.error("Error fetching product data:", err);
+            setError("Failed to fetch product data");
+          }
         }
 
         // Load audit log items
@@ -114,9 +82,6 @@ function EmissionsTreePageContent() {
             console.error("Error fetching audit logs:", err);
           }
         }
-
-        setSupplier(supplierData);
-        setProduct(productData);
       } catch (err: unknown) {
         if (err instanceof Error) {
           setError(err.message);
@@ -163,25 +128,26 @@ function EmissionsTreePageContent() {
           </div>
           <div className="grid md:grid-rows-4 md:grid-flow-col gap-y-2 gap-x-8">
             <div>
-              <span className="font-semibold">SKU:</span> {product.sku}
+              <span className="font-semibold">SKU:</span> {product.sku || "—"}
             </div>
             <div>
-              <span className="font-semibold">Manufacturer:</span> {manufacturer}
+              <span className="font-semibold">Manufacturer:</span>{" "}
+              {product.manufacturer_name || "—"}
             </div>
             <div>
-              <span className="font-semibold">Supplier:</span> {supplier?.name}
+              <span className="font-semibold">Supplier:</span> {product.supplier_name || "—"}
             </div>
             <div>
-              <span className="font-semibold">Total emissions:</span> {product.emission_total} kg
-              CO2e
+              <span className="font-semibold">Total emissions:</span>{" "}
+              {product.emission_total || "—"} kg CO₂-eq
             </div>
             <div>
               <span className="font-semibold">Biogenic emissions:</span>{" "}
-              {product.emission_total_biogenic} kg CO2e
+              {product.emission_total_biogenic} kg CO₂-eq
             </div>
             <div>
               <span className="font-semibold">Non-biogenic emissions:</span>{" "}
-              {product.emission_total_non_biogenic} kg CO2e
+              {product.emission_total_non_biogenic} kg CO₂-eq
             </div>
             <div>
               <span className="font-semibold">Public:</span> {product.is_public ? "Yes" : "No"}
@@ -201,7 +167,9 @@ function EmissionsTreePageContent() {
           <EmissionsTable emissions={emissions} />
         ) : (
           <div className="text-center py-6">
-            <p className="text-gray-500 dark:text-gray-400 mb-4">No emission data found.</p>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">
+              No detailed emission data available.
+            </p>
           </div>
         )}
       </Card>

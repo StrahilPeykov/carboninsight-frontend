@@ -1,3 +1,4 @@
+// src/app/components/layout/Navbar.tsx
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -7,6 +8,8 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../ui/Button";
 import ThemeSelector from "../ui/ThemeSelector";
+import TourManager from "../ui/TourManager";
+import { useTour } from "@/hooks/useTour";
 import {
   ChevronDown,
   SettingsIcon,
@@ -16,6 +19,7 @@ import {
   Plus,
   Users,
   Share2,
+  Book,
 } from "lucide-react";
 import { companyApi } from "@/lib/api/companyApi";
 import { setLocalStorageItem } from "@/lib/api/apiClient";
@@ -25,9 +29,11 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated, logout, isLoading } = useAuth();
+  const { completedTours, availableTours } = useTour();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isCompanyMenuOpen, setIsCompanyMenuOpen] = useState(false);
+  const [showTourManager, setShowTourManager] = useState(false);
 
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const profileButtonRef = useRef<HTMLButtonElement>(null);
@@ -430,6 +436,23 @@ export default function Navbar() {
                           Account Settings
                         </Link>
 
+                        {/* Guided Tours */}
+                        <button
+                          onClick={() => {
+                            setShowTourManager(true);
+                            setIsProfileMenuOpen(false);
+                          }}
+                          className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 min-h-[44px]"
+                        >
+                          <Book size={16} className="mr-2" aria-hidden="true" />
+                          Guided Tours
+                          {completedTours.size < availableTours.length && (
+                            <span className="ml-auto bg-red text-white text-xs px-1.5 py-0.5 rounded-full">
+                              {availableTours.length - completedTours.size}
+                            </span>
+                          )}
+                        </button>
+
                         <Link
                           href="/support"
                           className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 min-h-[44px] flex items-center"
@@ -590,6 +613,22 @@ export default function Navbar() {
                     Account Settings
                   </Link>
 
+                  <button
+                    onClick={() => {
+                      setShowTourManager(true);
+                      setIsMenuOpen(false);
+                    }}
+                    className="flex items-center w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 min-h-[44px]"
+                  >
+                    <Book size={16} className="mr-2" aria-hidden="true" />
+                    Guided Tours
+                    {completedTours.size < availableTours.length && (
+                      <span className="ml-auto bg-red text-white text-xs px-1.5 py-0.5 rounded-full">
+                        {availableTours.length - completedTours.size}
+                      </span>
+                    )}
+                  </button>
+
                   <Link
                     href="/support"
                     className="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 min-h-[44px]"
@@ -645,6 +684,12 @@ export default function Navbar() {
           </div>
         </div>
       </nav>
+
+      {/* Tour Manager Modal */}
+      <TourManager
+        isOpen={showTourManager}
+        onClose={() => setShowTourManager(false)}
+      />
     </>
   );
 }

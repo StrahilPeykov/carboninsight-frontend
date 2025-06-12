@@ -48,16 +48,6 @@
   --color-foreground: var(--foreground);
   --font-kievit: "Kievit";
   --color-red: #c20016;
-  
-  --color-success: #047857;
-  --color-warning: #d97706;
-  --color-error: #dc2626;
-  --color-info: #2563eb;
-  
-  /* UI Component Colors */
-  --color-border: #9ca3af;
-  --color-border-light: #e5e7eb;
-  --color-border-dark: #4b5563;
 }
 
 :root {
@@ -404,77 +394,7 @@ html.dark .support-email-text {
   overflow: hidden;
 }
 
-/* WCAG 2.1 AA Color Overrides */
-
-/* Success colors - WCAG compliant green */
-.text-green-600,
-.text-green-700 {
-  color: var(--color-success) !important;
-}
-
-.bg-green-50 {
-  background-color: #f0fdf4 !important;
-}
-
-.border-green-200 {
-  border-color: #16a34a !important;
-}
-
-/* Dark mode success colors */
-html.dark .text-green-600,
-html.dark .text-green-400 {
-  color: #22c55e !important;
-}
-
-html.dark .border-green-200 {
-  border-color: #16a34a !important;
-}
-
-/* Form input borders */
-.border-gray-300 {
-  border-color: var(--color-border) !important;
-}
-
-/* Dark mode form borders */
-html.dark .border-gray-300,
-html.dark .dark\:border-gray-600 {
-  border-color: var(--color-border-dark) !important;
-}
-
-/* Focus states use brand color */
-input:focus,
-textarea:focus,
-select:focus {
-  border-color: var(--color-red) !important;
-  --tw-ring-color: rgba(194, 0, 22, 0.5) !important;
-}
-
-/* Table and divider borders */
-.divide-gray-200 > :not([hidden]) ~ :not([hidden]),
-.border-gray-200 {
-  border-color: var(--color-border) !important;
-}
-
-/* Dark mode table borders */
-html.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]),
-html.dark .border-gray-200 {
-  border-color: var(--color-border-dark) !important;
-}
-
-/* Status message */
-.text-red-600,
-.text-red-700 {
-  color: var(--color-error) !important;
-}
-
-.text-yellow-600,
-.text-amber-600 {
-  color: var(--color-warning) !important;
-}
-
-.text-blue-600 {
-  color: var(--color-info) !important;
-}
+/* ...existing code... */
 
 @keyframes hue-rotate {
   from {

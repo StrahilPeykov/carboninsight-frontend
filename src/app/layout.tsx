@@ -1,8 +1,11 @@
+// src/app/layout.tsx
 import type { Metadata } from "next";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
+import { TourProvider } from "@/hooks/useTour";
+import TourOverlay from "./components/ui/TourOverlay";
 import GlobalCompanyChangeHandler from "./components/GlobalCompanyChangeHandler";
 import KeyboardShortcutsProvider from "./components/KeyboardShortcutsProvider";
 import "./globals.css";
@@ -32,14 +35,17 @@ export default function RootLayout({
 
         <AuthProvider>
           <ThemeProvider>
-            <KeyboardShortcutsProvider>
-              <GlobalCompanyChangeHandler />
-              <Navbar />
-              <main id="main-content" className="flex-grow" tabIndex={-1}>
-                {children}
-              </main>
-              <Footer />
-            </KeyboardShortcutsProvider>
+            <TourProvider>
+              <KeyboardShortcutsProvider>
+                <GlobalCompanyChangeHandler />
+                <Navbar />
+                <main id="main-content" className="flex-grow" tabIndex={-1}>
+                  {children}
+                </main>
+                <Footer />
+                <TourOverlay />
+              </KeyboardShortcutsProvider>
+            </TourProvider>
           </ThemeProvider>
         </AuthProvider>
 

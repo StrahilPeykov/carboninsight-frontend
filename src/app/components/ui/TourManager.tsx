@@ -1,4 +1,3 @@
-// src/app/components/ui/TourManager.tsx
 "use client";
 
 import { useState } from "react";
@@ -62,7 +61,7 @@ export default function TourManager({ isOpen, onClose }: TourManagerProps) {
       const userDataStr = localStorage.getItem("access_token");
       if (userDataStr) {
         // Extract user ID from token if possible, or use a simpler approach
-        const userId = "user"; // Fallback - you might want to get actual user ID
+        const userId = "user"; // Fallback - we might want to get actual user ID
         localStorage.removeItem(`completed_tours_${userId}`);
         window.location.reload(); // Refresh to reset state
       }

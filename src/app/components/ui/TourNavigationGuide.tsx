@@ -1,4 +1,3 @@
-// src/app/components/ui/TourNavigationGuide.tsx
 "use client";
 
 import { useState, useEffect } from "react";

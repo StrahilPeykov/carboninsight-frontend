@@ -1,4 +1,3 @@
-// src/app/components/ui/TourOverlay.tsx
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";

@@ -1,4 +1,3 @@
-// src/hooks/useTour.ts
 "use client";
 
 import React, { useState, useEffect, useCallback, createContext, useContext, ReactNode } from "react";
@@ -264,7 +263,7 @@ const TOURS: Tour[] = [
       {
         id: "ai-insights-feature",
         target: "button:has(.w-3.h-3.text-purple-500)",
-        title: "AI-Powered Optimization ✨",
+        title: "AI-Powered Optimization",
         content: "This is where the magic happens! Our AI analyzes your product data and suggests specific actions to reduce carbon footprint.",
         placement: "top",
         waitForElement: true,
@@ -336,7 +335,7 @@ const TOURS: Tour[] = [
       {
         id: "ai-intro",
         target: "body",
-        title: "Your AI Sustainability Advisor 🤖",
+        title: "Your AI Sustainability Advisor",
         content: "Our AI assistant analyzes your product data and provides personalized recommendations to reduce carbon footprint. Let's see how it works!",
         placement: "center",
       },
@@ -373,7 +372,7 @@ const TOURS: Tour[] = [
       {
         id: "shortcuts-intro",
         target: "body",
-        title: "Efficiency Mastery ⌨️",
+        title: "Efficiency Mastery",
         content: "Ready to work at lightning speed? These keyboard shortcuts will make you a CarbonInsight power user!",
         placement: "center",
       },
@@ -419,7 +418,7 @@ const TOURS: Tour[] = [
       {
         id: "collaboration-intro",
         target: "body",
-        title: "Supply Chain Transparency 🤝",
+        title: "Supply Chain Transparency",
         content: "This is where supply chain magic happens! Manage requests to share your emission data with customers and suppliers for complete transparency.",
         placement: "center",
         delay: 1000,

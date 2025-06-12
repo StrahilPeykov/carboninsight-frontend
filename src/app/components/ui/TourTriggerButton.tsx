@@ -1,4 +1,3 @@
-// src/app/components/ui/TourTriggerButton.tsx
 "use client";
 
 import { HelpCircle, Play, Sparkles } from "lucide-react";

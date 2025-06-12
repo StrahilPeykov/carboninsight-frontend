@@ -47,11 +47,6 @@ export default function AccountPage() {
     confirm_password: "",
   });
 
-  // Set page title
-  useEffect(() => {
-    document.title = "Account Settings - CarbonInsight";
-  }, []);
-
   useEffect(() => {
     if (user) {
       setFormData({
@@ -61,26 +56,6 @@ export default function AccountPage() {
       });
     }
   }, [user]);
-
-  // Enhanced error announcement function
-  const announceError = (message: string) => {
-    const errorRegion = document.getElementById("error-announcements");
-    if (errorRegion) {
-      errorRegion.textContent = `Account error: ${message}`;
-    }
-  };
-
-  // Enhanced success announcement function
-  const announceSuccess = (message: string) => {
-    const statusRegion = document.getElementById("status-announcements");
-    if (statusRegion) {
-      statusRegion.textContent = message;
-      // Clear after announcement
-      setTimeout(() => {
-        statusRegion.textContent = "";
-      }, 3000);
-    }
-  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -107,14 +82,10 @@ export default function AccountPage() {
     try {
       // Using userApi.updateProfile instead of direct fetch
       await userApi.updateProfile(formData);
-      const successMessage = "Your profile has been updated successfully!";
-      setSuccess(successMessage);
-      announceSuccess(successMessage);
+      setSuccess("Your profile has been updated successfully!");
     } catch (error) {
       console.error("Error updating profile:", error);
-      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-      setError(errorMessage);
-      announceError(errorMessage);
+      setError(error instanceof Error ? error.message : "An unknown error occurred");
     } finally {
       setIsSaving(false);
     }
@@ -127,9 +98,7 @@ export default function AccountPage() {
     setIsPasswordSubmitting(true);
 
     if (passwordData.new_password !== passwordData.confirm_password) {
-      const errorMessage = "New passwords don't match.";
-      setError(errorMessage);
-      announceError(errorMessage);
+      setError("New passwords don't match.");
       setIsPasswordSubmitting(false);
       return;
     }
@@ -142,9 +111,7 @@ export default function AccountPage() {
         new_password_confirm: passwordData.confirm_password,
       });
 
-      const successMessage = "Your password has been changed successfully!";
-      setSuccess(successMessage);
-      announceSuccess(successMessage);
+      setSuccess("Your password has been changed successfully!");
 
       setPasswordData({
         current_password: "",
@@ -154,9 +121,7 @@ export default function AccountPage() {
       setShowPasswordForm(false);
     } catch (error) {
       console.error("Error changing password:", error);
-      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-      setError(errorMessage);
-      announceError(errorMessage);
+      setError(error instanceof Error ? error.message : "An unknown error occurred");
     } finally {
       setIsPasswordSubmitting(false);
     }
@@ -176,9 +141,7 @@ export default function AccountPage() {
       await userApi.deleteAccount();
 
       // Show success message briefly before logout
-      const successMessage = "Account successfully deleted. Redirecting to login...";
-      setSuccess(successMessage);
-      announceSuccess(successMessage);
+      setSuccess("Account successfully deleted. Redirecting to login...");
 
       // Clear all user-related localStorage data
       if (typeof window !== "undefined") {
@@ -192,9 +155,7 @@ export default function AccountPage() {
       }, 1500);
     } catch (error) {
       console.error("Error deleting account:", error);
-      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
-      setError(errorMessage);
-      announceError(errorMessage);
+      setError(error instanceof Error ? error.message : "An unknown error occurred");
       setIsDeleting(false);
       setShowDeleteConfirm(false);
     }
@@ -220,14 +181,14 @@ export default function AccountPage() {
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md text-red-700 dark:bg-red-900/20 dark:border-red-900 dark:text-red-300" role="alert" aria-live="assertive">
-          <strong>Error:</strong> {error}
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md text-red-700 dark:bg-red-900/20 dark:border-red-900 dark:text-red-300">
+          {error}
         </div>
       )}
 
       {success && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md text-green-700 dark:bg-green-900/20 dark:border-green-900 dark:text-green-300" role="status" aria-live="polite">
-          <strong>Success:</strong> {success}
+        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md text-green-700 dark:bg-green-900/20 dark:border-green-900 dark:text-green-300">
+          {success}
         </div>
       )}
 
@@ -247,16 +208,10 @@ export default function AccountPage() {
                   id="first_name"
                   name="first_name"
                   type="text"
-                  autoComplete="given-name"
                   value={formData.first_name}
                   onChange={handleChange}
-                  disabled={isSaving}
-                  className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50"
-                  aria-describedby="first-name-hint"
+                  className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
                 />
-                <span id="first-name-hint" className="sr-only">
-                  Enter your first name
-                </span>
               </div>
 
               <div>
@@ -270,16 +225,10 @@ export default function AccountPage() {
                   id="last_name"
                   name="last_name"
                   type="text"
-                  autoComplete="family-name"
                   value={formData.last_name}
                   onChange={handleChange}
-                  disabled={isSaving}
-                  className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50"
-                  aria-describedby="last-name-hint"
+                  className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
                 />
-                <span id="last-name-hint" className="sr-only">
-                  Enter your last name
-                </span>
               </div>
             </div>
 
@@ -294,32 +243,16 @@ export default function AccountPage() {
                 id="email"
                 name="email"
                 type="email"
-                autoComplete="email"
                 value={formData.email}
                 onChange={handleChange}
-                disabled={isSaving}
-                className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50"
-                aria-describedby="email-hint"
+                className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
               />
-              <span id="email-hint" className="sr-only">
-                Enter your email address
-              </span>
             </div>
 
             <div className="flex justify-end">
-              <Button 
-                type="submit" 
-                disabled={isSaving}
-                aria-busy={isSaving}
-                aria-describedby={isSaving ? "save-status" : undefined}
-              >
+              <Button type="submit" disabled={isSaving}>
                 {isSaving ? "Saving..." : "Save Changes"}
               </Button>
-              {isSaving && (
-                <div id="save-status" className="sr-only" aria-live="polite">
-                  Saving your changes, please wait
-                </div>
-              )}
             </div>
           </form>
         </Card>
@@ -335,11 +268,7 @@ export default function AccountPage() {
                   Update your password to keep your account secure
                 </p>
               </div>
-              <Button 
-                variant="outline" 
-                onClick={() => setShowPasswordForm(true)}
-                aria-label="Change your password"
-              >
+              <Button variant="outline" onClick={() => setShowPasswordForm(true)}>
                 Change Password
               </Button>
             </div>
@@ -350,20 +279,16 @@ export default function AccountPage() {
                   htmlFor="current_password"
                   className="block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
-                  Current Password{" "}
-                  <span className="text-red-500" aria-label="required">*</span>
+                  Current Password
                 </label>
                 <input
                   id="current_password"
                   name="current_password"
                   type="password"
-                  autoComplete="current-password"
                   value={passwordData.current_password}
                   onChange={handlePasswordChange}
                   required
-                  aria-required="true"
-                  disabled={isPasswordSubmitting}
-                  className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50"
+                  className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
                 />
               </div>
 
@@ -372,24 +297,19 @@ export default function AccountPage() {
                   htmlFor="new_password"
                   className="block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
-                  New Password{" "}
-                  <span className="text-red-500" aria-label="required">*</span>
+                  New Password
                 </label>
                 <input
                   id="new_password"
                   name="new_password"
                   type="password"
-                  autoComplete="new-password"
                   value={passwordData.new_password}
                   onChange={handlePasswordChange}
                   required
-                  aria-required="true"
                   minLength={8}
-                  disabled={isPasswordSubmitting}
-                  className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50"
-                  aria-describedby="new-password-requirements"
+                  className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
                 />
-                <p id="new-password-requirements" className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                   Password must be at least 8 characters
                 </p>
               </div>
@@ -399,30 +319,17 @@ export default function AccountPage() {
                   htmlFor="confirm_password"
                   className="block text-sm font-medium text-gray-700 dark:text-gray-300"
                 >
-                  Confirm New Password{" "}
-                  <span className="text-red-500" aria-label="required">*</span>
+                  Confirm New Password
                 </label>
                 <input
                   id="confirm_password"
                   name="confirm_password"
                   type="password"
-                  autoComplete="new-password"
                   value={passwordData.confirm_password}
                   onChange={handlePasswordChange}
                   required
-                  aria-required="true"
-                  disabled={isPasswordSubmitting}
-                  className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50"
-                  aria-describedby="confirm-password-hint"
+                  className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 dark:bg-gray-700 dark:border-gray-600"
                 />
-                <span id="confirm-password-hint" className="sr-only">
-                  Re-enter your new password
-                </span>
-                {passwordData.new_password !== passwordData.confirm_password && passwordData.confirm_password && (
-                  <p className="mt-1 text-xs text-red-600 dark:text-red-400" role="alert" aria-live="polite">
-                    Passwords do not match
-                  </p>
-                )}
               </div>
 
               <div className="flex justify-end space-x-4">
@@ -437,15 +344,10 @@ export default function AccountPage() {
                       confirm_password: "",
                     });
                   }}
-                  disabled={isPasswordSubmitting}
                 >
                   Cancel
                 </Button>
-                <Button 
-                  type="submit" 
-                  disabled={isPasswordSubmitting}
-                  aria-busy={isPasswordSubmitting}
-                >
+                <Button type="submit" disabled={isPasswordSubmitting}>
                   {isPasswordSubmitting ? "Changing..." : "Update Password"}
                 </Button>
               </div>
@@ -469,7 +371,6 @@ export default function AccountPage() {
                 onClick={handleDeleteAccount}
                 disabled={isDeleting}
                 className="bg-red-600 text-white hover:bg-red-700 focus:ring-red-500"
-                aria-label="Delete your account permanently"
               >
                 {isDeleting ? "Processing..." : "Delete Account"}
               </Button>

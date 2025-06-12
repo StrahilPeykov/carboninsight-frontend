@@ -250,6 +250,7 @@ export default function Navbar() {
         className="sticky top-0 z-50 h-16 bg-white shadow-sm dark:bg-gray-900"
         role="navigation"
         aria-label="Main navigation"
+        id="main-navigation"
       >
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
           <div className="flex justify-between h-16 items-center">
@@ -262,14 +263,14 @@ export default function Navbar() {
               >
                 <Image
                   src="/brainport-logo-white.webp"
-                  alt=""
+                  alt="CarbonInsight"
                   width={32}
                   height={32}
                   className="hidden dark:block flex-shrink-0"
                 />
                 <Image
                   src="/brainport-logo.webp"
-                  alt=""
+                  alt="CarbonInsight"
                   width={32}
                   height={32}
                   className="block dark:hidden flex-shrink-0"
@@ -297,6 +298,7 @@ export default function Navbar() {
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -310,6 +312,7 @@ export default function Navbar() {
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -330,6 +333,7 @@ export default function Navbar() {
                     <nav
                       className="hidden md:flex md:items-center md:space-x-1 lg:space-x-2"
                       role="navigation"
+                      aria-label="Primary navigation"
                     >
                       <Link
                         href="/dashboard"
@@ -388,7 +392,10 @@ export default function Navbar() {
                       aria-label={`User account menu for ${getUserDisplayName()}`}
                     >
                       <span className="sr-only">Open user menu</span>
-                      <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700">
+                      <div 
+                        className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700"
+                        aria-hidden="true"
+                      >
                         <span aria-hidden="true">
                           {user?.first_name?.charAt(0)?.toUpperCase() ||
                             user?.username?.charAt(0)?.toUpperCase() ||
@@ -464,6 +471,7 @@ export default function Navbar() {
 
         {/* Mobile menu */}
         <div
+          id="mobile-menu"
           className={`${isMenuOpen ? "block" : "hidden"} md:hidden bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700`}
         >
           <div className="pt-2 pb-3 space-y-1">
@@ -497,14 +505,18 @@ export default function Navbar() {
                 {/* Mobile Company Selection */}
                 <div className="px-3 py-2 border-t border-gray-200 dark:border-gray-700">
                   <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Current Company:</p>
+                  <label htmlFor="mobile-company-select" className="sr-only">
+                    Select company
+                  </label>
                   <select
+                    id="mobile-company-select"
                     value={companyId || ""}
                     onChange={e => {
                       if (e.target.value) {
                         handleCompanySelect(e.target.value);
                       }
                     }}
-                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
+                    className="w-full p-2 border border-gray-300 rounded-md text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                   >
                     <option value="">Select Company</option>
                     {allCompanies.map(company => (
@@ -521,13 +533,13 @@ export default function Navbar() {
                         handleCreateCompany();
                         setIsMenuOpen(false);
                       }}
-                      className="flex items-center justify-between w-full text-sm text-green-600 hover:text-green-900 py-1"
+                      className="flex items-center justify-between w-full text-sm text-green-600 hover:text-green-900 py-1 focus:outline-none focus:ring-2 focus:ring-green-500"
                     >
                       <div className="flex items-center">
-                        <Plus size={14} className="mr-1" />
+                        <Plus size={14} className="mr-1" aria-hidden="true" />
                         Create New Company
                       </div>
-                      <span className="text-xs text-gray-400">N</span>
+                      <span className="text-xs text-gray-400" aria-label="Keyboard shortcut">N</span>
                     </button>
 
                     {companyId && (
@@ -537,9 +549,9 @@ export default function Navbar() {
                             handleCompanySettings();
                             setIsMenuOpen(false);
                           }}
-                          className="flex items-center text-sm text-gray-600 hover:text-gray-900 py-1 w-full"
+                          className="flex items-center text-sm text-gray-600 hover:text-gray-900 py-1 w-full focus:outline-none focus:ring-2 focus:ring-gray-500"
                         >
-                          <SettingsIcon size={14} className="mr-2" />
+                          <SettingsIcon size={14} className="mr-2" aria-hidden="true" />
                           Company Settings
                         </button>
                         <button
@@ -547,9 +559,9 @@ export default function Navbar() {
                             handleManageUsers();
                             setIsMenuOpen(false);
                           }}
-                          className="flex items-center text-sm text-gray-600 hover:text-gray-900 py-1 w-full"
+                          className="flex items-center text-sm text-gray-600 hover:text-gray-900 py-1 w-full focus:outline-none focus:ring-2 focus:ring-gray-500"
                         >
-                          <Users size={14} className="mr-2" />
+                          <Users size={14} className="mr-2" aria-hidden="true" />
                           Manage Users
                         </button>
                         <button
@@ -557,9 +569,9 @@ export default function Navbar() {
                             handleDataSharing();
                             setIsMenuOpen(false);
                           }}
-                          className="flex items-center text-sm text-gray-600 hover:text-gray-900 py-1"
+                          className="flex items-center text-sm text-gray-600 hover:text-gray-900 py-1 focus:outline-none focus:ring-2 focus:ring-gray-500"
                         >
-                          <Share2 size={14} className="mr-2" />
+                          <Share2 size={14} className="mr-2" aria-hidden="true" />
                           Data Sharing
                         </button>
                       </>

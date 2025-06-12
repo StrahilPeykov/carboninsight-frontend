@@ -38,10 +38,35 @@ export default function DashboardPage() {
   // API URL from environment variables with fallback
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
+  // Set page title
+  useEffect(() => {
+    document.title = "Dashboard - CarbonInsight";
+  }, []);
+
   // Ensure component is mounted before accessing localStorage
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // Enhanced error announcement function
+  const announceError = (message: string) => {
+    const errorRegion = document.getElementById("error-announcements");
+    if (errorRegion) {
+      errorRegion.textContent = `Dashboard error: ${message}`;
+    }
+  };
+
+  // Enhanced success announcement function
+  const announceSuccess = (message: string) => {
+    const statusRegion = document.getElementById("status-announcements");
+    if (statusRegion) {
+      statusRegion.textContent = message;
+      // Clear after announcement
+      setTimeout(() => {
+        statusRegion.textContent = "";
+      }, 3000);
+    }
+  };
 
   // Check if company is selected
   useEffect(() => {
@@ -66,8 +91,15 @@ export default function DashboardPage() {
 
         if (!token) {
           setError("No authentication token found");
+          announceError("No authentication token found");
           setDataLoading(false);
           return;
+        }
+
+        // Announce loading to screen readers
+        const statusRegion = document.getElementById("status-announcements");
+        if (statusRegion) {
+          statusRegion.textContent = "Loading dashboard data...";
         }
 
         // Fetch companies
@@ -146,9 +178,19 @@ export default function DashboardPage() {
         }
 
         setError(null);
+        
+        // Announce completion
+        if (statusRegion) {
+          statusRegion.textContent = "Dashboard loaded successfully";
+          setTimeout(() => {
+            statusRegion.textContent = "";
+          }, 2000);
+        }
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
-        setError(err instanceof Error ? err.message : "Failed to load dashboard data");
+        const errorMessage = err instanceof Error ? err.message : "Failed to load dashboard data";
+        setError(errorMessage);
+        announceError(errorMessage);
       } finally {
         setDataLoading(false);
       }
@@ -170,8 +212,16 @@ export default function DashboardPage() {
   if (error) {
     return (
       <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-red-50 border border-red-200 p-4 rounded-md">
+        <div className="bg-red-50 border border-red-200 p-4 rounded-md" role="alert" aria-live="assertive">
+          <h2 className="text-lg font-semibold text-red-800 mb-2">Dashboard Error</h2>
           <p className="text-red-700">{error}</p>
+          <Button 
+            onClick={() => window.location.reload()} 
+            className="mt-4"
+            aria-label="Reload dashboard"
+          >
+            Try Again
+          </Button>
         </div>
       </div>
     );
@@ -195,47 +245,65 @@ export default function DashboardPage() {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <Link href="/list-companies" className="block transition-transform hover:scale-105">
+        <Link 
+          href="/list-companies" 
+          className="block transition-transform hover:scale-105"
+          aria-label={`View your ${companyCount} companies`}
+        >
           <Card className="bg-gradient-to-r from-red-50 to-white dark:from-red-900/20 dark:to-gray-800 cursor-pointer hover:shadow-lg">
             <div className="flex items-center">
-              <div className="p-3 rounded-full bg-red-100 dark:bg-red-800">
+              <div className="p-3 rounded-full bg-red-100 dark:bg-red-800" aria-hidden="true">
                 <Building2 className="h-6 w-6 text-red dark:text-red-200" />
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                <h2 className="text-lg font-medium text-gray-900 dark:text-white">
                   Your Companies
-                </h3>
-                <p className="text-2xl font-semibold">{companyCount}</p>
+                </h2>
+                <p className="text-2xl font-semibold" aria-label={`${companyCount} companies`}>
+                  {companyCount}
+                </p>
               </div>
             </div>
           </Card>
         </Link>
 
-        <Link href="/product-list" className="block transition-transform hover:scale-105">
+        <Link 
+          href="/product-list" 
+          className="block transition-transform hover:scale-105"
+          aria-label={`View your ${productCount} products`}
+        >
           <Card className="bg-gradient-to-r from-blue-50 to-white dark:from-blue-900/20 dark:to-gray-800 cursor-pointer hover:shadow-lg">
             <div className="flex items-center">
-              <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-800">
+              <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-800" aria-hidden="true">
                 <BoxesIcon className="h-6 w-6 text-blue-600 dark:text-blue-200" />
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">Products</h3>
-                <p className="text-2xl font-semibold">{productCount}</p>
+                <h2 className="text-lg font-medium text-gray-900 dark:text-white">Products</h2>
+                <p className="text-2xl font-semibold" aria-label={`${productCount} products`}>
+                  {productCount}
+                </p>
               </div>
             </div>
           </Card>
         </Link>
 
-        <Link href="/product-data-sharing" className="block transition-transform hover:scale-105">
+        <Link 
+          href="/product-data-sharing" 
+          className="block transition-transform hover:scale-105"
+          aria-label={`View ${pendingRequestsCount} pending data sharing requests`}
+        >
           <Card className="bg-gradient-to-r from-green-50 to-white dark:from-green-900/20 dark:to-gray-800 cursor-pointer hover:shadow-lg">
             <div className="flex items-center">
-              <div className="p-3 rounded-full bg-green-100 dark:bg-green-800">
+              <div className="p-3 rounded-full bg-green-100 dark:bg-green-800" aria-hidden="true">
                 <Share2 className="h-6 w-6 text-green-600 dark:text-green-200" />
               </div>
               <div className="ml-4">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                <h2 className="text-lg font-medium text-gray-900 dark:text-white">
                   Pending Requests
-                </h3>
-                <p className="text-2xl font-semibold">{pendingRequestsCount}</p>
+                </h2>
+                <p className="text-2xl font-semibold" aria-label={`${pendingRequestsCount} pending requests`}>
+                  {pendingRequestsCount}
+                </p>
                 {pendingRequestsCount > 0 && (
                   <p className="text-xs text-green-600 dark:text-green-400">
                     {pendingRequestsCount} awaiting approval
@@ -258,7 +326,7 @@ export default function DashboardPage() {
             <Link href="/list-companies" className="block">
               <Button className="w-full flex justify-between items-center">
                 <span>View Companies</span>
-                <Building2 className="ml-2 h-4 w-4" />
+                <Building2 className="ml-2 h-4 w-4" aria-hidden="true" />
               </Button>
             </Link>
             <Link href="/create-company" className="block">
@@ -279,7 +347,7 @@ export default function DashboardPage() {
             <Link href="/product-list" className="block">
               <Button className="w-full flex justify-between items-center">
                 <span>View Products</span>
-                <BoxesIcon className="ml-2 h-4 w-4" />
+                <BoxesIcon className="ml-2 h-4 w-4" aria-hidden="true" />
               </Button>
             </Link>
             <Link href="/product-list/product" className="block">
@@ -292,7 +360,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Audit log of company */}
-      <AuditLog caption="A table displaying the auditlog of a company." logItems={logItems} />
+      <AuditLog caption="A table displaying the audit log of the current company." logItems={logItems} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Card from "../components/ui/Card";
@@ -21,12 +21,38 @@ export default function RegisterPage() {
     confirm_password: "",
   });
 
+  // Set page title
+  useEffect(() => {
+    document.title = "Register - CarbonInsight";
+  }, []);
+
+  // Enhanced error announcement function
+  const announceError = (message: string) => {
+    const errorRegion = document.getElementById("error-announcements");
+    if (errorRegion) {
+      errorRegion.textContent = `Registration error: ${message}`;
+    }
+  };
+
+  // Enhanced success announcement function
+  const announceSuccess = (message: string) => {
+    const statusRegion = document.getElementById("status-announcements");
+    if (statusRegion) {
+      statusRegion.textContent = message;
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value,
     }));
+
+    // Clear error when user starts typing
+    if (error) {
+      setError(null);
+    }
   };
 
   const validatePassword = () => {
@@ -47,6 +73,7 @@ export default function RegisterPage() {
     const passwordError = validatePassword();
     if (passwordError) {
       setError(passwordError);
+      announceError(passwordError);
       setIsLoading(false);
       // Focus the confirm password field for user convenience
       document.getElementById("confirm_password")?.focus();
@@ -57,20 +84,16 @@ export default function RegisterPage() {
       // Use the register method from AuthContext which now uses our API client
       await register(formData);
 
-      // Announce success to screen readers before redirect
-      const announcement = document.createElement("div");
-      announcement.setAttribute("role", "status");
-      announcement.setAttribute("aria-live", "polite");
-      announcement.className = "sr-only";
-      announcement.textContent = "Registration successful. Redirecting to home page...";
-      document.body.appendChild(announcement);
+      announceSuccess("Registration successful. Redirecting to home page...");
 
       // Small delay to ensure announcement is read
       setTimeout(() => {
         router.push("/");
       }, 100);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "An unknown error occurred");
+      const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
+      setError(errorMessage);
+      announceError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -95,7 +118,8 @@ export default function RegisterPage() {
               role="alert"
               aria-live="assertive"
             >
-              {error}
+              <strong>Registration Error:</strong>
+              <span className="ml-1">{error}</span>
             </div>
           )}
 
@@ -256,6 +280,7 @@ export default function RegisterPage() {
                 id="password-mismatch"
                 className="mt-1 text-xs text-red-600 dark:text-red-400"
                 role="alert"
+                aria-live="polite"
               >
                 Passwords do not match
               </p>
@@ -274,7 +299,13 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <Button type="submit" className="w-full" disabled={isLoading} aria-busy={isLoading}>
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={isLoading} 
+              aria-busy={isLoading}
+              aria-describedby={isLoading ? "register-status" : undefined}
+            >
               {isLoading ? (
                 <>
                   <span className="sr-only">Creating account, please wait</span>
@@ -284,6 +315,12 @@ export default function RegisterPage() {
                 "Register"
               )}
             </Button>
+            
+            {isLoading && (
+              <div id="register-status" className="sr-only" aria-live="polite">
+                Creating your account, please wait
+              </div>
+            )}
           </div>
         </form>
       </Card>

@@ -38,6 +38,8 @@ export default function CleanCompanySelector({
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const comboboxId = useRef(`company-selector-${Math.random().toString(36).substr(2, 9)}`);
+  const listboxId = useRef(`company-listbox-${Math.random().toString(36).substr(2, 9)}`);
 
   // Enhanced company finding with better type safety
   const currentCompany = companies.find(c => {
@@ -59,6 +61,13 @@ export default function CleanCompanySelector({
     onCompanySelect(companyId);
     onClose();
     setSearchQuery("");
+
+    // Announce selection to screen readers
+    const statusAnnouncement = document.getElementById("status-announcements");
+    if (statusAnnouncement) {
+      const selectedCompany = companies.find(c => c.id === companyId);
+      statusAnnouncement.textContent = `Selected company: ${selectedCompany?.name}`;
+    }
   };
 
   // Smart truncation for company names
@@ -90,11 +99,34 @@ export default function CleanCompanySelector({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, onClose]);
 
+  // Handle keyboard navigation
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    switch (event.key) {
+      case "Escape":
+        onClose();
+        setSearchQuery("");
+        break;
+      case "ArrowDown":
+        if (!isOpen) {
+          onToggle();
+        }
+        event.preventDefault();
+        break;
+      case "ArrowUp":
+        if (isOpen) {
+          onClose();
+        }
+        event.preventDefault();
+        break;
+    }
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
       {/* Company Selector Button */}
       <button
         onClick={() => onToggle()}
+        onKeyDown={handleKeyDown}
         className={`flex items-center px-3 py-2 rounded-md text-sm font-medium h-[44px] transition-all duration-200 min-w-0 max-w-full border
           ${
             currentCompany
@@ -105,9 +137,12 @@ export default function CleanCompanySelector({
           width: "clamp(120px, 20vw, 200px)",
           maxWidth: "100%",
         }}
+        role="combobox"
         aria-expanded={isOpen}
-        aria-haspopup="true"
+        aria-haspopup="listbox"
+        aria-controls={isOpen ? listboxId.current : undefined}
         aria-label={`${currentCompany ? `Current company: ${currentCompany.name}. Click to change or manage company.` : "No company selected. Click to select a company."}`}
+        id={comboboxId.current}
       >
         <div className="flex items-center min-w-0 flex-1 overflow-hidden">
           {currentCompany?.avatar ? (
@@ -115,6 +150,7 @@ export default function CleanCompanySelector({
               src={currentCompany.avatar}
               alt=""
               className="w-4 h-4 rounded mr-2 flex-shrink-0"
+              aria-hidden="true"
             />
           ) : (
             <Building2
@@ -154,13 +190,17 @@ export default function CleanCompanySelector({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 sm:left-0 mt-2 w-80 max-w-[calc(100vw-1rem)] bg-white dark:bg-gray-800 rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none z-50 border border-gray-200 dark:border-gray-700">
+        <div 
+          className="absolute right-0 sm:left-0 mt-2 w-80 max-w-[calc(100vw-1rem)] bg-white dark:bg-gray-800 rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none z-50 border border-gray-200 dark:border-gray-700"
+          role="dialog"
+          aria-labelledby={comboboxId.current}
+        >
           {/* Clear Header Section */}
           <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 rounded-t-lg">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
               Select Company
             </h3>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-4 gap-2" role="toolbar" aria-label="Company management actions">
               <button
                 onClick={e => {
                   e.preventDefault();
@@ -174,8 +214,9 @@ export default function CleanCompanySelector({
                 disabled={!currentCompanyId}
                 className="flex flex-col items-center p-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-white dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-transparent hover:border-gray-200 dark:hover:border-gray-600"
                 title="Company Settings"
+                aria-label="Company Settings"
               >
-                <Settings size={14} className="mb-1" />
+                <Settings size={14} className="mb-1" aria-hidden="true" />
                 <span className="hidden sm:inline">Settings</span>
                 <span className="sm:hidden text-[10px]">Set</span>
               </button>
@@ -192,8 +233,9 @@ export default function CleanCompanySelector({
                 disabled={!currentCompanyId}
                 className="flex flex-col items-center p-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-white dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-transparent hover:border-gray-200 dark:hover:border-gray-600"
                 title="Manage Users"
+                aria-label="Manage Users"
               >
-                <Users size={14} className="mb-1" />
+                <Users size={14} className="mb-1" aria-hidden="true" />
                 <span className="hidden sm:inline">Users</span>
                 <span className="sm:hidden text-[10px]">Use</span>
               </button>
@@ -210,8 +252,9 @@ export default function CleanCompanySelector({
                 disabled={!currentCompanyId}
                 className="flex flex-col items-center p-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-white dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-transparent hover:border-gray-200 dark:hover:border-gray-600"
                 title="Data Sharing Requests"
+                aria-label="Data Sharing Requests"
               >
-                <Share2 size={14} className="mb-1" />
+                <Share2 size={14} className="mb-1" aria-hidden="true" />
                 <span className="hidden sm:inline">Sharing</span>
                 <span className="sm:hidden text-[10px]">Shr</span>
               </button>
@@ -222,8 +265,9 @@ export default function CleanCompanySelector({
                 }}
                 className="flex flex-col items-center p-2 text-xs text-green-700 hover:text-green-800 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/30 rounded-md transition-colors border border-transparent hover:border-green-200 dark:hover:border-green-800"
                 title="Create New Company"
+                aria-label="Create New Company"
               >
-                <Plus size={14} className="mb-1" />
+                <Plus size={14} className="mb-1" aria-hidden="true" />
                 <span className="hidden sm:inline">Create</span>
                 <span className="sm:hidden text-[10px]">New</span>
               </button>
@@ -237,6 +281,7 @@ export default function CleanCompanySelector({
                 <Search
                   size={14}
                   className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                  aria-hidden="true"
                 />
                 <input
                   ref={searchInputRef}
@@ -245,6 +290,9 @@ export default function CleanCompanySelector({
                   value={searchQuery}
                   onChange={e => setSearchQuery(e.target.value)}
                   className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 dark:bg-gray-700 dark:text-white"
+                  role="searchbox"
+                  aria-label="Search companies"
+                  aria-controls={listboxId.current}
                 />
               </div>
             </div>
@@ -278,7 +326,12 @@ export default function CleanCompanySelector({
             `}</style>
             <div className="company-scroll py-1">
               {filteredCompanies.length > 0 ? (
-                <div className="px-1 space-y-1">
+                <div 
+                  className="px-1 space-y-1"
+                  role="listbox"
+                  id={listboxId.current}
+                  aria-label="Available companies"
+                >
                   {filteredCompanies.map(company => (
                     <button
                       key={company.id}
@@ -288,11 +341,15 @@ export default function CleanCompanySelector({
                           ? "bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800"
                           : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-300 dark:hover:bg-gray-600 dark:hover:text-white"
                       }`}
+                      role="option"
+                      aria-selected={company.id === currentCompanyId}
+                      aria-label={`Select ${company.name}`}
                     >
                       <div className="flex items-center flex-1 min-w-0">
                         <Building2
                           size={16}
                           className="mr-3 flex-shrink-0 text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200"
+                          aria-hidden="true"
                         />
                         <span className="truncate font-medium min-w-0 flex-1" title={company.name}>
                           {company.name}
@@ -302,22 +359,23 @@ export default function CleanCompanySelector({
                         <Check
                           size={16}
                           className="text-red-600 dark:text-red-400 flex-shrink-0 ml-2"
+                          aria-hidden="true"
                         />
                       )}
                     </button>
                   ))}
                 </div>
               ) : (
-                <div className="px-4 py-6 text-sm text-gray-500 dark:text-gray-400 text-center">
+                <div className="px-4 py-6 text-sm text-gray-500 dark:text-gray-400 text-center" role="status">
                   {searchQuery ? (
                     <>
-                      <Building2 size={24} className="mx-auto mb-2 opacity-50" />
+                      <Building2 size={24} className="mx-auto mb-2 opacity-50" aria-hidden="true" />
                       <p>No companies found</p>
                       <p className="text-xs">Try adjusting your search</p>
                     </>
                   ) : (
                     <>
-                      <Building2 size={24} className="mx-auto mb-2 opacity-50" />
+                      <Building2 size={24} className="mx-auto mb-2 opacity-50" aria-hidden="true" />
                       <p>No companies available</p>
                     </>
                   )}
@@ -336,8 +394,9 @@ export default function CleanCompanySelector({
                     onClose();
                   }}
                   className="w-full flex items-center justify-center px-3 py-2 text-sm font-medium text-white bg-red hover:bg-red-700 rounded-md transition-colors"
+                  aria-label="Create Your First Company"
                 >
-                  <Plus size={16} className="mr-2" />
+                  <Plus size={16} className="mr-2" aria-hidden="true" />
                   Create Your First Company
                 </button>
               </div>

@@ -38,13 +38,17 @@ export function OurTable<T>({ title, description, caption, items, columns }: Our
           {/* Desktop Table */}
           <AccessibleTable caption={caption} className="hidden md:block w-full">
             <thead className="border-b font-bold text-l">
-              <tr>
+              <tr role="row">
                 {columns.map(({ key, label }, idx) => {
                   const alignmentClass = key === "actions" ? "text-right" : "text-left";
                   return (
-                    <td key={idx} className={`py-3 px-6 ${alignmentClass} whitespace-nowrap`}>
+                    <th 
+                      key={idx} 
+                      scope="col"
+                      className={`py-3 px-6 ${alignmentClass} whitespace-nowrap`}
+                    >
                       {label}
-                    </td>
+                    </th>
                   );
                 })}
               </tr>
@@ -59,6 +63,7 @@ export function OurTable<T>({ title, description, caption, items, columns }: Our
                     return (
                       <td
                         key={colIndex}
+                        role="cell"
                         className={`py-3 px-6 ${alignmentClass} whitespace-nowrap min-w-0 w-[1%]`}
                       >
                         {render ? render(value, item) : String(value ?? "")}
@@ -105,15 +110,17 @@ export function OurTable<T>({ title, description, caption, items, columns }: Our
               <Button
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
+                aria-label="Go to previous page"
               >
                 Previous
               </Button>
-              <span className="text-sm">
+              <span className="text-sm" aria-current="page">
                 Page {currentPage} of {totalPages}
               </span>
               <Button
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
+                aria-label="Go to next page"
               >
                 Next
               </Button>

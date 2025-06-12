@@ -22,25 +22,27 @@ export default function LoginPage() {
     password: "",
   });
 
+  // Set page title
+  useEffect(() => {
+    document.title = "Login - CarbonInsight";
+  }, []);
+
+  // Enhanced error announcement function
+  const announceError = (message: string, isBlocked: boolean = false) => {
+    const errorRegion = document.getElementById("error-announcements");
+    if (errorRegion) {
+      errorRegion.textContent = isBlocked 
+        ? `Account temporarily blocked: ${message}` 
+        : `Login error: ${message}`;
+    }
+  };
+
   // Announce errors to screen readers
   useEffect(() => {
     if (error && errorAnnouncementRef.current) {
-      // Create a live region announcement
-      const announcement = document.createElement("div");
-      announcement.setAttribute("role", "alert");
-      announcement.setAttribute("aria-live", "assertive");
-      announcement.className = "sr-only";
-      announcement.textContent = error;
-      document.body.appendChild(announcement);
-
-      // Remove after announcement
-      setTimeout(() => {
-        if (announcement.parentNode) {
-          document.body.removeChild(announcement);
-        }
-      }, 1000);
+      announceError(error, isAccountBlocked);
     }
-  }, [error]);
+  }, [error, isAccountBlocked]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -66,12 +68,10 @@ export default function LoginPage() {
       await login(formData);
 
       // Announce successful login
-      const announcement = document.createElement("div");
-      announcement.setAttribute("role", "status");
-      announcement.setAttribute("aria-live", "polite");
-      announcement.className = "sr-only";
-      announcement.textContent = "Login successful. Redirecting to dashboard...";
-      document.body.appendChild(announcement);
+      const statusAnnouncement = document.getElementById("status-announcements");
+      if (statusAnnouncement) {
+        statusAnnouncement.textContent = "Login successful. Redirecting to dashboard...";
+      }
 
       router.push("/dashboard");
     } catch (err) {
@@ -85,8 +85,8 @@ export default function LoginPage() {
         setError(err.message);
 
         // Focus on error message for screen readers
-        if (isBlocked) {
-          formRef.current?.querySelector<HTMLElement>('[role="alert"]')?.focus();
+        if (isBlocked && errorAnnouncementRef.current) {
+          errorAnnouncementRef.current.focus();
         }
       } else {
         setError("Login failed. Please try again.");
@@ -121,7 +121,10 @@ export default function LoginPage() {
               <span className="text-red-600 mr-2" aria-hidden="true">
                 ✗
               </span>
-              <span>{error}</span>
+              <div>
+                <strong>Login Error:</strong>
+                <span className="ml-1">{error}</span>
+              </div>
             </div>
           </div>
         )}
@@ -133,6 +136,7 @@ export default function LoginPage() {
             aria-live="assertive"
             className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md dark:bg-red-900/20 dark:border-red-900"
             tabIndex={-1}
+            ref={errorAnnouncementRef}
           >
             <h3 className="text-lg font-medium text-red-800 dark:text-red-300 mb-2 flex items-center">
               <span className="text-red-600 mr-2" aria-hidden="true">
@@ -155,7 +159,7 @@ export default function LoginPage() {
                   <strong>Support:</strong>{" "}
                   <a
                     href="mailto:support@carboninsight.win.tue.nl?subject=Account Unlock Request"
-                    className="hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                    className="hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 rounded"
                   >
                     support@carboninsight.win.tue.nl
                   </a>
@@ -253,9 +257,21 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading} loading={isLoading}>
+          <Button 
+            type="submit" 
+            className="w-full" 
+            disabled={isLoading} 
+            loading={isLoading}
+            aria-describedby={isLoading ? "login-status" : undefined}
+          >
             {isLoading ? "Signing in..." : "Login"}
           </Button>
+          
+          {isLoading && (
+            <div id="login-status" className="sr-only" aria-live="polite">
+              Signing you in, please wait
+            </div>
+          )}
         </form>
 
         {/* Additional Support Information */}

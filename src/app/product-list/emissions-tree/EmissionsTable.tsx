@@ -124,6 +124,8 @@ export const EmissionTreeItem: FC<EmissionTreeItemProps> = ({
   const key = getNodeKey(emission.label, path);
   const isOpen = !!openMap[key];
   const emissionValue = emission.total;
+  const hasChildren = (emission.children?.length + emission.mentions?.length) > 0;
+  const childrenId = `children-${key.replace(/[^a-zA-Z0-9]/g, '-')}`;
 
   const handleClick = () => {
     if (isOpen) {
@@ -136,29 +138,44 @@ export const EmissionTreeItem: FC<EmissionTreeItemProps> = ({
 
   return (
     <>
-      <tr data-open={isOpen} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+      <tr 
+        role="row"
+        aria-expanded={hasChildren ? isOpen : undefined}
+        aria-level={depth + 1}
+        data-open={isOpen} 
+        className="hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
         <td
+          role="gridcell"
           className="px-2 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white"
           style={{ paddingLeft: `${depth * 25}px` }}
         >
           <div className="px-2 flex items-center">
-            {emission.children?.length + emission.mentions?.length > 0 && (
-              <button onClick={handleClick} className="mr-2">
+            {hasChildren && (
+              <button 
+                onClick={handleClick} 
+                className="mr-2"
+                aria-label={`${isOpen ? 'Collapse' : 'Expand'} ${emission.label} emissions breakdown`}
+                aria-controls={hasChildren ? childrenId : undefined}
+                aria-expanded={isOpen}
+              >
                 {isOpen ? <SquareMinus size={16} /> : <SquarePlus size={16} />}
               </button>
             )}
-            <span style={{ color: getSourceColor(emission.source) }}>
+            <span style={{ color: getSourceColor(emission.source) }} aria-hidden="true">
               {getSourceIcon(emission.source)}
             </span>
             {"\u00A0"}
             {emission.label}
           </div>
         </td>
-        <td className="px-2 py-2 text-sm text-gray-900 dark:text-white">{emission.methodology}</td>
-        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden-when-closed">
+        <td role="gridcell" className="px-2 py-2 text-sm text-gray-900 dark:text-white">
+          {emission.methodology}
+        </td>
+        <td role="gridcell" className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden-when-closed">
           {quantity ? `${quantity} ${unit}` : ""}
         </td>
-        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+        <td role="gridcell" className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
           {emissionValue !== undefined && Number.isFinite(emissionValue)
             ? emissionValue.toFixed(3)
             : ""}
@@ -180,43 +197,50 @@ export const EmissionTreeItem: FC<EmissionTreeItemProps> = ({
                 </div>
               }
             >
-              <Info className="w-4 h-4 text-gray-400" />
+              <Info className="w-4 h-4 text-gray-400" aria-label="Show emissions breakdown by lifecycle stage" />
             </Tooltip>
           )}
         </td>
       </tr>
-      {isOpen &&
-        emission.children?.map((child, idx) => (
-          <EmissionTreeItem
-            key={getNodeKey(child.emission_trace.label, `${key}/${idx}`)}
-            emission={child.emission_trace}
-            depth={depth + 1}
-            quantity={child.quantity}
-            unit={child.emission_trace.reference_impact_unit}
-            isChild={true}
-            path={`${key}/${idx}`}
-            openMap={openMap}
-            anyRowOpen={anyRowOpen}
-            toggleRow={toggleRow}
-            closeDescendants={closeDescendants}
-          />
-        ))}
-      {isOpen &&
-        emission.mentions?.map((mention, idx) => (
-          <tr key={`mention-${key}-${idx}`} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-            <td
-              colSpan={5}
-              className="py-2 text-sm font-medium text-gray-900 dark:text-white"
-              style={{ paddingLeft: `${(depth + 1) * 25}px` }}
-            >
-              <div className="flex items-center">
-                <span className="px-2 font-bold">{mention.mention_class}:</span>
-                {"\u00A0"}
-                {mention.message}
+      {isOpen && (
+        <tr role="group" id={childrenId} aria-labelledby={`label-${key.replace(/[^a-zA-Z0-9]/g, '-')}`}>
+          <td colSpan={4} className="p-0">
+            {emission.children?.map((child, idx) => (
+              <table key={getNodeKey(child.emission_trace.label, `${key}/${idx}`)} className="w-full">
+                <tbody>
+                  <EmissionTreeItem
+                    emission={child.emission_trace}
+                    depth={depth + 1}
+                    quantity={child.quantity}
+                    unit={child.emission_trace.reference_impact_unit}
+                    isChild={true}
+                    path={`${key}/${idx}`}
+                    openMap={openMap}
+                    anyRowOpen={anyRowOpen}
+                    toggleRow={toggleRow}
+                    closeDescendants={closeDescendants}
+                  />
+                </tbody>
+              </table>
+            ))}
+            {emission.mentions?.map((mention, idx) => (
+              <div 
+                key={`mention-${key}-${idx}`} 
+                className="py-2 text-sm font-medium text-gray-900 dark:text-white"
+                style={{ paddingLeft: `${(depth + 1) * 25}px` }}
+                role="note"
+                aria-label={`${mention.mention_class} message`}
+              >
+                <div className="flex items-center">
+                  <span className="px-2 font-bold">{mention.mention_class}:</span>
+                  {"\u00A0"}
+                  {mention.message}
+                </div>
               </div>
-            </td>
-          </tr>
-        ))}
+            ))}
+          </td>
+        </tr>
+      )}
     </>
   );
 };
@@ -246,22 +270,28 @@ export const EmissionsTable: FC<EmissionsTableProps> = ({ emissions }) => {
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full divide-y overflow-visible">
+      <table 
+        role="treegrid" 
+        aria-label="Product emissions breakdown with expandable categories"
+        className="min-w-full divide-y overflow-visible"
+      >
         <thead className="border-b text-black dark:text-white">
-          <tr>
+          <tr role="row">
             <th scope="col" className="p-2 text-left text-sm font-medium">
               Label
             </th>
             <th scope="col" className="p-2 text-left text-sm font-medium">
               Methodology
             </th>
-            <th className="p-2 text-left text-sm font-medium">Quantity</th>
+            <th scope="col" className="p-2 text-left text-sm font-medium">
+              Quantity
+            </th>
             <th scope="col" className="p-2 text-left text-sm font-medium">
               Emissions (kg CO2e)
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y dark:divide-white">
+        <tbody className="divide-y dark:divide-white" role="rowgroup">
           {emissions.children.map((child, index) => (
             <EmissionTreeItem
               key={getNodeKey(child.emission_trace.label, `${index}`)}

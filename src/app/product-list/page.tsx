@@ -13,11 +13,6 @@ import ReactMarkdown from "react-markdown";
 import ExportModal from "../components/ui/ExportModal";
 import { TableRow } from "../components/ui/tableRow";
 
-// Set page title
-if (typeof document !== "undefined") {
-  document.title = "Products - CarbonInsight";
-}
-
 // Types
 type Product = {
   id: string;
@@ -69,6 +64,11 @@ export default function ProductListPage() {
   const [confirmInput, setConfirmInput] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Set page title
+  useEffect(() => {
+    document.title = "Products - CarbonInsight";
+  }, []);
+
   // Ensure component is mounted
   useEffect(() => {
     setMounted(true);
@@ -95,6 +95,26 @@ export default function ProductListPage() {
     setInitializing(false);
   }, [router, mounted]);
 
+  // Enhanced error announcement function
+  const announceError = (message: string) => {
+    const errorRegion = document.getElementById("error-announcements");
+    if (errorRegion) {
+      errorRegion.textContent = `Error loading products: ${message}`;
+    }
+  };
+
+  // Enhanced success announcement function
+  const announceSuccess = (message: string) => {
+    const statusRegion = document.getElementById("status-announcements");
+    if (statusRegion) {
+      statusRegion.textContent = message;
+      // Clear after announcement
+      setTimeout(() => {
+        statusRegion.textContent = "";
+      }, 3000);
+    }
+  };
+
   // Data fetch with loading announcement
   const fetchProducts = async (query = "") => {
     if (!companyId) return;
@@ -103,9 +123,9 @@ export default function ProductListPage() {
       setDataLoading(true);
       setError("");
 
-      const liveRegion = document.getElementById("status-announcements");
-      if (liveRegion) {
-        liveRegion.textContent = "Loading products...";
+      const statusRegion = document.getElementById("status-announcements");
+      if (statusRegion) {
+        statusRegion.textContent = "Loading products...";
       }
 
       const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
@@ -124,22 +144,22 @@ export default function ProductListPage() {
         },
       });
 
-      if (!res.ok) throw new Error("Failed to fetch products");
+      if (!res.ok) throw new Error(`Failed to fetch products: ${res.status} ${res.statusText}`);
 
       const data = await res.json();
       setProducts(data);
 
       // Announce completion
-      if (liveRegion) {
-        liveRegion.textContent = `${data.length} products loaded`;
+      if (statusRegion) {
+        statusRegion.textContent = `${data.length} products loaded`;
+        setTimeout(() => {
+          statusRegion.textContent = "";
+        }, 2000);
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
-
-      const urgentRegion = document.getElementById("error-announcements");
-      if (urgentRegion) {
-        urgentRegion.textContent = "Error loading products";
-      }
+      const errorMessage = err instanceof Error ? err.message : "Something went wrong";
+      setError(errorMessage);
+      announceError(errorMessage);
     } finally {
       setDataLoading(false);
     }
@@ -198,13 +218,11 @@ export default function ProductListPage() {
       }
       setProducts(prev => prev.filter(p => p.id !== toDeleteProduct.id));
 
-      // Announce deletion
-      const liveRegion = document.getElementById("status-announcements");
-      if (liveRegion) {
-        liveRegion.textContent = `Product ${toDeleteProduct.name} deleted`;
-      }
+      announceSuccess(`Product ${toDeleteProduct.name} deleted successfully`);
     } catch (e) {
       console.error("Error deleting product:", e);
+      const errorMessage = e instanceof Error ? e.message : "Failed to delete product";
+      announceError(errorMessage);
     } finally {
       setIsDeleting(false);
       setToDeleteProduct(null);
@@ -258,10 +276,13 @@ export default function ProductListPage() {
       setAiAdvice(data.response);
       setPendingProductName(product?.name ?? "this product");
       setAiModalStep("result");
+
+      announceSuccess("AI analysis completed for " + (product?.name || "product"));
     } catch (err) {
       console.error("Failed to request AI advice", err);
       setAiModalStep(null);
       setAiAdvice(null);
+      announceError("Failed to get AI analysis");
     }
   };
 
@@ -309,8 +330,8 @@ export default function ProductListPage() {
         <h1 className="text-3xl font-bold mb-2">Products</h1>
 
         {dataLoading && (
-          <div className="flex items-center text-sm text-gray-500 mb-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-gray-500 mr-2"></div>
+          <div className="flex items-center text-sm text-gray-500 mb-2" role="status" aria-live="polite">
+            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-gray-500 mr-2" aria-hidden="true"></div>
             Loading product data...
           </div>
         )}
@@ -322,44 +343,61 @@ export default function ProductListPage() {
 
       {/* Search + Add Product */}
       <div className="mb-6 flex items-center gap-2">
+        <label htmlFor="product-search" className="sr-only">
+          Search products by name, SKU or manufacturer
+        </label>
         <input
+          id="product-search"
           type="text"
           placeholder="Search by product, SKU or manufacturer name..."
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           className="flex-grow border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          aria-describedby="search-help"
         />
+        <span id="search-help" className="sr-only">
+          Enter at least 4 characters to search products
+        </span>
         <Button
           onClick={() => router.push(`/product-list/product`)}
           className="bg-black text-white rounded-md px-4 py-2 text-md"
+          aria-label="Add new product"
         >
           Add Product
         </Button>
       </div>
 
-      {error && <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md">{error}</div>}
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md" role="alert" aria-live="assertive">
+          <strong>Error:</strong> {error}
+        </div>
+      )}
 
       {/* Table card */}
       <Card className="p-4">
         {dataLoading ? (
-          <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-gray-400"></div>
+          <div className="flex justify-center items-center py-8" role="status" aria-live="polite">
+            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-gray-400" aria-hidden="true"></div>
             <span className="ml-3 text-gray-500">Loading products...</span>
           </div>
         ) : error ? (
-          <p className="text-red-500">{error}</p>
+          <div role="alert" aria-live="assertive">
+            <p className="text-red-500">{error}</p>
+          </div>
         ) : (
           <>
             {/* Desktop and tablet table */}
             <div className="hidden sm:block overflow-x-auto">
-              <table className="min-w-full table-auto text-base">
+              <table className="min-w-full table-auto text-base" role="table" aria-label="Products table">
                 <thead>
-                  <tr className="text-left border-b">
-                    <th className="p-2">Manufacturer</th>
-                    <th className="p-2">Product name</th>
-                    <th className="p-2">SKU</th>
-                    <th className="p-2">PCF</th>
-                    <th className="p-2 text-right">Actions</th>
+                  <tr role="row" className="text-left border-b">
+                    <th scope="col" className="p-2">Manufacturer</th>
+                    <th scope="col" className="p-2">Product name</th>
+                    <th scope="col" className="p-2">SKU</th>
+                    <th scope="col" className="p-2">
+                      <abbr title="Product Carbon Footprint">PCF</abbr>
+                    </th>
+                    <th scope="col" className="p-2 text-right">Actions</th>
                   </tr>
                 </thead>
 
@@ -374,8 +412,10 @@ export default function ProductListPage() {
                       <td className="p-2">{product.name}</td>
                       <td className="p-2">{product.sku}</td>
                       <td className="p-2 flex items-center gap-1">
-                        {product.emission_total} kg
-                        <Info className="w-4 h-4 text-gray-400" />
+                        <span aria-label={`${product.emission_total} kilograms CO2 equivalent`}>
+                          {product.emission_total} kg
+                        </span>
+                        <Info className="w-4 h-4 text-gray-400" aria-label="Product carbon footprint information" />
                       </td>
                       <td className="p-2">
                         <div className="flex items-center justify-end gap-2">
@@ -385,8 +425,9 @@ export default function ProductListPage() {
                             size="sm"
                             className="flex items-center gap-1 text-xs"
                             onClick={e => handleExportClick(product, e)}
+                            aria-label={`Export ${product.name} data`}
                           >
-                            <FileDown className="w-3 h-3" />
+                            <FileDown className="w-3 h-3" aria-hidden="true" />
                             <span>Export</span>
                           </Button>
 
@@ -399,8 +440,9 @@ export default function ProductListPage() {
                               e.stopPropagation();
                               handleAIButtonClick(product.id);
                             }}
+                            aria-label={`Get AI recommendations for ${product.name}`}
                           >
-                            <Sparkles className="w-3 h-3 text-purple-500 group-hover:text-white" />
+                            <Sparkles className="w-3 h-3 text-purple-500 group-hover:text-white" aria-hidden="true" />
                             Ask AI
                           </Button>
 
@@ -412,8 +454,9 @@ export default function ProductListPage() {
                               e.stopPropagation();
                               handleEdit(product.id);
                             }}
+                            aria-label={`Edit ${product.name}`}
                           >
-                            <Edit className="w-4 h-4 text-white" />
+                            <Edit className="w-4 h-4 text-white" aria-hidden="true" />
                           </Button>
 
                           {/* Delete */}
@@ -425,8 +468,9 @@ export default function ProductListPage() {
                               handleDelete(product.id);
                             }}
                             disabled={isDeleting}
+                            aria-label={`Delete ${product.name}`}
                           >
-                            <Trash className="w-4 h-4 text-white" />
+                            <Trash className="w-4 h-4 text-white" aria-hidden="true" />
                           </Button>
 
                         </div>
@@ -448,7 +492,7 @@ export default function ProductListPage() {
                           </div>
                         ) : (
                           <div className="space-y-4">
-                            <Boxes className="mx-auto h-12 w-12 text-gray-400" />
+                            <Boxes className="mx-auto h-12 w-12 text-gray-400" aria-hidden="true" />
                             <div className="text-gray-500">
                               <p className="text-lg font-medium">No products yet</p>
                               <p className="text-sm mt-1">
@@ -475,6 +519,15 @@ export default function ProductListPage() {
                   key={product.id}
                   className="border rounded-md p-4 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
                   onClick={() => handleProductClick(product.id)}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`View details for ${product.name}`}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleProductClick(product.id);
+                    }
+                  }}
                 >
                   <div className="mb-2">
                     <span className="font-medium text-gray-900 dark:text-gray-100">
@@ -486,8 +539,10 @@ export default function ProductListPage() {
                     <p>SKU: {product.sku}</p>
                     <p>Method: {product.pcf_calculation_method}</p>
                     <p className="flex items-center gap-1">
-                      PCF: {product.emission_total}
-                      <Info className="w-3 h-3 text-gray-400" />
+                      <span aria-label={`Product Carbon Footprint: ${product.emission_total} kilograms CO2 equivalent`}>
+                        PCF: {product.emission_total}
+                      </span>
+                      <Info className="w-3 h-3 text-gray-400" aria-hidden="true" />
                     </p>
                   </div>
                   <div className="flex justify-end gap-2 mt-3">
@@ -495,13 +550,13 @@ export default function ProductListPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      /* group = lets icons & label inherit the hover state if you want */
                       className="group flex items-center gap-1 text-xs transition-colors
                       motion-safe:hover:animate-hue
                       motion-safe:active:animate-hue-fast"
                       onClick={e => handleExportClick(product, e)}
+                      aria-label={`Export ${product.name} data`}
                     >
-                      <FileDown className="w-3 h-3" />
+                      <FileDown className="w-3 h-3" aria-hidden="true" />
                       <span>Export</span>
                     </Button>
 
@@ -516,8 +571,9 @@ export default function ProductListPage() {
                         e.stopPropagation();
                         handleAIButtonClick(product.id);
                       }}
+                      aria-label={`Get AI recommendations for ${product.name}`}
                     >
-                      <Sparkles className="w-3 h-3 text-purple-500" />
+                      <Sparkles className="w-3 h-3 text-purple-500" aria-hidden="true" />
                       <span>Ask&nbsp;AI</span>
                     </Button>
 
@@ -527,8 +583,9 @@ export default function ProductListPage() {
                         handleEdit(product.id);
                       }}
                       className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-full"
+                      aria-label={`Edit ${product.name}`}
                     >
-                      <Edit className="w-4 h-4 text-blue-500" />
+                      <Edit className="w-4 h-4 text-blue-500" aria-hidden="true" />
                     </button>
                     <button
                       onClick={e => {
@@ -537,8 +594,9 @@ export default function ProductListPage() {
                       }}
                       disabled={isDeleting}
                       className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-full"
+                      aria-label={`Delete ${product.name}`}
                     >
-                      <Trash className="w-4 h-4 text-red-500" />
+                      <Trash className="w-4 h-4 text-red-500" aria-hidden="true" />
                     </button>
                   </div>
                 </div>
@@ -553,7 +611,7 @@ export default function ProductListPage() {
                     <p className="text-gray-500">No products found matching "{searchQuery}".</p>
                   ) : (
                     <div className="space-y-4">
-                      <Boxes className="mx-auto h-12 w-12 text-gray-400" />
+                      <Boxes className="mx-auto h-12 w-12 text-gray-400" aria-hidden="true" />
                       <div className="text-gray-500">
                         <p className="text-lg font-medium">No products yet</p>
                         <p className="text-sm mt-1">
@@ -577,6 +635,7 @@ export default function ProductListPage() {
                     className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
+                    aria-label="Go to previous page"
                   >
                     Previous
                   </Button>
@@ -587,6 +646,7 @@ export default function ProductListPage() {
                     className="px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
                     onClick={() => setCurrentPage(p => p + 1)}
                     disabled={currentPage * rowsPerPage >= products.length}
+                    aria-label="Go to next page"
                   >
                     Next
                   </Button>
@@ -603,6 +663,7 @@ export default function ProductListPage() {
                       setRowsPerPage(Number(e.target.value));
                       setCurrentPage(1);
                     }}
+                    aria-label="Select number of rows per page"
                   >
                     <option value={15}>15</option>
                     <option value={30}>30</option>
@@ -652,13 +713,21 @@ export default function ProductListPage() {
                 <strong>No personal or sensitive data will be stored.</strong>
               </p>
 
+              <label htmlFor="ai-prompt" className="block text-sm font-medium mb-2">
+                Optional: Ask a specific question
+              </label>
               <textarea
+                id="ai-prompt"
                 value={userPromptInput}
                 onChange={e => setUserPromptInput(e.target.value)}
                 placeholder="Ask a specific question about this product..."
                 className="w-full border rounded px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 rows={4}
+                aria-describedby="ai-prompt-help"
               />
+              <div id="ai-prompt-help" className="sr-only">
+                Enter a specific question to guide the AI analysis, or leave blank for general recommendations
+              </div>
 
               <div className="flex justify-end gap-2">
                 <Button
@@ -679,14 +748,14 @@ export default function ProductListPage() {
           )}
 
           {aiModalStep === "loading" && (
-            <div className="flex flex-col items-center justify-center py-8" role="status">
-              <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mb-4" />
+            <div className="flex flex-col items-center justify-center py-8" role="status" aria-live="polite">
+              <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full mb-4" aria-hidden="true" />
               <p className="text-sm text-gray-600">AI is thinking, please wait...</p>
             </div>
           )}
 
           {aiModalStep === "result" && aiAdvice && (
-            <div className="prose prose-sm max-w-none text-gray-800 dark:text-gray-100">
+            <div className="prose prose-sm max-w-none text-gray-800 dark:text-gray-100" role="article" aria-label="AI recommendations">
               <ReactMarkdown>{aiAdvice}</ReactMarkdown>
             </div>
           )}

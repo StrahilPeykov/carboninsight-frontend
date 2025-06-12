@@ -14,6 +14,10 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isAccountBlocked, setIsAccountBlocked] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{
+    username?: string;
+    password?: string;
+  }>({});
   const formRef = useRef<HTMLFormElement>(null);
   const errorAnnouncementRef = useRef<HTMLDivElement>(null);
 
@@ -51,10 +55,16 @@ export default function LoginPage() {
       [name]: value,
     }));
 
-    // Clear error when user starts typing
+    // Clear errors when user starts typing
     if (error) {
       setError(null);
       setIsAccountBlocked(false);
+    }
+    if (fieldErrors[name as keyof typeof fieldErrors]) {
+      setFieldErrors(prev => ({
+        ...prev,
+        [name]: undefined,
+      }));
     }
   };
 
@@ -63,6 +73,7 @@ export default function LoginPage() {
     setIsLoading(true);
     setError(null);
     setIsAccountBlocked(false);
+    setFieldErrors({});
 
     try {
       await login(formData);
@@ -83,6 +94,13 @@ export default function LoginPage() {
 
         setIsAccountBlocked(isBlocked);
         setError(err.message);
+
+        // Set field-specific errors if applicable
+        if (err.message.includes("email") || err.message.includes("username")) {
+          setFieldErrors(prev => ({ ...prev, username: err.message }));
+        } else if (err.message.includes("password")) {
+          setFieldErrors(prev => ({ ...prev, password: err.message }));
+        }
 
         // Focus on error message for screen readers
         if (isBlocked && errorAnnouncementRef.current) {
@@ -116,6 +134,7 @@ export default function LoginPage() {
             aria-live="assertive"
             className="mb-4 p-3 bg-red-100 text-red-800 rounded-md dark:bg-red-900/20 dark:text-red-300 border border-red-200 dark:border-red-800"
             tabIndex={-1}
+            id="general-error"
           >
             <div className="flex items-start">
               <span className="text-red-600 mr-2" aria-hidden="true">
@@ -137,6 +156,7 @@ export default function LoginPage() {
             className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md dark:bg-red-900/20 dark:border-red-900"
             tabIndex={-1}
             ref={errorAnnouncementRef}
+            id="blocked-account-error"
           >
             <h3 className="text-lg font-medium text-red-800 dark:text-red-300 mb-2 flex items-center">
               <span className="text-red-600 mr-2" aria-hidden="true">
@@ -191,8 +211,13 @@ export default function LoginPage() {
               inputMode="email"
               required
               aria-required="true"
-              aria-invalid={!!error}
-              aria-describedby={error ? "login-error" : "email-hint"}
+              aria-invalid={!!(fieldErrors.username || (error && !isAccountBlocked))}
+              aria-describedby={[
+                "email-hint",
+                fieldErrors.username ? "username-error" : null,
+                error && !isAccountBlocked ? "general-error" : null,
+                isAccountBlocked ? "blocked-account-error" : null,
+              ].filter(Boolean).join(" ")}
               value={formData.username}
               onChange={handleChange}
               disabled={isLoading}
@@ -202,6 +227,11 @@ export default function LoginPage() {
             <span id="email-hint" className="sr-only">
               Enter your registered email address
             </span>
+            {fieldErrors.username && (
+              <p id="username-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
+                {fieldErrors.username}
+              </p>
+            )}
           </div>
 
           <div>
@@ -221,8 +251,13 @@ export default function LoginPage() {
               autoComplete="current-password"
               required
               aria-required="true"
-              aria-invalid={!!error}
-              aria-describedby={error ? "login-error" : "password-hint"}
+              aria-invalid={!!(fieldErrors.password || (error && !isAccountBlocked))}
+              aria-describedby={[
+                "password-hint",
+                fieldErrors.password ? "password-error" : null,
+                error && !isAccountBlocked ? "general-error" : null,
+                isAccountBlocked ? "blocked-account-error" : null,
+              ].filter(Boolean).join(" ")}
               value={formData.password}
               onChange={handleChange}
               disabled={isLoading}
@@ -231,10 +266,10 @@ export default function LoginPage() {
             <span id="password-hint" className="sr-only">
               Enter your password
             </span>
-            {error && (
-              <span id="login-error" className="sr-only">
-                {error}
-              </span>
+            {fieldErrors.password && (
+              <p id="password-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
+                {fieldErrors.password}
+              </p>
             )}
           </div>
 

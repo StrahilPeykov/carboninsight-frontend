@@ -13,6 +13,13 @@ export default function RegisterPage() {
   const { register } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+    password?: string;
+    confirm_password?: string;
+  }>({});
   const [formData, setFormData] = useState<RegisterData>({
     first_name: "",
     last_name: "",
@@ -49,9 +56,15 @@ export default function RegisterPage() {
       [name]: value,
     }));
 
-    // Clear error when user starts typing
+    // Clear errors when user starts typing
     if (error) {
       setError(null);
+    }
+    if (fieldErrors[name as keyof typeof fieldErrors]) {
+      setFieldErrors(prev => ({
+        ...prev,
+        [name]: undefined,
+      }));
     }
   };
 
@@ -68,11 +81,13 @@ export default function RegisterPage() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    setFieldErrors({});
 
     // Validate password
     const passwordError = validatePassword();
     if (passwordError) {
       setError(passwordError);
+      setFieldErrors({ confirm_password: passwordError });
       announceError(passwordError);
       setIsLoading(false);
       // Focus the confirm password field for user convenience
@@ -92,12 +107,40 @@ export default function RegisterPage() {
       }, 100);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
-      setError(errorMessage);
+      
+      // Parse field-specific errors if they exist
+      if (err instanceof Error && err.message.includes(":")) {
+        const fieldErrorPairs = err.message.split(". ");
+        const newFieldErrors: typeof fieldErrors = {};
+        let hasFieldErrors = false;
+
+        fieldErrorPairs.forEach(pair => {
+          if (pair.includes(":")) {
+            const [field, message] = pair.split(": ");
+            const normalizedField = field.toLowerCase().replace(" ", "_");
+            if (normalizedField in formData) {
+              newFieldErrors[normalizedField as keyof typeof fieldErrors] = message;
+              hasFieldErrors = true;
+            }
+          }
+        });
+
+        if (hasFieldErrors) {
+          setFieldErrors(newFieldErrors);
+        } else {
+          setError(errorMessage);
+        }
+      } else {
+        setError(errorMessage);
+      }
+      
       announceError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
+
+  const passwordsMatch = formData.password === formData.confirm_password;
 
   return (
     <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -112,11 +155,12 @@ export default function RegisterPage() {
 
       <Card className="max-w-md mx-auto">
         <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-          {error && (
+          {error && !Object.keys(fieldErrors).length && (
             <div
               className="p-3 bg-red-50 border border-red-200 rounded-md text-red-700 dark:bg-red-900/20 dark:border-red-900 dark:text-red-300"
               role="alert"
               aria-live="assertive"
+              id="general-error"
             >
               <strong>Registration Error:</strong>
               <span className="ml-1">{error}</span>
@@ -141,8 +185,11 @@ export default function RegisterPage() {
                 autoComplete="given-name"
                 required
                 aria-required="true"
-                aria-invalid={!!error}
-                aria-describedby="first-name-hint"
+                aria-invalid={!!fieldErrors.first_name}
+                aria-describedby={[
+                  "first-name-hint",
+                  fieldErrors.first_name ? "first-name-error" : null,
+                ].filter(Boolean).join(" ")}
                 value={formData.first_name}
                 onChange={handleChange}
                 disabled={isLoading}
@@ -151,6 +198,11 @@ export default function RegisterPage() {
               <span id="first-name-hint" className="sr-only">
                 Enter your first name
               </span>
+              {fieldErrors.first_name && (
+                <p id="first-name-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
+                  {fieldErrors.first_name}
+                </p>
+              )}
             </div>
 
             <div>
@@ -170,8 +222,11 @@ export default function RegisterPage() {
                 autoComplete="family-name"
                 required
                 aria-required="true"
-                aria-invalid={!!error}
-                aria-describedby="last-name-hint"
+                aria-invalid={!!fieldErrors.last_name}
+                aria-describedby={[
+                  "last-name-hint",
+                  fieldErrors.last_name ? "last-name-error" : null,
+                ].filter(Boolean).join(" ")}
                 value={formData.last_name}
                 onChange={handleChange}
                 disabled={isLoading}
@@ -180,6 +235,11 @@ export default function RegisterPage() {
               <span id="last-name-hint" className="sr-only">
                 Enter your last name
               </span>
+              {fieldErrors.last_name && (
+                <p id="last-name-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
+                  {fieldErrors.last_name}
+                </p>
+              )}
             </div>
           </div>
 
@@ -201,8 +261,11 @@ export default function RegisterPage() {
               inputMode="email"
               required
               aria-required="true"
-              aria-invalid={!!error}
-              aria-describedby="email-hint"
+              aria-invalid={!!fieldErrors.email}
+              aria-describedby={[
+                "email-hint",
+                fieldErrors.email ? "email-error" : null,
+              ].filter(Boolean).join(" ")}
               value={formData.email}
               onChange={handleChange}
               disabled={isLoading}
@@ -212,6 +275,11 @@ export default function RegisterPage() {
             <span id="email-hint" className="sr-only">
               Enter your email address
             </span>
+            {fieldErrors.email && (
+              <p id="email-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
+                {fieldErrors.email}
+              </p>
+            )}
           </div>
 
           <div>
@@ -231,8 +299,11 @@ export default function RegisterPage() {
               autoComplete="new-password"
               required
               aria-required="true"
-              aria-invalid={!!error}
-              aria-describedby="password-requirements"
+              aria-invalid={!!fieldErrors.password}
+              aria-describedby={[
+                "password-requirements",
+                fieldErrors.password ? "password-error" : null,
+              ].filter(Boolean).join(" ")}
               value={formData.password}
               onChange={handleChange}
               disabled={isLoading}
@@ -242,6 +313,11 @@ export default function RegisterPage() {
               Password must be at least 8 characters long and contain at least one letter and one
               number.
             </p>
+            {fieldErrors.password && (
+              <p id="password-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
+                {fieldErrors.password}
+              </p>
+            )}
           </div>
 
           <div>
@@ -261,12 +337,12 @@ export default function RegisterPage() {
               autoComplete="new-password"
               required
               aria-required="true"
-              aria-invalid={!!error || formData.password !== formData.confirm_password}
-              aria-describedby={
-                formData.password !== formData.confirm_password
-                  ? "password-mismatch"
-                  : "confirm-password-hint"
-              }
+              aria-invalid={!!(fieldErrors.confirm_password || (!passwordsMatch && formData.confirm_password))}
+              aria-describedby={[
+                "confirm-password-hint",
+                !passwordsMatch && formData.confirm_password ? "password-mismatch" : null,
+                fieldErrors.confirm_password ? "confirm-password-error" : null,
+              ].filter(Boolean).join(" ")}
               value={formData.confirm_password}
               onChange={handleChange}
               disabled={isLoading}
@@ -275,7 +351,7 @@ export default function RegisterPage() {
             <span id="confirm-password-hint" className="sr-only">
               Re-enter your password
             </span>
-            {formData.password !== formData.confirm_password && formData.confirm_password && (
+            {!passwordsMatch && formData.confirm_password && (
               <p
                 id="password-mismatch"
                 className="mt-1 text-xs text-red-600 dark:text-red-400"
@@ -283,6 +359,11 @@ export default function RegisterPage() {
                 aria-live="polite"
               >
                 Passwords do not match
+              </p>
+            )}
+            {fieldErrors.confirm_password && (
+              <p id="confirm-password-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
+                {fieldErrors.confirm_password}
               </p>
             )}
           </div>

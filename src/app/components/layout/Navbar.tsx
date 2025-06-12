@@ -7,9 +7,6 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../ui/Button";
 import ThemeSelector from "../ui/ThemeSelector";
-import TourManager from "../ui/TourManager";
-import { useTour } from "@/hooks/useTour";
-import { TourProgressBadge } from "../ui/TourNavigationGuide";
 import {
   ChevronDown,
   SettingsIcon,
@@ -19,9 +16,6 @@ import {
   Plus,
   Users,
   Share2,
-  Book,
-  Target,
-  CheckCircle,
 } from "lucide-react";
 import { companyApi } from "@/lib/api/companyApi";
 import { setLocalStorageItem } from "@/lib/api/apiClient";
@@ -31,17 +25,9 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated, logout, isLoading } = useAuth();
-  const { 
-    completedFlows, 
-    availableFlows, 
-    currentOnboardingStep, 
-    isOnboardingComplete 
-  } = useTour();
-  
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isCompanyMenuOpen, setIsCompanyMenuOpen] = useState(false);
-  const [showTourManager, setShowTourManager] = useState(false);
 
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const profileButtonRef = useRef<HTMLButtonElement>(null);
@@ -264,7 +250,6 @@ export default function Navbar() {
         className="sticky top-0 z-50 h-16 bg-white shadow-sm dark:bg-gray-900"
         role="navigation"
         aria-label="Main navigation"
-        id="main-navigation"
       >
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
           <div className="flex justify-between h-16 items-center">
@@ -277,14 +262,14 @@ export default function Navbar() {
               >
                 <Image
                   src="/brainport-logo-white.webp"
-                  alt="CarbonInsight"
+                  alt=""
                   width={32}
                   height={32}
                   className="hidden dark:block flex-shrink-0"
                 />
                 <Image
                   src="/brainport-logo.webp"
-                  alt="CarbonInsight"
+                  alt=""
                   width={32}
                   height={32}
                   className="block dark:hidden flex-shrink-0"
@@ -312,7 +297,6 @@ export default function Navbar() {
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
-                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -326,7 +310,6 @@ export default function Navbar() {
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
-                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -347,7 +330,6 @@ export default function Navbar() {
                     <nav
                       className="hidden md:flex md:items-center md:space-x-1 lg:space-x-2"
                       role="navigation"
-                      aria-label="Primary navigation"
                     >
                       <Link
                         href="/dashboard"
@@ -406,10 +388,7 @@ export default function Navbar() {
                       aria-label={`User account menu for ${getUserDisplayName()}`}
                     >
                       <span className="sr-only">Open user menu</span>
-                      <div 
-                        className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700"
-                        aria-hidden="true"
-                      >
+                      <div className="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-700">
                         <span aria-hidden="true">
                           {user?.first_name?.charAt(0)?.toUpperCase() ||
                             user?.username?.charAt(0)?.toUpperCase() ||
@@ -429,40 +408,6 @@ export default function Navbar() {
                           </p>
                         </div>
 
-                        {/* Tour Progress Section - NEW */}
-                        {isAuthenticated && !isOnboardingComplete && (
-                          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                                Onboarding Progress
-                              </span>
-                              <TourProgressBadge />
-                            </div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                              <div
-                                className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
-                                style={{ width: `${(currentOnboardingStep / 6) * 100}%` }}
-                              />
-                            </div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              {currentOnboardingStep}/6 steps completed
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Expert Badge - NEW */}
-                        {isOnboardingComplete && (
-                          <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                            <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-                              <CheckCircle size={16} />
-                              <span className="text-sm font-medium">CarbonInsight Expert!</span>
-                            </div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                              You've mastered all features
-                            </p>
-                          </div>
-                        )}
-
                         {/* Theme Selection */}
                         <div className="border-b border-gray-200 dark:border-gray-700">
                           <ThemeSelector />
@@ -477,23 +422,6 @@ export default function Navbar() {
                           <SettingsIcon size={16} className="mr-2" aria-hidden="true" />
                           Account Settings
                         </Link>
-
-                        {/* Guided Tours */}
-                        <button
-                          onClick={() => {
-                            setShowTourManager(true);
-                            setIsProfileMenuOpen(false);
-                          }}
-                          className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 min-h-[44px]"
-                        >
-                          <Book size={16} className="mr-2" aria-hidden="true" />
-                          Guided Tours
-                          {completedFlows.size < availableFlows.length && (
-                            <span className="ml-auto bg-red text-white text-xs px-1.5 py-0.5 rounded-full">
-                              {availableFlows.length - completedFlows.size}
-                            </span>
-                          )}
-                        </button>
 
                         <Link
                           href="/support"
@@ -536,7 +464,6 @@ export default function Navbar() {
 
         {/* Mobile menu */}
         <div
-          id="mobile-menu"
           className={`${isMenuOpen ? "block" : "hidden"} md:hidden bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700`}
         >
           <div className="pt-2 pb-3 space-y-1">
@@ -570,18 +497,14 @@ export default function Navbar() {
                 {/* Mobile Company Selection */}
                 <div className="px-3 py-2 border-t border-gray-200 dark:border-gray-700">
                   <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Current Company:</p>
-                  <label htmlFor="mobile-company-select" className="sr-only">
-                    Select company
-                  </label>
                   <select
-                    id="mobile-company-select"
                     value={companyId || ""}
                     onChange={e => {
                       if (e.target.value) {
                         handleCompanySelect(e.target.value);
                       }
                     }}
-                    className="w-full p-2 border border-gray-300 rounded-md text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    className="w-full p-2 border border-gray-300 rounded-md text-sm"
                   >
                     <option value="">Select Company</option>
                     {allCompanies.map(company => (
@@ -598,13 +521,13 @@ export default function Navbar() {
                         handleCreateCompany();
                         setIsMenuOpen(false);
                       }}
-                      className="flex items-center justify-between w-full text-sm text-green-600 hover:text-green-900 py-1 focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="flex items-center justify-between w-full text-sm text-green-600 hover:text-green-900 py-1"
                     >
                       <div className="flex items-center">
-                        <Plus size={14} className="mr-1" aria-hidden="true" />
+                        <Plus size={14} className="mr-1" />
                         Create New Company
                       </div>
-                      <span className="text-xs text-gray-400" aria-label="Keyboard shortcut">N</span>
+                      <span className="text-xs text-gray-400">N</span>
                     </button>
 
                     {companyId && (
@@ -614,9 +537,9 @@ export default function Navbar() {
                             handleCompanySettings();
                             setIsMenuOpen(false);
                           }}
-                          className="flex items-center text-sm text-gray-600 hover:text-gray-900 py-1 w-full focus:outline-none focus:ring-2 focus:ring-gray-500"
+                          className="flex items-center text-sm text-gray-600 hover:text-gray-900 py-1 w-full"
                         >
-                          <SettingsIcon size={14} className="mr-2" aria-hidden="true" />
+                          <SettingsIcon size={14} className="mr-2" />
                           Company Settings
                         </button>
                         <button
@@ -624,9 +547,9 @@ export default function Navbar() {
                             handleManageUsers();
                             setIsMenuOpen(false);
                           }}
-                          className="flex items-center text-sm text-gray-600 hover:text-gray-900 py-1 w-full focus:outline-none focus:ring-2 focus:ring-gray-500"
+                          className="flex items-center text-sm text-gray-600 hover:text-gray-900 py-1 w-full"
                         >
-                          <Users size={14} className="mr-2" aria-hidden="true" />
+                          <Users size={14} className="mr-2" />
                           Manage Users
                         </button>
                         <button
@@ -634,37 +557,15 @@ export default function Navbar() {
                             handleDataSharing();
                             setIsMenuOpen(false);
                           }}
-                          className="flex items-center text-sm text-gray-600 hover:text-gray-900 py-1 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                          className="flex items-center text-sm text-gray-600 hover:text-gray-900 py-1"
                         >
-                          <Share2 size={14} className="mr-2" aria-hidden="true" />
+                          <Share2 size={14} className="mr-2" />
                           Data Sharing
                         </button>
                       </>
                     )}
                   </div>
                 </div>
-
-                {/* Mobile tour progress - NEW */}
-                {!isOnboardingComplete && (
-                  <div className="px-3 py-2 border-t border-gray-200 dark:border-gray-700">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                        <Target size={12} className="inline mr-1" />
-                        Onboarding Progress
-                      </span>
-                      <TourProgressBadge />
-                    </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <div
-                        className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${(currentOnboardingStep / 6) * 100}%` }}
-                      />
-                    </div>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      {currentOnboardingStep}/6 steps completed
-                    </p>
-                  </div>
-                )}
 
                 {/* Mobile profile menu */}
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
@@ -676,22 +577,6 @@ export default function Navbar() {
                     <SettingsIcon size={16} className="mr-2" aria-hidden="true" />
                     Account Settings
                   </Link>
-
-                  <button
-                    onClick={() => {
-                      setShowTourManager(true);
-                      setIsMenuOpen(false);
-                    }}
-                    className="flex items-center w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700 min-h-[44px]"
-                  >
-                    <Book size={16} className="mr-2" aria-hidden="true" />
-                    Guided Tours
-                    {completedFlows.size < availableFlows.length && (
-                      <span className="ml-auto bg-red text-white text-xs px-1.5 py-0.5 rounded-full">
-                        {availableFlows.length - completedFlows.size}
-                      </span>
-                    )}
-                  </button>
 
                   <Link
                     href="/support"
@@ -748,12 +633,6 @@ export default function Navbar() {
           </div>
         </div>
       </nav>
-
-      {/* Tour Manager Modal */}
-      <TourManager
-        isOpen={showTourManager}
-        onClose={() => setShowTourManager(false)}
-      />
     </>
   );
 }

@@ -9,7 +9,6 @@ import { companyApi, CompanyCreateData } from "@/lib/api/companyApi";
 import { ApiError } from "@/lib/api/apiClient";
 import { setLocalStorageItem } from "@/lib/api/apiClient";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
-import { tourEvents } from "../components/ui/SmartTourTrigger";
 
 export default function CreateCompanyPage() {
   const router = useRouter();
@@ -57,9 +56,6 @@ export default function CreateCompanyPage() {
         console.log("Company created - dispatching events");
         window.dispatchEvent(new CustomEvent("companyListChanged"));
         window.dispatchEvent(new CustomEvent("companyChanged"));
-        
-        // NEW: Trigger tour continuation
-        tourEvents.companyCreated();
       }
 
       // Redirect after a short delay to show the success message

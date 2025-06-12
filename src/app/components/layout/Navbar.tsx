@@ -9,6 +9,7 @@ import Button from "../ui/Button";
 import ThemeSelector from "../ui/ThemeSelector";
 import TourManager from "../ui/TourManager";
 import { useTour } from "@/hooks/useTour";
+import { TourProgressBadge } from "../ui/TourNavigationGuide";
 import {
   ChevronDown,
   SettingsIcon,
@@ -19,6 +20,8 @@ import {
   Users,
   Share2,
   Book,
+  Target,
+  CheckCircle,
 } from "lucide-react";
 import { companyApi } from "@/lib/api/companyApi";
 import { setLocalStorageItem } from "@/lib/api/apiClient";
@@ -28,7 +31,13 @@ export default function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated, logout, isLoading } = useAuth();
-  const { completedTours, availableTours } = useTour();
+  const { 
+    completedFlows, 
+    availableFlows, 
+    currentOnboardingStep, 
+    isOnboardingComplete 
+  } = useTour();
+  
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isCompanyMenuOpen, setIsCompanyMenuOpen] = useState(false);
@@ -420,6 +429,40 @@ export default function Navbar() {
                           </p>
                         </div>
 
+                        {/* Tour Progress Section - NEW */}
+                        {isAuthenticated && !isOnboardingComplete && (
+                          <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                Onboarding Progress
+                              </span>
+                              <TourProgressBadge />
+                            </div>
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                              <div
+                                className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${(currentOnboardingStep / 6) * 100}%` }}
+                              />
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              {currentOnboardingStep}/6 steps completed
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Expert Badge - NEW */}
+                        {isOnboardingComplete && (
+                          <div className="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+                            <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                              <CheckCircle size={16} />
+                              <span className="text-sm font-medium">CarbonInsight Expert!</span>
+                            </div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                              You've mastered all features
+                            </p>
+                          </div>
+                        )}
+
                         {/* Theme Selection */}
                         <div className="border-b border-gray-200 dark:border-gray-700">
                           <ThemeSelector />
@@ -445,9 +488,9 @@ export default function Navbar() {
                         >
                           <Book size={16} className="mr-2" aria-hidden="true" />
                           Guided Tours
-                          {completedTours.size < availableTours.length && (
+                          {completedFlows.size < availableFlows.length && (
                             <span className="ml-auto bg-red text-white text-xs px-1.5 py-0.5 rounded-full">
-                              {availableTours.length - completedTours.size}
+                              {availableFlows.length - completedFlows.size}
                             </span>
                           )}
                         </button>
@@ -601,6 +644,28 @@ export default function Navbar() {
                   </div>
                 </div>
 
+                {/* Mobile tour progress - NEW */}
+                {!isOnboardingComplete && (
+                  <div className="px-3 py-2 border-t border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                        <Target size={12} className="inline mr-1" />
+                        Onboarding Progress
+                      </span>
+                      <TourProgressBadge />
+                    </div>
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                      <div
+                        className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${(currentOnboardingStep / 6) * 100}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {currentOnboardingStep}/6 steps completed
+                    </p>
+                  </div>
+                )}
+
                 {/* Mobile profile menu */}
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
                   <Link
@@ -621,9 +686,9 @@ export default function Navbar() {
                   >
                     <Book size={16} className="mr-2" aria-hidden="true" />
                     Guided Tours
-                    {completedTours.size < availableTours.length && (
+                    {completedFlows.size < availableFlows.length && (
                       <span className="ml-auto bg-red text-white text-xs px-1.5 py-0.5 rounded-full">
-                        {availableTours.length - completedTours.size}
+                        {availableFlows.length - completedFlows.size}
                       </span>
                     )}
                   </button>

@@ -5,6 +5,8 @@ import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { TourProvider } from "@/hooks/useTour";
 import TourOverlay from "./components/ui/TourOverlay";
+import TourNavigationGuide from "./components/ui/TourNavigationGuide";
+import SmartTourTrigger from "./components/ui/SmartTourTrigger";
 import GlobalCompanyChangeHandler from "./components/GlobalCompanyChangeHandler";
 import KeyboardShortcutsProvider from "./components/KeyboardShortcutsProvider";
 import "./globals.css";
@@ -37,12 +39,14 @@ export default function RootLayout({
             <TourProvider>
               <KeyboardShortcutsProvider>
                 <GlobalCompanyChangeHandler />
+                <SmartTourTrigger />
                 <Navbar />
                 <main id="main-content" className="flex-grow" tabIndex={-1}>
                   {children}
                 </main>
                 <Footer />
                 <TourOverlay />
+                <TourNavigationGuide />
               </KeyboardShortcutsProvider>
             </TourProvider>
           </ThemeProvider>

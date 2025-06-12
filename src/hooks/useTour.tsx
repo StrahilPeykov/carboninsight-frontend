@@ -14,434 +14,411 @@ export interface TourStep {
   showBack?: boolean;
   disableBeacon?: boolean;
   spotlightClicks?: boolean;
-  waitForElement?: boolean; // Wait for element to appear
-  delay?: number; // Delay before showing step
-  action?: {
-    type: "click" | "navigate" | "wait" | "focus";
-    target?: string;
-    url?: string;
+  waitForElement?: boolean;
+  delay?: number;
+  // New: Action to perform when step completes
+  onComplete?: {
+    type: "navigate" | "wait" | "trigger-event" | "set-data";
+    payload?: any;
     delay?: number;
   };
 }
 
-export interface Tour {
+export interface TourFlow {
   id: string;
   name: string;
   description: string;
-  trigger: "manual" | "first-login" | "company-created" | "page-visit" | "feature-discovery";
-  triggerCondition?: string; // page path for page-visit trigger
+  // Flow management
+  autoStart?: boolean; // Should this flow start automatically?
+  trigger: "manual" | "first-login" | "company-created" | "page-visit" | "feature-discovery" | "onboarding-complete";
+  triggerCondition?: string;
+  priority: number;
+  prerequisites?: string[];
+  // Navigation and flow
+  startUrl?: string; // Where should user be when flow starts?
   steps: TourStep[];
-  priority: number; // higher = more important
-  prerequisites?: string[]; // Required completed tours
-  cooldown?: number; // Minimum time between auto-triggers (in ms)
+  // Post-completion
+  nextFlow?: string; // Which flow should run next?
+  completionMessage?: string;
+  completionAction?: {
+    type: "navigate" | "show-message" | "trigger-flow";
+    payload?: any;
+  };
 }
 
 interface TourContextType {
+  // Current state
   isActive: boolean;
-  currentTour: Tour | null;
+  currentFlow: TourFlow | null;
   currentStepIndex: number;
-  startTour: (tourId: string) => void;
-  stopTour: () => void;
+  
+  // Flow management
+  startFlow: (flowId: string, force?: boolean) => void;
+  stopFlow: () => void;
   nextStep: () => void;
   prevStep: () => void;
-  skipTour: () => void;
-  completedTours: Set<string>;
-  availableTours: Tour[];
-  triggerCompanyCreatedTour: () => void;
-  triggerFeatureTour: (featureId: string) => void;
+  skipFlow: () => void;
+  
+  // Progress tracking
+  completedFlows: Set<string>;
+  availableFlows: TourFlow[];
+  currentOnboardingStep: number;
+  isOnboardingComplete: boolean;
+  
+  // Special triggers
+  triggerOnboardingFlow: () => void;
+  triggerFeatureDiscovery: (featureId: string) => void;
 }
 
 const TourContext = createContext<TourContextType | undefined>(undefined);
 
-// Enhanced tour definitions
-const TOURS: Tour[] = [
+// Enhanced tour flows with better navigation
+const TOUR_FLOWS: TourFlow[] = [
   {
-    id: "welcome-first-time",
-    name: "Welcome to CarbonInsight",
-    description: "Get started with your first company and product",
+    id: "complete-onboarding",
+    name: "Complete Onboarding",
+    description: "Full guided setup from first login to first product",
     trigger: "first-login",
+    autoStart: true,
     priority: 10,
     steps: [
       {
         id: "welcome",
         target: "body",
         title: "Welcome to CarbonInsight! 🌱",
-        content: "Welcome to the future of sustainable manufacturing! CarbonInsight helps you calculate product carbon footprints and generate Digital Product Passports. Let's get you started with a quick tour.",
+        content: "Let's get you set up! This quick guided tour will take you through creating your company, adding your first product, and understanding all the key features. Ready to get started?",
         placement: "center",
-        showSkip: true,
+        showSkip: false,
         showBack: false,
       },
       {
-        id: "navigation-overview",
+        id: "navigation-tour",
         target: "#main-navigation",
         title: "Your Navigation Hub",
-        content: "This is your main navigation bar. From here you can access your dashboard, manage companies, view products, and access your account settings.",
+        content: "This navigation bar is your command center. We'll guide you through each section, but first - let's create your company profile.",
         placement: "bottom",
         waitForElement: true,
-      },
-      {
-        id: "company-concept",
-        target: "body",
-        title: "Understanding Companies",
-        content: "In CarbonInsight, you start by creating a Company profile. This represents your business and will contain all your products and their carbon footprint data.",
-        placement: "center",
-      },
-      {
-        id: "lets-create-company",
-        target: "body",
-        title: "Create Your First Company",
-        content: "Ready to get started? Let's create your first company profile. When you finish this tour, we'll guide you to the company creation page and continue with the next steps!",
-        placement: "center",
+        onComplete: {
+          type: "navigate",
+          payload: "/create-company",
+          delay: 1000,
+        },
       },
     ],
+    nextFlow: "company-creation-guided",
+    completionMessage: "Navigation tour complete! Now let's create your company...",
   },
+  
   {
-    id: "company-creation-guide",
-    name: "Company Creation Guide",
-    description: "Learn how to set up your company profile",
-    trigger: "manual", // Changed from page-visit to manual to prevent auto-trigger
+    id: "company-creation-guided",
+    name: "Company Setup Wizard",
+    description: "Guided company creation with validation",
+    trigger: "manual",
     priority: 9,
+    startUrl: "/create-company",
     steps: [
       {
         id: "company-form-intro",
         target: "body",
-        title: "Setting Up Your Company 🏢",
-        content: "Great! Now let's set up your company profile. This information will be used in your Digital Product Passports and for regulatory compliance.",
+        title: "Company Setup 🏢",
+        content: "Perfect! Now let's set up your company profile. This information will be used in your Digital Product Passports and ensures regulatory compliance.",
         placement: "center",
-        delay: 1000,
+        delay: 500,
       },
       {
-        id: "company-name-field",
+        id: "business-name-guidance",
         target: "input[name='name']",
         title: "Business Name",
-        content: "Enter your official business name exactly as it appears on your registration documents.",
+        content: "Enter your official business name exactly as it appears on registration documents. This will appear on all your Digital Product Passports.",
         placement: "bottom",
         waitForElement: true,
       },
       {
-        id: "vat-field",
+        id: "vat-number-guidance",
         target: "input[name='vat_number']",
         title: "VAT Number",
-        content: "Your VAT number is required for EU compliance and will appear in Digital Product Passports.",
+        content: "Your VAT number is required for EU compliance. Don't worry if you don't have one yet - you can update this later.",
         placement: "bottom",
       },
       {
-        id: "registration-field",
+        id: "registration-guidance",
         target: "input[name='business_registration_number']",
         title: "Registration Number",
         content: "This is your business registration number from the commercial register.",
         placement: "bottom",
       },
       {
-        id: "submit-company",
+        id: "ready-to-create",
         target: "button[type='submit']",
         title: "Create Your Company",
-        content: "Once you've filled in all the details, click this button to create your company. After creation, we'll automatically continue with the next tour to show you your dashboard and how to add products!",
+        content: "Great! Once you click this button, your company will be created and we'll continue to the next step - exploring your dashboard and adding your first product.",
         placement: "top",
+        onComplete: {
+          type: "wait",
+          delay: 2000, // Wait for company creation
+        },
       },
     ],
+    nextFlow: "dashboard-and-first-product",
+    completionMessage: "Company created! Let's explore your dashboard...",
   },
+  
   {
-    id: "company-created-success",
-    name: "Company Created - Next Steps",
-    description: "Learn what to do after creating your company",
+    id: "dashboard-and-first-product",
+    name: "Dashboard & First Product",
+    description: "Explore dashboard then create first product",
     trigger: "company-created",
     priority: 8,
+    startUrl: "/dashboard",
     steps: [
       {
-        id: "company-success",
+        id: "company-success-celebration",
         target: "body",
         title: "Congratulations! 🎉",
-        content: "Your company has been successfully created! You're now ready to start adding products and calculating their carbon footprints.",
-        placement: "center",
-        delay: 2000,
-      },
-      {
-        id: "dashboard-intro",
-        target: "body",
-        title: "Welcome to Your Dashboard",
-        content: "This is your command center. Here you can see an overview of your companies, products, and data sharing requests. Think of it as your sustainability mission control!",
-        placement: "center",
-      },
-      {
-        id: "quick-stats",
-        target: ".grid-cols-1.md\\:grid-cols-3",
-        title: "Quick Statistics",
-        content: "These cards show key metrics at a glance: your companies, products, and any pending data sharing requests from suppliers or customers.",
-        placement: "bottom",
-        waitForElement: true,
-      },
-      {
-        id: "next-step-products",
-        target: "body",
-        title: "Ready for Your First Product?",
-        content: "Now that your company is set up, the next step is to add your first product and calculate its carbon footprint. When you finish this tour, we'll take you to the product creation wizard and continue guiding you through the process!",
-        placement: "center",
-      },
-    ],
-  },
-  {
-    id: "product-creation-comprehensive",
-    name: "Product Creation Walkthrough",
-    description: "Complete guide to adding and configuring a new product",
-    trigger: "manual", // Changed to manual to prevent auto-trigger
-    priority: 7,
-    cooldown: 300000, // 5 minutes
-    steps: [
-      {
-        id: "product-wizard-intro",
-        target: "body",
-        title: "Product Carbon Footprint Wizard 🏭",
-        content: "Welcome to the product creation wizard! This process will guide you through calculating your product's complete carbon footprint across its entire lifecycle.",
+        content: "Your company is now set up! This is your dashboard - your sustainability command center. Let's explore the key features, then create your first product.",
         placement: "center",
         delay: 1000,
       },
       {
-        id: "tab-overview",
+        id: "dashboard-stats-overview",
+        target: ".grid-cols-1.md\\:grid-cols-3",
+        title: "Your Sustainability Metrics",
+        content: "These cards show your key metrics: companies managed, products analyzed, and collaboration requests. Right now you have 1 company (yours!) and 0 products - let's fix that!",
+        placement: "bottom",
+        waitForElement: true,
+      },
+      {
+        id: "ready-for-first-product",
+        target: "body",
+        title: "Time for Your First Product! 📦",
+        content: "Now for the exciting part - let's add your first product and calculate its carbon footprint. This is where CarbonInsight really shines!",
+        placement: "center",
+        onComplete: {
+          type: "navigate",
+          payload: "/product-list/product",
+          delay: 1500,
+        },
+      },
+    ],
+    nextFlow: "product-creation-wizard",
+    completionMessage: "Dashboard tour complete! Let's create your first product...",
+  },
+  
+  {
+    id: "product-creation-wizard",
+    name: "Product Creation Wizard",
+    description: "Complete walkthrough of product creation process",
+    trigger: "manual",
+    priority: 7,
+    startUrl: "/product-list/product",
+    steps: [
+      {
+        id: "product-wizard-welcome",
+        target: "body",
+        title: "Product Carbon Footprint Wizard ⚡",
+        content: "This is where the magic happens! We'll walk through calculating your product's complete carbon footprint across its entire lifecycle. Don't worry - we'll guide you through each step!",
+        placement: "center",
+        delay: 1000,
+      },
+      {
+        id: "tab-system-overview",
         target: "[role='tablist']",
         title: "The Five-Step Process",
-        content: "We'll walk through 5 key areas: Product Info → Bill of Materials → Production Energy → User Energy → Transportation. Each step builds your complete carbon profile.",
+        content: "See these tabs? We'll go through each one: Product Info → Bill of Materials → Production Energy → User Energy → Transportation. Each step builds your complete carbon profile.",
         placement: "bottom",
         waitForElement: true,
       },
       {
-        id: "product-info-importance",
+        id: "start-with-basics",
         target: "[name='product_name']",
-        title: "Product Information",
-        content: "Start with basic product details. The product name and SKU are required - these will appear in your Digital Product Passport.",
+        title: "Start with the Basics",
+        content: "First, give your product a name and SKU. These will appear in your Digital Product Passport, so make them clear and professional.",
         placement: "bottom",
         waitForElement: true,
       },
       {
-        id: "save-workflow",
+        id: "save-and-continue-concept",
         target: "body",
         title: "Save As You Go 💾",
-        content: "Important: Save each tab before moving to the next! This preserves your data and unlocks the next step in the calculation process.",
+        content: "Important tip: Save each tab before moving to the next! This preserves your data and unlocks the calculation process. Take your time - we're building something comprehensive here.",
         placement: "center",
       },
       {
-        id: "lifecycle-thinking",
+        id: "complete-your-product",
         target: "body",
-        title: "Complete Your First Product",
-        content: "Work through all the tabs to create your first product. Once you have products, you can explore the product management features, AI insights, and export options. Take your time - we'll be here when you're ready for the next level!",
+        title: "Complete Your Product Setup",
+        content: "Go ahead and fill out the product information, then work through the other tabs. When you're done, come back to the product list to see the magic - we'll show you the advanced features next!",
         placement: "center",
+        onComplete: {
+          type: "set-data",
+          payload: { waitingForProductCompletion: true },
+        },
       },
     ],
+    nextFlow: "product-management-features",
+    completionMessage: "Create your product, then we'll show you the advanced features!",
   },
+  
   {
-    id: "product-list-mastery",
-    name: "Product Management Features",
-    description: "Master your product portfolio management",
-    trigger: "manual", // Changed to manual to prevent auto-trigger
-    priority: 6,
-    cooldown: 600000, // 10 minutes
-    steps: [
-      {
-        id: "product-portfolio-intro",
-        target: "body",
-        title: "Your Product Portfolio 📦",
-        content: "This is mission control for your products! Here you can view, analyze, export, and get AI insights for all your products' carbon footprints.",
-        placement: "center",
-        delay: 1500,
-      },
-      {
-        id: "search-mastery",
-        target: "[placeholder*='Search']",
-        title: "Smart Search",
-        content: "Quickly find products by name, SKU, or manufacturer. Pro tip: Search requires at least 4 characters for precise results.",
-        placement: "bottom",
-        waitForElement: true,
-      },
-      {
-        id: "emissions-display",
-        target: "tbody tr:first-child td:nth-child(4)",
-        title: "Carbon Footprint Data",
-        content: "Each product shows its total PCF (Product Carbon Footprint) in kg CO₂e. Click the info icon for lifecycle stage breakdowns.",
-        placement: "left",
-        waitForElement: true,
-      },
-      {
-        id: "ai-insights-feature",
-        target: "button:has(.w-3.h-3.text-purple-500)",
-        title: "AI-Powered Optimization",
-        content: "This is where the magic happens! Our AI analyzes your product data and suggests specific actions to reduce carbon footprint.",
-        placement: "top",
-        waitForElement: true,
-      },
-      {
-        id: "export-digital-passport",
-        target: "button:has([class*='FileDown'])",
-        title: "Digital Product Passports",
-        content: "Export your data in multiple formats: AASX for technical integration, XML/JSON for systems, or PDF for reports. All formats are industry-compliant.",
-        placement: "top",
-        waitForElement: true,
-      },
-      {
-        id: "emissions-tree-view",
-        target: "tbody tr:first-child",
-        title: "Detailed Analysis",
-        content: "Click any product row to dive deep into its emission sources. You'll see a visual tree of all contributing factors.",
-        placement: "left",
-      },
-    ],
-  },
-  {
-    id: "dashboard-advanced",
-    name: "Dashboard Deep Dive",
-    description: "Understand all dashboard features and metrics",
+    id: "product-management-features",
+    name: "Product Management Mastery",
+    description: "Advanced product features and AI insights",
     trigger: "manual",
-    priority: 5,
-    cooldown: 900000, // 15 minutes
+    priority: 6,
+    startUrl: "/product-list",
+    prerequisites: ["product-creation-wizard"],
     steps: [
       {
-        id: "dashboard-power-user",
+        id: "product-list-mastery-intro",
         target: "body",
-        title: "Dashboard Mastery 📊",
-        content: "You're becoming a CarbonInsight power user! Let's explore advanced dashboard features for tracking your sustainability progress.",
+        title: "Product Management Mastery 🚀",
+        content: "Excellent! Now you have products in your portfolio. Let's explore the powerful features that make CarbonInsight special - AI insights, export options, and collaboration tools.",
         placement: "center",
         delay: 1000,
       },
       {
-        id: "metrics-overview",
-        target: ".grid-cols-1.md\\:grid-cols-3",
-        title: "Key Performance Indicators",
-        content: "These cards are your sustainability KPIs. Track companies managed, products analyzed, and collaboration requests - all indicators of your environmental impact awareness.",
+        id: "search-and-filter",
+        target: "[placeholder*='Search']",
+        title: "Smart Search & Organization",
+        content: "Quickly find products by name, SKU, or manufacturer. As your product catalog grows, this becomes invaluable for organization.",
         placement: "bottom",
+        waitForElement: true,
       },
       {
-        id: "data-sharing-collaboration",
-        target: "a[href='/product-data-sharing']",
-        title: "Supply Chain Collaboration",
-        content: "This tracks requests from customers or suppliers to share your emission data. It's key for supply chain transparency and building trust.",
-        placement: "top",
+        id: "emissions-data-insight",
+        target: "tbody tr:first-child td:nth-child(4)",
+        title: "Carbon Footprint Insights",
+        content: "Each product shows its total PCF (Product Carbon Footprint) in kg CO₂e. Click any product row to see detailed emission breakdowns by lifecycle stage.",
+        placement: "left",
+        waitForElement: true,
       },
       {
-        id: "audit-trail-compliance",
-        target: "[aria-label*='Audit Log']",
-        title: "Compliance & Audit Trail",
-        content: "Essential for regulatory compliance! This log tracks all changes to your data, showing who did what and when. Critical for audits and certification.",
+        id: "ai-optimization-power",
+        target: "button:has(.text-purple-500)",
+        title: "AI-Powered Optimization ✨",
+        content: "This is game-changing! Our AI analyzes your product data and suggests specific, actionable ways to reduce carbon footprint. Try it!",
         placement: "top",
         waitForElement: true,
       },
+      {
+        id: "export-digital-passports",
+        target: "button:has([class*='FileDown'])",
+        title: "Digital Product Passports",
+        content: "Export your data in industry-standard formats: AAS for technical integration, SCSN for supply chains, or PDF for reports. All formats meet regulatory requirements!",
+        placement: "top",
+        waitForElement: true,
+      },
+      {
+        id: "collaboration-preview",
+        target: "body",
+        title: "Supply Chain Collaboration 🤝",
+        content: "Soon we'll show you how to collaborate with suppliers and customers, sharing verified emission data for complete supply chain transparency. But first, let's explore one more area...",
+        placement: "center",
+        onComplete: {
+          type: "navigate",
+          payload: "/dashboard",
+          delay: 1500,
+        },
+      },
     ],
+    nextFlow: "advanced-features",
+    completionMessage: "You're becoming a CarbonInsight expert! One more area to explore...",
   },
+  
+  {
+    id: "advanced-features",
+    name: "Advanced Features & Collaboration",
+    description: "Data sharing, audit logs, and expert features",
+    trigger: "manual",
+    priority: 5,
+    startUrl: "/dashboard",
+    steps: [
+      {
+        id: "advanced-user-welcome",
+        target: "body",
+        title: "Advanced Features 🎯",
+        content: "You're now a CarbonInsight power user! Let's explore the advanced features that set you apart: audit logs, collaboration tools, and compliance features.",
+        placement: "center",
+        delay: 1000,
+      },
+      {
+        id: "audit-compliance",
+        target: "[aria-label*='table']",
+        title: "Audit Trail & Compliance",
+        content: "This audit log tracks every change to your data - who, what, when. Essential for regulatory compliance and certifications. Shows you take sustainability seriously!",
+        placement: "top",
+        waitForElement: true,
+      },
+      {
+        id: "collaboration-teaser",
+        target: "a[href='/product-data-sharing']",
+        title: "Collaboration Hub",
+        content: "This area manages data sharing requests from customers and suppliers. When they request your emission data, you approve or deny here - maintaining control while enabling transparency.",
+        placement: "top",
+      },
+      {
+        id: "keyboard-shortcuts-hint",
+        target: "body",
+        title: "Pro Tips: Keyboard Shortcuts ⌨️",
+        content: "Power users love efficiency! Press '/' to search anywhere, 'N' to create new items, '?' for help, and 'Esc' to close dialogs. We've built this for speed!",
+        placement: "center",
+      },
+      {
+        id: "onboarding-complete",
+        target: "body",
+        title: "Congratulations! You're Ready! 🎓",
+        content: "You've mastered CarbonInsight! You can now: create companies, calculate product carbon footprints, get AI optimization suggestions, export Digital Product Passports, and collaborate with your supply chain. Welcome to the future of sustainable manufacturing!",
+        placement: "center",
+        showSkip: false,
+      },
+    ],
+    completionMessage: "Onboarding complete! You're now a CarbonInsight expert!",
+  },
+  
+  // Feature-specific flows for later discovery
   {
     id: "ai-assistant-deep-dive",
-    name: "AI Assistant Features",
-    description: "Discover how AI can optimize your carbon footprint",
+    name: "AI Assistant Mastery",
+    description: "Deep dive into AI optimization features",
     trigger: "feature-discovery",
     priority: 4,
     steps: [
       {
-        id: "ai-intro",
+        id: "ai-privacy-first",
         target: "body",
-        title: "Your AI Sustainability Advisor",
-        content: "Our AI assistant analyzes your product data and provides personalized recommendations to reduce carbon footprint. Let's see how it works!",
-        placement: "center",
-      },
-      {
-        id: "ai-data-privacy",
-        target: "body",
-        title: "Privacy & Security",
-        content: "Your data privacy is paramount. The AI analyzes your product information locally and provides recommendations without storing sensitive business data.",
+        title: "AI Privacy & Security 🔒",
+        content: "Your data privacy is paramount. Our AI analyzes your product information to provide recommendations without storing sensitive business data permanently.",
         placement: "center",
       },
       {
         id: "ai-recommendation-types",
         target: "body",
-        title: "Types of Recommendations",
-        content: "The AI can suggest: alternative materials with lower impact, energy efficiency improvements, supplier optimizations, transportation route improvements, and end-of-life strategies.",
-        placement: "center",
-      },
-      {
-        id: "ai-custom-queries",
-        target: "body",
-        title: "Custom Questions",
-        content: "You can ask specific questions like 'How can I reduce transportation emissions?' or 'What's the biggest impact reduction opportunity?' for targeted advice.",
+        title: "Types of AI Recommendations",
+        content: "The AI suggests: alternative materials with lower impact, energy efficiency improvements, supplier optimizations, transportation improvements, and end-of-life strategies.",
         placement: "center",
       },
     ],
   },
+  
   {
-    id: "keyboard-shortcuts-pro",
-    name: "Keyboard Shortcuts & Efficiency",
-    description: "Work faster with keyboard shortcuts and power user features",
+    id: "keyboard-mastery",
+    name: "Keyboard Shortcuts Mastery",
+    description: "Work at lightning speed",
     trigger: "manual",
     priority: 3,
     steps: [
       {
-        id: "shortcuts-intro",
+        id: "efficiency-intro",
         target: "body",
-        title: "Efficiency Mastery",
-        content: "Ready to work at lightning speed? These keyboard shortcuts will make you a CarbonInsight power user!",
+        title: "Work at Lightning Speed ⚡",
+        content: "These shortcuts will make you incredibly efficient. Master these and you'll fly through CarbonInsight!",
         placement: "center",
       },
       {
-        id: "universal-search",
-        target: "[placeholder*='Search']",
-        title: "Universal Search: Press '/'",
-        content: "From anywhere in the app, press '/' to instantly focus the search field. Works on product lists, company lists, and more!",
-        placement: "bottom",
-        waitForElement: true,
-      },
-      {
-        id: "quick-create",
+        id: "universal-shortcuts",
         target: "body",
-        title: "Quick Create: Press 'N'",
-        content: "Press 'N' to quickly create new items based on your current context - products when viewing product list, companies when managing companies.",
-        placement: "center",
-      },
-      {
-        id: "help-access",
-        target: "body",
-        title: "Instant Help: Press '?'",
-        content: "Press '?' anywhere to access the complete keyboard shortcuts reference and accessibility guide.",
-        placement: "center",
-      },
-      {
-        id: "escape-everything",
-        target: "body",
-        title: "Escape to Freedom: Press 'Esc'",
-        content: "The Escape key is your universal 'cancel' - close modals, dismiss dropdowns, cancel forms. Your way out of any situation!",
-        placement: "center",
-      },
-    ],
-  },
-  {
-    id: "data-sharing-collaboration",
-    name: "Supply Chain Collaboration",
-    description: "Learn how to collaborate with suppliers and customers",
-    trigger: "manual",
-    priority: 4,
-    cooldown: 1200000, // 20 minutes
-    steps: [
-      {
-        id: "collaboration-intro",
-        target: "body",
-        title: "Supply Chain Transparency",
-        content: "This is where supply chain magic happens! Manage requests to share your emission data with customers and suppliers for complete transparency.",
-        placement: "center",
-        delay: 1000,
-      },
-      {
-        id: "request-types",
-        target: "body",
-        title: "Understanding Requests",
-        content: "Companies may request access to your product emission data to include in their own calculations. This builds trust and enables accurate scope 3 emissions.",
-        placement: "center",
-      },
-      {
-        id: "approval-process",
-        target: "body",
-        title: "Smart Approval Process",
-        content: "You maintain full control. Review each request, verify the requesting company, and approve only legitimate business partners.",
-        placement: "center",
-      },
-      {
-        id: "competitive-advantage",
-        target: "body",
-        title: "Competitive Advantage",
-        content: "Sharing verified emission data builds trust with customers and can be a key differentiator in sustainability-focused markets.",
+        title: "Universal Shortcuts",
+        content: "• Press '/' to search anywhere\n• Press 'N' to create new items\n• Press '?' for help\n• Press 'Esc' to close anything\n\nTry them now!",
         placement: "center",
       },
     ],
@@ -454,229 +431,148 @@ export function TourProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   
   const [isActive, setIsActive] = useState(false);
-  const [currentTour, setCurrentTour] = useState<Tour | null>(null);
+  const [currentFlow, setCurrentFlow] = useState<TourFlow | null>(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
-  const [completedTours, setCompletedTours] = useState<Set<string>>(new Set());
-  const [lastTriggerTime, setLastTriggerTime] = useState<Record<string, number>>({});
-
-  // Load completed tours from localStorage with proper user ID
+  const [completedFlows, setCompletedFlows] = useState<Set<string>>(new Set());
+  const [onboardingStep, setOnboardingStep] = useState(0);
+  
+  // Load progress from localStorage with proper user scoping
   useEffect(() => {
-    if (typeof window !== "undefined" && user && user.id) {
-      // Clear any old generic user data
-      localStorage.removeItem('completed_tours_user');
-      localStorage.removeItem('tour_trigger_times_user');
+    if (typeof window !== "undefined" && user?.id) {
+      const savedFlows = localStorage.getItem(`completed_flows_${user.id}`);
+      const savedOnboardingStep = localStorage.getItem(`onboarding_step_${user.id}`);
       
-      const saved = localStorage.getItem(`completed_tours_${user.id}`);
-      const savedTriggerTimes = localStorage.getItem(`tour_trigger_times_${user.id}`);
-      
-      if (saved) {
-        setCompletedTours(new Set(JSON.parse(saved)));
-      } else {
-        setCompletedTours(new Set());
+      if (savedFlows) {
+        setCompletedFlows(new Set(JSON.parse(savedFlows)));
       }
       
-      if (savedTriggerTimes) {
-        setLastTriggerTime(JSON.parse(savedTriggerTimes));
-      } else {
-        setLastTriggerTime({});
+      if (savedOnboardingStep) {
+        setOnboardingStep(parseInt(savedOnboardingStep, 10));
       }
     }
   }, [user]);
 
-  // Save completed tours to localStorage
-  const saveCompletedTours = useCallback((tours: Set<string>) => {
-    if (typeof window !== "undefined" && user && user.id) {
-      localStorage.setItem(`completed_tours_${user.id}`, JSON.stringify([...tours]));
+  // Save progress to localStorage
+  const saveProgress = useCallback((flows: Set<string>, step: number) => {
+    if (typeof window !== "undefined" && user?.id) {
+      localStorage.setItem(`completed_flows_${user.id}`, JSON.stringify([...flows]));
+      localStorage.setItem(`onboarding_step_${user.id}`, step.toString());
     }
   }, [user]);
 
-  const saveTriggerTime = useCallback((tourId: string) => {
-    if (typeof window !== "undefined" && user && user.id) {
-      const newTriggerTimes = { ...lastTriggerTime, [tourId]: Date.now() };
-      setLastTriggerTime(newTriggerTimes);
-      localStorage.setItem(`tour_trigger_times_${user.id}`, JSON.stringify(newTriggerTimes));
-    }
-  }, [lastTriggerTime, user]);
-
-  // Check if a tour can be triggered (respects cooldown)
-  const canTriggerTour = useCallback((tour: Tour): boolean => {
-    if (completedTours.has(tour.id)) return false;
-    if (!tour.cooldown) return true;
-    
-    const lastTrigger = lastTriggerTime[tour.id];
-    if (!lastTrigger) return true;
-    
-    return Date.now() - lastTrigger > tour.cooldown;
-  }, [completedTours, lastTriggerTime]);
-
-  // Check for automatic tour triggers with better logic
+  // Smart auto-trigger logic - only for truly new users
   useEffect(() => {
     if (!isAuthenticated || isActive || !user) return;
 
-    const checkTriggers = () => {
-      // First-login trigger (highest priority) - only for truly new users
-      const welcomeTour = TOURS.find(t => t.trigger === "first-login");
-      if (welcomeTour && !completedTours.has(welcomeTour.id) && completedTours.size === 0) {
-        setTimeout(() => startTour(welcomeTour.id), 2000);
-        return;
-      }
+    // Only auto-trigger for completely new users
+    if (completedFlows.size === 0 && onboardingStep === 0) {
+      // Small delay to ensure page is loaded
+      const timer = setTimeout(() => {
+        startFlow("complete-onboarding", false);
+      }, 2000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthenticated, user, completedFlows.size, onboardingStep, isActive]);
 
-      // Don't auto-trigger other tours to prevent loops
-      // Users will be guided to continue via post-tour navigation
-    };
-
-    checkTriggers();
-  }, [pathname, isAuthenticated, user, completedTours, isActive, canTriggerTour]);
-
-  const startTour = useCallback((tourId: string) => {
-    const tour = TOURS.find(t => t.id === tourId);
-    if (!tour || isActive) return;
+  const startFlow = useCallback((flowId: string, force: boolean = false) => {
+    const flow = TOUR_FLOWS.find(f => f.id === flowId);
+    if (!flow || (isActive && !force)) return;
 
     // Check prerequisites
-    if (tour.prerequisites) {
-      const missingPrerequisites = tour.prerequisites.filter(req => !completedTours.has(req));
-      if (missingPrerequisites.length > 0) {
-        console.log(`Tour ${tourId} requires: ${missingPrerequisites.join(', ')}`);
+    if (flow.prerequisites && !force) {
+      const missing = flow.prerequisites.filter(req => !completedFlows.has(req));
+      if (missing.length > 0) {
+        console.log(`Flow ${flowId} requires: ${missing.join(', ')}`);
         return;
       }
     }
 
-    setCurrentTour(tour);
-    setCurrentStepIndex(0);
-    setIsActive(true);
-    saveTriggerTime(tourId);
+    // Navigate to start URL if specified and we're not already there
+    if (flow.startUrl && pathname !== flow.startUrl) {
+      router.push(flow.startUrl);
+      // Wait for navigation, then start tour
+      setTimeout(() => {
+        setCurrentFlow(flow);
+        setCurrentStepIndex(0);
+        setIsActive(true);
+      }, 1000);
+    } else {
+      setCurrentFlow(flow);
+      setCurrentStepIndex(0);
+      setIsActive(true);
+    }
 
     // Announce to screen readers
     const announcement = document.createElement("div");
     announcement.setAttribute("role", "status");
     announcement.setAttribute("aria-live", "polite");
     announcement.className = "sr-only";
-    announcement.textContent = `Starting ${tour.name} tour`;
+    announcement.textContent = `Starting ${flow.name}`;
     document.body.appendChild(announcement);
     setTimeout(() => document.body.removeChild(announcement), 1000);
-  }, [isActive, saveTriggerTime, completedTours]);
+  }, [isActive, router, pathname, completedFlows]);
 
-  const stopTour = useCallback(() => {
+  const stopFlow = useCallback(() => {
     setIsActive(false);
-    setCurrentTour(null);
+    setCurrentFlow(null);
     setCurrentStepIndex(0);
   }, []);
 
   const nextStep = useCallback(() => {
-    if (!currentTour) return;
+    if (!currentFlow) return;
 
-    const currentStep = currentTour.steps[currentStepIndex];
-    const isLastStep = currentStepIndex === currentTour.steps.length - 1;
+    const currentStep = currentFlow.steps[currentStepIndex];
+    const isLastStep = currentStepIndex === currentFlow.steps.length - 1;
     
-    // Handle step actions for non-final steps
-    if (!isLastStep && currentStep.action) {
-      const { action } = currentStep;
+    // Handle step completion actions
+    if (currentStep.onComplete) {
+      const { onComplete } = currentStep;
       
-      if (action.type === "navigate" && action.url) {
-        // Stop current tour before navigation
-        stopTour();
-        
-        // Navigate after a brief delay
+      if (onComplete.type === "navigate" && onComplete.payload) {
         setTimeout(() => {
-          router.push(action.url!);
-        }, action.delay || 500);
+          router.push(onComplete.payload);
+        }, onComplete.delay || 500);
+      } else if (onComplete.type === "wait") {
+        // Just wait, don't advance step yet
+        setTimeout(() => {
+          if (!isLastStep) {
+            setCurrentStepIndex(prev => prev + 1);
+          }
+        }, onComplete.delay || 1000);
         return;
-      } else if (action.type === "click" && action.target) {
-        const element = document.querySelector(action.target) as HTMLElement;
-        if (element) {
-          element.click();
-        }
-      } else if (action.type === "focus" && action.target) {
-        const element = document.querySelector(action.target) as HTMLElement;
-        if (element) {
-          element.focus();
-        }
       }
     }
 
     if (!isLastStep) {
       setCurrentStepIndex(prev => prev + 1);
     } else {
-      // Tour completed - handle post-tour navigation
-      const newCompleted = new Set(completedTours);
-      newCompleted.add(currentTour.id);
-      setCompletedTours(newCompleted);
-      saveCompletedTours(newCompleted);
+      // Flow completed
+      const newCompleted = new Set(completedFlows);
+      newCompleted.add(currentFlow.id);
+      setCompletedFlows(newCompleted);
       
-      // Handle post-tour navigation and continuation
-      handleTourCompletion(currentTour.id);
+      // Update onboarding progress
+      const newOnboardingStep = Math.max(onboardingStep, getFlowOnboardingStep(currentFlow.id));
+      setOnboardingStep(newOnboardingStep);
       
-      stopTour();
+      saveProgress(newCompleted, newOnboardingStep);
+      
+      stopFlow();
+      
+      // Handle flow completion
+      handleFlowCompletion(currentFlow);
 
       // Announce completion
       const announcement = document.createElement("div");
       announcement.setAttribute("role", "status");
       announcement.setAttribute("aria-live", "polite");
       announcement.className = "sr-only";
-      announcement.textContent = `${currentTour.name} tour completed`;
+      announcement.textContent = `${currentFlow.name} completed`;
       document.body.appendChild(announcement);
       setTimeout(() => document.body.removeChild(announcement), 1000);
     }
-  }, [currentTour, currentStepIndex, completedTours, saveCompletedTours, stopTour, router]);
-
-  // Handle post-tour navigation and continuation
-  const handleTourCompletion = useCallback((completedTourId: string) => {
-    const currentPath = pathname;
-    
-    switch (completedTourId) {
-      case "welcome-first-time":
-        // Navigate to company creation and start that tour
-        setTimeout(() => {
-          router.push("/create-company");
-          setTimeout(() => {
-            startTour("company-creation-guide");
-          }, 1500);
-        }, 1000);
-        break;
-        
-      case "company-creation-guide":
-        // User should create their company first, then we'll trigger the success tour
-        // The success tour is triggered by the create company action
-        break;
-        
-      case "company-created-success":
-        // Navigate to product creation and start that tour
-        setTimeout(() => {
-          router.push("/product-list/product");
-          setTimeout(() => {
-            startTour("product-creation-comprehensive");
-          }, 1500);
-        }, 1000);
-        break;
-        
-      case "product-creation-comprehensive":
-        // Show guidance about continuing when they have products
-        if (typeof window !== "undefined") {
-          setTimeout(() => {
-            const continueDialog = confirm(
-              "Great work! You've learned the basics of product creation.\n\n" +
-              "Once you've created some products, you can explore:\n" +
-              "• Product Management features\n" +
-              "• AI-powered optimization\n" +
-              "• Digital Product Passport exports\n\n" +
-              "Would you like to see the Product Management tour now?"
-            );
-            
-            if (continueDialog) {
-              router.push("/product-list");
-              setTimeout(() => {
-                startTour("product-list-mastery");
-              }, 1500);
-            }
-          }, 2000);
-        }
-        break;
-        
-      default:
-        // For other tours, just show a completion message
-        break;
-    }
-  }, [pathname, router, startTour]);
+  }, [currentFlow, currentStepIndex, completedFlows, onboardingStep, saveProgress, stopFlow, router]);
 
   const prevStep = useCallback(() => {
     if (currentStepIndex > 0) {
@@ -684,46 +580,82 @@ export function TourProvider({ children }: { children: ReactNode }) {
     }
   }, [currentStepIndex]);
 
-  const skipTour = useCallback(() => {
-    if (!currentTour) return;
+  const skipFlow = useCallback(() => {
+    if (!currentFlow) return;
 
-    const newCompleted = new Set(completedTours);
-    newCompleted.add(currentTour.id);
-    setCompletedTours(newCompleted);
-    saveCompletedTours(newCompleted);
-    stopTour();
-  }, [currentTour, completedTours, saveCompletedTours, stopTour]);
+    const newCompleted = new Set(completedFlows);
+    newCompleted.add(currentFlow.id);
+    setCompletedFlows(newCompleted);
+    
+    const newOnboardingStep = Math.max(onboardingStep, getFlowOnboardingStep(currentFlow.id));
+    setOnboardingStep(newOnboardingStep);
+    
+    saveProgress(newCompleted, newOnboardingStep);
+    stopFlow();
+  }, [currentFlow, completedFlows, onboardingStep, saveProgress, stopFlow]);
 
-  // Special trigger functions with better flow management
-  const triggerCompanyCreatedTour = useCallback(() => {
-    // Only trigger if user completed the welcome tour or is manually starting
-    if (completedTours.has("welcome-first-time") || completedTours.size > 0) {
+  // Handle post-flow actions and automatic continuation
+  const handleFlowCompletion = useCallback((completedFlow: TourFlow) => {
+    if (completedFlow.completionAction) {
+      const { completionAction } = completedFlow;
+      
+      if (completionAction.type === "navigate") {
+        setTimeout(() => {
+          router.push(completionAction.payload);
+        }, 1000);
+      } else if (completionAction.type === "trigger-flow" && completedFlow.nextFlow) {
+        setTimeout(() => {
+          startFlow(completedFlow.nextFlow!);
+        }, 1500);
+      }
+    } else if (completedFlow.nextFlow) {
+      // Auto-continue to next flow
       setTimeout(() => {
-        startTour("company-created-success");
-      }, 2000);
+        startFlow(completedFlow.nextFlow!);
+      }, 1500);
     }
-  }, [startTour, completedTours]);
+  }, [router, startFlow]);
 
-  const triggerFeatureTour = useCallback((featureId: string) => {
-    const tour = TOURS.find(t => t.trigger === "feature-discovery" && t.id.includes(featureId));
-    if (tour) {
-      startTour(tour.id);
+  // Helper function to map flow IDs to onboarding steps
+  const getFlowOnboardingStep = (flowId: string): number => {
+    const stepMap: Record<string, number> = {
+      "complete-onboarding": 1,
+      "company-creation-guided": 2,
+      "dashboard-and-first-product": 3,
+      "product-creation-wizard": 4,
+      "product-management-features": 5,
+      "advanced-features": 6,
+    };
+    return stepMap[flowId] || 0;
+  };
+
+  // Special trigger functions
+  const triggerOnboardingFlow = useCallback(() => {
+    startFlow("complete-onboarding", true);
+  }, [startFlow]);
+
+  const triggerFeatureDiscovery = useCallback((featureId: string) => {
+    const flow = TOUR_FLOWS.find(f => f.trigger === "feature-discovery" && f.id.includes(featureId));
+    if (flow) {
+      startFlow(flow.id);
     }
-  }, [startTour]);
+  }, [startFlow]);
 
   const value: TourContextType = {
     isActive,
-    currentTour,
+    currentFlow,
     currentStepIndex,
-    startTour,
-    stopTour,
+    startFlow,
+    stopFlow,
     nextStep,
     prevStep,
-    skipTour,
-    completedTours,
-    availableTours: TOURS,
-    triggerCompanyCreatedTour,
-    triggerFeatureTour,
+    skipFlow,
+    completedFlows,
+    availableFlows: TOUR_FLOWS,
+    currentOnboardingStep: onboardingStep,
+    isOnboardingComplete: onboardingStep >= 6,
+    triggerOnboardingFlow,
+    triggerFeatureDiscovery,
   };
 
   return <TourContext.Provider value={value}>{children}</TourContext.Provider>;
@@ -737,15 +669,15 @@ export function useTour() {
   return context;
 }
 
-// Helper hook for triggering specific tour events
+// Helper hook for triggering specific events
 export function useTourTrigger() {
-  const { startTour, triggerCompanyCreatedTour, triggerFeatureTour } = useTour();
+  const { startFlow, triggerOnboardingFlow, triggerFeatureDiscovery } = useTour();
 
   return {
-    triggerCompanyCreatedTour,
-    triggerFeatureTour,
-    triggerKeyboardShortcutsTour: () => startTour("keyboard-shortcuts-pro"),
-    triggerAIAssistantTour: () => triggerFeatureTour("ai-assistant"),
-    triggerDataSharingTour: () => startTour("data-sharing-collaboration"),
+    triggerOnboardingFlow,
+    triggerFeatureDiscovery,
+    triggerKeyboardShortcuts: () => startFlow("keyboard-mastery"),
+    triggerAIDeepDive: () => startFlow("ai-assistant-deep-dive"),
+    triggerManualFlow: (flowId: string) => startFlow(flowId, true),
   };
 }

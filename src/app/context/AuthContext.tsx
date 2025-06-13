@@ -183,6 +183,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const response = await authApi.register(userData);
       localStorage.setItem("access_token", response.access);
       localStorage.setItem("refresh_token", response.refresh);
+      
+      // Mark as new user for tour
+      localStorage.setItem("isNewUser", "true");
+      
       setUser(response.user);
     } catch (error) {
       console.error("Registration failed:", error);

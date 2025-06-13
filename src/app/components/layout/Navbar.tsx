@@ -7,6 +7,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import Button from "../ui/Button";
 import ThemeSelector from "../ui/ThemeSelector";
+import HelpMenu from "../HelpMenu";
 import {
   ChevronDown,
   SettingsIcon,
@@ -362,7 +363,7 @@ export default function Navbar() {
                   )}
 
                   {/* Company Selector */}
-                  <div className="flex-shrink-0">
+                  <div className="flex-shrink-0 company-selector-wrapper">
                     <CleanCompanySelector
                       companies={allCompanies}
                       currentCompanyId={companyId}
@@ -376,6 +377,9 @@ export default function Navbar() {
                       onClose={() => setIsCompanyMenuOpen(false)}
                     />
                   </div>
+
+                  {/* Help Menu */}
+                  <HelpMenu />
 
                   {/* Profile Menu */}
                   <div className="relative flex-shrink-0" ref={profileMenuRef}>
@@ -409,7 +413,7 @@ export default function Navbar() {
                         </div>
 
                         {/* Theme Selection */}
-                        <div className="border-b border-gray-200 dark:border-gray-700">
+                        <div className="border-b border-gray-200 dark:border-gray-700 theme-selector">
                           <ThemeSelector />
                         </div>
 
@@ -596,8 +600,13 @@ export default function Navbar() {
                 </div>
 
                 {/* Mobile theme selection */}
-                <div className="border-t border-gray-200 dark:border-gray-700">
+                <div className="border-t border-gray-200 dark:border-gray-700 theme-selector">
                   <ThemeSelector />
+                </div>
+
+                {/* Mobile help menu */}
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-2 px-3">
+                  <HelpMenu />
                 </div>
 
                 {/* Keyboard shortcuts info for mobile */}
@@ -625,7 +634,7 @@ export default function Navbar() {
                 </Link>
 
                 {/* Mobile theme selection for non-authenticated users */}
-                <div className="border-t border-gray-200 dark:border-gray-700">
+                <div className="border-t border-gray-200 dark:border-gray-700 theme-selector">
                   <ThemeSelector />
                 </div>
               </>

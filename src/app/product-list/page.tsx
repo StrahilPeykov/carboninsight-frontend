@@ -331,7 +331,7 @@ export default function ProductListPage() {
         />
         <Button
           onClick={() => router.push(`/product-list/product`)}
-          className="bg-black text-white rounded-md px-4 py-2 text-md"
+          className="bg-black text-white rounded-md px-4 py-2 text-md add-product-button"
         >
           Add Product
         </Button>
@@ -383,7 +383,7 @@ export default function ProductListPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="flex items-center gap-1 text-xs"
+                            className="export-button flex items-center gap-1 text-xs"
                             onClick={e => handleExportClick(product, e)}
                           >
                             <FileDown className="w-3 h-3" />
@@ -394,7 +394,7 @@ export default function ProductListPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="group flex items-center gap-1 text-xs hover:bg-gradient-to-r from-purple-500 to-blue-500 hover:text-white"
+                            className="ai-button group flex items-center gap-1 text-xs hover:bg-gradient-to-r from-purple-500 to-blue-500 hover:text-white"
                             onClick={e => {
                               e.stopPropagation();
                               handleAIButtonClick(product.id);
@@ -495,10 +495,7 @@ export default function ProductListPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      /* group = lets icons & label inherit the hover state if you want */
-                      className="group flex items-center gap-1 text-xs transition-colors
-                      motion-safe:hover:animate-hue
-                      motion-safe:active:animate-hue-fast"
+                      className="export-button group flex items-center gap-1 text-xs transition-colors motion-safe:hover:animate-hue motion-safe:active:animate-hue-fast"
                       onClick={e => handleExportClick(product, e)}
                     >
                       <FileDown className="w-3 h-3" />
@@ -509,9 +506,7 @@ export default function ProductListPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="group flex items-center gap-1 text-xs transition-colors
-                      motion-safe:hover:animate-hue
-                      motion-safe:active:animate-hue-fast"
+                      className="ai-button group flex items-center gap-1 text-xs transition-colors motion-safe:hover:animate-hue motion-safe:active:animate-hue-fast"
                       onClick={e => {
                         e.stopPropagation();
                         handleAIButtonClick(product.id);

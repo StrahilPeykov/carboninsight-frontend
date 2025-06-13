@@ -95,7 +95,7 @@ export default function CleanCompanySelector({
       {/* Company Selector Button */}
       <button
         onClick={() => onToggle()}
-        className={`flex items-center px-3 py-2 rounded-md text-sm font-medium h-[44px] transition-all duration-200 min-w-0 max-w-full border
+        className={`company-selector-button flex items-center px-3 py-2 rounded-md text-sm font-medium h-[44px] transition-all duration-200 min-w-0 max-w-full border
           ${
             currentCompany
               ? "bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
@@ -172,7 +172,7 @@ export default function CleanCompanySelector({
                   }
                 }}
                 disabled={!currentCompanyId}
-                className="flex flex-col items-center p-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-white dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-transparent hover:border-gray-200 dark:hover:border-gray-600"
+                className="company-settings-button flex flex-col items-center p-2 text-xs text-gray-600 hover:text-gray-900 hover:bg-white dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-transparent hover:border-gray-200 dark:hover:border-gray-600"
                 title="Company Settings"
               >
                 <Settings size={14} className="mb-1" />

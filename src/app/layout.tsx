@@ -6,6 +6,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import TourProvider from "./components/TourProvider";
 import GlobalCompanyChangeHandler from "./components/GlobalCompanyChangeHandler";
 import KeyboardShortcutsProvider from "./components/KeyboardShortcutsProvider";
+import TourTrigger from "./components/TourTrigger";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -14,15 +15,6 @@ export const metadata: Metadata = {
     "Calculate your product carbon footprint and generate Digital Product Passports compliant with AAS standards",
   keywords: "carbon footprint, PCF, digital product passport, DPP, sustainability, AAS",
 };
-
-// Client component wrapper for tour trigger
-function TourTriggerWrapper({ children }: { children: React.ReactNode }) {
-  "use client";
-  
-  const { useTourTrigger } = require("@/hooks/useTourTrigger");
-  useTourTrigger();
-  return <>{children}</>;
-}
 
 export default function RootLayout({
   children,
@@ -44,14 +36,13 @@ export default function RootLayout({
           <ThemeProvider>
             <TourProvider>
               <KeyboardShortcutsProvider>
-                <TourTriggerWrapper>
-                  <GlobalCompanyChangeHandler />
-                  <Navbar />
-                  <main id="main-content" className="flex-grow" tabIndex={-1}>
-                    {children}
-                  </main>
-                  <Footer />
-                </TourTriggerWrapper>
+                <TourTrigger />
+                <GlobalCompanyChangeHandler />
+                <Navbar />
+                <main id="main-content" className="flex-grow" tabIndex={-1}>
+                  {children}
+                </main>
+                <Footer />
               </KeyboardShortcutsProvider>
             </TourProvider>
           </ThemeProvider>

@@ -53,7 +53,7 @@ const TOURS = {
   ],
   'product-list-tour': [
     {
-      target: 'button:has-text("Add Product")',
+      target: '.add-product-button',
       title: 'Add Your First Product',
       content: 'Click here to add a new product and start calculating its carbon footprint.',
       placement: 'left' as const,
@@ -65,13 +65,13 @@ const TOURS = {
       placement: 'bottom' as const,
     },
     {
-      target: '.export-button:first-of-type',
+      target: '.export-button',
       title: 'Export Digital Product Passports',
       content: 'Export your product data in various formats including PDF reports and AAS packages.',
       placement: 'left' as const,
     },
     {
-      target: '.ai-button:first-of-type',
+      target: '.ai-button',
       title: 'AI-Powered Insights',
       content: 'Get personalized recommendations for reducing your product\'s carbon footprint.',
       placement: 'left' as const,

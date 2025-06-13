@@ -2,26 +2,48 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronRight, ChevronLeft, X, Sparkles } from 'lucide-react';
 
 interface TourStep {
-  target: string; // CSS selector for the element to highlight
+  target: string;
   title: string;
   content: string;
   placement?: 'top' | 'bottom' | 'left' | 'right' | 'center';
   spotlightPadding?: number;
+  waitForAction?: boolean;
+  expectedAction?: string;
 }
 
 interface OnboardingTourProps {
   steps: TourStep[];
   onComplete?: () => void;
   onSkip?: () => void;
+  currentStepIndex?: number;
+  totalSteps?: number;
+  globalCurrentStep?: number;
 }
 
-export default function OnboardingTour({ steps, onComplete, onSkip }: OnboardingTourProps) {
-  const [currentStep, setCurrentStep] = useState(0);
+export default function OnboardingTour({ 
+  steps, 
+  onComplete, 
+  onSkip,
+  currentStepIndex = 0,
+  totalSteps,
+  globalCurrentStep = 0
+}: OnboardingTourProps) {
+  const [localStep, setLocalStep] = useState(currentStepIndex);
   const [isVisible, setIsVisible] = useState(true);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
-  const currentStepData = steps[currentStep];
+  // Use totalSteps if provided, otherwise use steps.length
+  const totalStepCount = totalSteps || steps.length;
+  
+  // Calculate the actual step number for display
+  const displayStepNumber = globalCurrentStep + 1;
+
+  const currentStepData = steps[localStep];
+
+  useEffect(() => {
+    setLocalStep(currentStepIndex);
+  }, [currentStepIndex]);
 
   useEffect(() => {
     if (!isVisible || !currentStepData) return;
@@ -37,21 +59,23 @@ export default function OnboardingTour({ steps, onComplete, onSkip }: Onboarding
         const rect = targetElement.getBoundingClientRect();
         setTargetRect(rect);
         
-        // Scroll element into view with smooth behavior
-        targetElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center',
-          inline: 'center'
-        });
+        // Only scroll into view if element is not already visible
+        const isInViewport = rect.top >= 0 && rect.bottom <= window.innerHeight;
+        if (!isInViewport) {
+          targetElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'center'
+          });
+        }
       } else {
-        // If target doesn't exist, treat as center placement
         console.warn(`Tour target not found: ${currentStepData.target}`);
         setTargetRect(null);
       }
     };
 
-    // Update position initially and on scroll/resize
-    updateTargetPosition();
+    // Small delay to ensure DOM is ready
+    const timeoutId = setTimeout(updateTargetPosition, 100);
     
     const handleUpdate = () => {
       requestAnimationFrame(updateTargetPosition);
@@ -60,23 +84,39 @@ export default function OnboardingTour({ steps, onComplete, onSkip }: Onboarding
     window.addEventListener('scroll', handleUpdate, true);
     window.addEventListener('resize', handleUpdate);
 
+    // Set up mutation observer to watch for DOM changes
+    const observer = new MutationObserver(() => {
+      updateTargetPosition();
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['class', 'style']
+    });
+
     return () => {
+      clearTimeout(timeoutId);
       window.removeEventListener('scroll', handleUpdate, true);
       window.removeEventListener('resize', handleUpdate);
+      observer.disconnect();
     };
-  }, [currentStep, currentStepData, isVisible]);
+  }, [localStep, currentStepData, isVisible]);
 
   const handleNext = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      handleComplete();
+    if (!currentStepData.waitForAction) {
+      if (localStep < steps.length - 1) {
+        setLocalStep(localStep + 1);
+      } else {
+        handleComplete();
+      }
     }
   };
 
   const handlePrevious = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+    if (localStep > 0) {
+      setLocalStep(localStep - 1);
     }
   };
 
@@ -137,11 +177,15 @@ export default function OnboardingTour({ steps, onComplete, onSkip }: Onboarding
   if (!isVisible) return null;
 
   const spotlightPadding = currentStepData.spotlightPadding || 8;
+  const isWaitingForAction = currentStepData.waitForAction;
 
   return (
     <>
       {/* Backdrop with spotlight */}
-      <div className="fixed inset-0 z-[9998] pointer-events-none">
+      <div 
+        className="fixed inset-0 z-[9998]"
+        style={{ pointerEvents: isWaitingForAction ? 'none' : 'auto' }}
+      >
         <svg className="absolute inset-0 w-full h-full">
           <defs>
             <mask id="spotlight-mask">
@@ -165,16 +209,44 @@ export default function OnboardingTour({ steps, onComplete, onSkip }: Onboarding
             height="100%"
             fill="rgba(0, 0, 0, 0.7)"
             mask="url(#spotlight-mask)"
-            className="pointer-events-auto tour-backdrop"
-            onClick={handleSkip}
+            className="tour-backdrop"
+            onClick={!isWaitingForAction ? handleSkip : undefined}
+            style={{ pointerEvents: 'auto' }}
           />
         </svg>
       </div>
 
+      {/* Click blocker for everything except the highlighted element */}
+      {isWaitingForAction && (
+        <div 
+          className="fixed inset-0 z-[9999]" 
+          style={{ pointerEvents: 'auto' }}
+          onClick={(e) => {
+            // Prevent clicks from going through
+            e.stopPropagation();
+            e.preventDefault();
+          }}
+        >
+          {/* Cut out hole for the target element */}
+          {targetRect && (
+            <div
+              style={{
+                position: 'absolute',
+                top: targetRect.top - spotlightPadding,
+                left: targetRect.left - spotlightPadding,
+                width: targetRect.width + spotlightPadding * 2,
+                height: targetRect.height + spotlightPadding * 2,
+                pointerEvents: 'none',
+              }}
+            />
+          )}
+        </div>
+      )}
+
       {/* Animated border around target element */}
       {targetRect && currentStepData.placement !== 'center' && (
         <div
-          className="fixed z-[9999] pointer-events-none animate-pulse"
+          className="fixed z-[9997] pointer-events-none animate-pulse"
           style={{
             top: targetRect.top - spotlightPadding - 2,
             left: targetRect.left - spotlightPadding - 2,
@@ -190,7 +262,7 @@ export default function OnboardingTour({ steps, onComplete, onSkip }: Onboarding
       {/* Tooltip */}
       <div
         ref={tooltipRef}
-        className="fixed z-[10000] bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 max-w-md tour-tooltip tour-tooltip-enter"
+        className="fixed z-[10000] bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 max-w-md tour-tooltip tour-tooltip-enter pointer-events-auto"
         style={getTooltipPosition()}
       >
         {/* Header */}
@@ -198,7 +270,7 @@ export default function OnboardingTour({ steps, onComplete, onSkip }: Onboarding
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-red-500" />
             <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              Step {currentStep + 1} of {steps.length}
+              Step {displayStepNumber} of {totalStepCount}
             </span>
           </div>
           <button
@@ -218,15 +290,25 @@ export default function OnboardingTour({ steps, onComplete, onSkip }: Onboarding
           {currentStepData.content}
         </p>
 
+        {/* Show waiting indicator if waiting for action */}
+        {isWaitingForAction && (
+          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <p className="text-sm text-blue-700 dark:text-blue-300 flex items-center gap-2">
+              <span className="animate-pulse">👆</span>
+              Click the highlighted element to continue
+            </p>
+          </div>
+        )}
+
         {/* Progress dots */}
         <div className="flex justify-center gap-1 mb-4">
-          {steps.map((_, index) => (
+          {Array.from({ length: totalStepCount }).map((_, index) => (
             <div
               key={index}
               className={`h-2 w-2 rounded-full transition-all duration-300 tour-progress-dot ${
-                index === currentStep
+                index === globalCurrentStep
                   ? 'bg-red-500 w-8 tour-progress-dot-active'
-                  : index < currentStep
+                  : index < globalCurrentStep
                   ? 'bg-red-300'
                   : 'bg-gray-300 dark:bg-gray-600'
               }`}
@@ -244,7 +326,7 @@ export default function OnboardingTour({ steps, onComplete, onSkip }: Onboarding
           </button>
           
           <div className="flex gap-2">
-            {currentStep > 0 && (
+            {localStep > 0 && !isWaitingForAction && (
               <button
                 onClick={handlePrevious}
                 className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors tour-button"
@@ -254,13 +336,15 @@ export default function OnboardingTour({ steps, onComplete, onSkip }: Onboarding
               </button>
             )}
             
-            <button
-              onClick={handleNext}
-              className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors tour-button"
-            >
-              {currentStep === steps.length - 1 ? 'Finish' : 'Next'}
-              <ChevronRight className="w-4 h-4" />
-            </button>
+            {!isWaitingForAction && (
+              <button
+                onClick={handleNext}
+                className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors tour-button"
+              >
+                {localStep === steps.length - 1 && globalCurrentStep === totalStepCount - 1 ? 'Finish' : 'Next'}
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </div>

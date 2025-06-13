@@ -43,6 +43,10 @@ export default function OnboardingTour({ steps, onComplete, onSkip }: Onboarding
           block: 'center',
           inline: 'center'
         });
+      } else {
+        // If target doesn't exist, treat as center placement
+        console.warn(`Tour target not found: ${currentStepData.target}`);
+        setTargetRect(null);
       }
     };
 

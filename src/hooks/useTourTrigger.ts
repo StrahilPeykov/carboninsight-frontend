@@ -14,7 +14,7 @@ export function useTourTrigger() {
   useEffect(() => {
     if (!isAuthenticated || !user) return;
 
-    // Check if user just registered (you might want to add a flag in your auth context)
+    // Check if user just registered
     const isNewUser = localStorage.getItem('isNewUser') === 'true';
     
     if (isNewUser && !isTourCompleted('main-onboarding')) {
@@ -23,29 +23,46 @@ export function useTourTrigger() {
         startTour('main-onboarding');
         localStorage.removeItem('isNewUser');
       }, 1000);
+      return; // Don't trigger other tours if we're showing onboarding
     }
 
-    // Trigger context-specific tours
-    if (pathname === '/product-list' && !isTourCompleted('product-list-tour')) {
-      const hasSeenDashboard = localStorage.getItem('hasSeenDashboard') === 'true';
-      if (hasSeenDashboard) {
-        setTimeout(() => {
-          startTour('product-list-tour');
-        }, 500);
+    // Check if user has a company
+    const hasCompany = localStorage.getItem('selected_company_id');
+
+    // Trigger context-specific tours only if user has completed onboarding
+    if (isTourCompleted('main-onboarding') || hasCompany) {
+      // Only trigger product tour if user has a company and is on product list page
+      if (pathname === '/product-list' && hasCompany && !isTourCompleted('product-list-tour')) {
+        const hasSeenProductList = localStorage.getItem('hasSeenProductList') === 'true';
+        if (!hasSeenProductList) {
+          setTimeout(() => {
+            startTour('product-list-tour');
+            localStorage.setItem('hasSeenProductList', 'true');
+          }, 500);
+        }
       }
-    }
 
-    if (pathname === '/list-companies' && !isTourCompleted('company-tour')) {
-      setTimeout(() => {
-        startTour('company-tour');
-      }, 500);
+      // Only trigger company tour if on companies page and not completed
+      if (pathname === '/list-companies' && !isTourCompleted('company-tour')) {
+        const hasSeenCompanyList = localStorage.getItem('hasSeenCompanyList') === 'true';
+        if (!hasSeenCompanyList) {
+          setTimeout(() => {
+            startTour('company-tour');
+            localStorage.setItem('hasSeenCompanyList', 'true');
+          }, 500);
+        }
+      }
     }
   }, [isAuthenticated, user, pathname, startTour, isTourCompleted]);
 
-  // Mark dashboard as seen
+  // Mark pages as seen for tour triggering
   useEffect(() => {
     if (pathname === '/dashboard') {
       localStorage.setItem('hasSeenDashboard', 'true');
+    } else if (pathname === '/product-list') {
+      localStorage.setItem('hasSeenProductList', 'true');
+    } else if (pathname === '/list-companies') {
+      localStorage.setItem('hasSeenCompanyList', 'true');
     }
   }, [pathname]);
 }

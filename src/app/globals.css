@@ -413,276 +413,10 @@ html.dark .support-email-text {
   animation: hue-rotate 5s linear infinite;
 }
 
-/* Tour animations */
-@keyframes tour-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes tour-slide-up {
-  from {
-    transform: translateY(10px);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-@keyframes tour-pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(1.05);
-  }
-}
-
-@keyframes tour-spotlight-pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(194, 0, 22, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 10px rgba(194, 0, 22, 0);
-  }
-}
-
-/* Tour tooltip entrance animation */
-.tour-tooltip-enter {
-  animation: tour-fade-in 0.3s ease-out, tour-slide-up 0.3s ease-out;
-}
-
-/* Spotlight border animation */
-.tour-spotlight-border {
-  position: relative;
-  overflow: hidden;
-}
-
-.tour-spotlight-border::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: linear-gradient(
-    45deg,
-    #c20016,
-    #ff6b6b,
-    #c20016,
-    #ff6b6b
-  );
-  border-radius: 8px;
-  opacity: 0;
-  animation: tour-fade-in 0.5s ease-out forwards;
-  background-size: 400% 400%;
-  animation: tour-fade-in 0.5s ease-out forwards,
-            gradient-shift 3s ease infinite;
-}
-
-@keyframes gradient-shift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-/* Smooth scroll behavior for tour */
-.tour-scroll-smooth {
+/* Tour styles - Simple and clean */
+.tour-active {
+  /* Ensure smooth scrolling during tour */
   scroll-behavior: smooth;
-}
-
-/* Tour progress dots animation */
-.tour-progress-dot {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.tour-progress-dot-active {
-  animation: tour-pulse 2s ease-in-out infinite;
-}
-
-/* Skip and navigation button animations */
-.tour-button {
-  transition: all 0.2s ease;
-}
-
-.tour-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-              0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-.tour-button:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-}
-
-/* Backdrop fade animation */
-.tour-backdrop {
-  animation: tour-fade-in 0.3s ease-out;
-}
-
-/* Mobile adjustments */
-@media (max-width: 640px) {
-  .tour-tooltip {
-    max-width: calc(100vw - 2rem);
-    margin: 0 1rem;
-  }
-}
-
-/* Dark mode adjustments */
-@media (prefers-color-scheme: dark) {
-  .tour-spotlight-border::before {
-    background: linear-gradient(
-      45deg,
-      #ff6b6b,
-      #ffd93d,
-      #ff6b6b,
-      #ffd93d
-    );
-  }
-}
-
-/* Reduced motion support for tour */
-@media (prefers-reduced-motion: reduce) {
-  .tour-tooltip-enter,
-  .tour-spotlight-border::before,
-  .tour-progress-dot-active,
-  .tour-button,
-  .tour-backdrop {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-
-
-/* Tour animations */
-@keyframes tour-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes tour-slide-up {
-  from {
-    transform: translateY(10px);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-@keyframes tour-pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(1.05);
-  }
-}
-
-@keyframes tour-spotlight-pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(194, 0, 22, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 10px rgba(194, 0, 22, 0);
-  }
-}
-
-/* Tour tooltip entrance animation */
-.tour-tooltip-enter {
-  animation: tour-fade-in 0.3s ease-out, tour-slide-up 0.3s ease-out;
-}
-
-/* Spotlight border animation */
-.tour-spotlight-border {
-  position: relative;
-  overflow: hidden;
-}
-
-.tour-spotlight-border::before {
-  content: '';
-  position: absolute;
-  top: -2px;
-  left: -2px;
-  right: -2px;
-  bottom: -2px;
-  background: linear-gradient(
-    45deg,
-    #c20016,
-    #ff6b6b,
-    #c20016,
-    #ff6b6b
-  );
-  border-radius: 8px;
-  opacity: 0;
-  animation: tour-fade-in 0.5s ease-out forwards;
-  background-size: 400% 400%;
-  animation: tour-fade-in 0.5s ease-out forwards,
-            gradient-shift 3s ease infinite;
-}
-
-@keyframes gradient-shift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-/* Smooth scroll behavior for tour */
-html.tour-active {
-  scroll-behavior: smooth;
-}
-
-/* Tour progress dots animation */
-.tour-progress-dot {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.tour-progress-dot-active {
-  animation: tour-pulse 2s ease-in-out infinite;
-}
-
-/* Skip and navigation button animations */
-.tour-button {
-  transition: all 0.2s ease;
-}
-
-.tour-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-              0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-.tour-button:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-}
-
-/* Backdrop fade animation */
-.tour-backdrop {
-  animation: tour-fade-in 0.3s ease-out;
 }
 
 /* Ensure highlighted elements are clickable during tour */
@@ -691,9 +425,10 @@ html.tour-active {
   z-index: 9999 !important;
 }
 
-/* Fix for company selector during tour */
-.company-selector-button {
-  position: relative;
+/* Company selector specific fixes during tour */
+.tour-active .company-selector-button {
+  position: relative !important;
+  z-index: auto !important;
 }
 
 /* Ensure dropdowns work properly during tour */
@@ -702,33 +437,8 @@ html.tour-active {
 }
 
 /* Tour z-index management */
-.tour-active {
-  /* Ensure navbar doesn't interfere with tour */
-}
-
 .tour-active nav {
   z-index: 50 !important;
-}
-
-/* Backdrop should be behind clickable elements */
-.tour-backdrop-container {
-  z-index: 9998;
-}
-
-/* Clickable area for highlighted elements */
-.tour-clickable-overlay {
-  z-index: 9999;
-}
-
-/* Tooltip should be on top */
-.tour-tooltip {
-  z-index: 10000;
-}
-
-/* Company selector specific fixes during tour */
-.tour-active .company-selector-button {
-  position: relative !important;
-  z-index: auto !important;
 }
 
 /* Ensure the dropdown appears above tour overlay */
@@ -744,27 +454,10 @@ html.tour-active {
   }
 }
 
-/* Dark mode adjustments */
-@media (prefers-color-scheme: dark) {
-  .tour-spotlight-border::before {
-    background: linear-gradient(
-      45deg,
-      #ff6b6b,
-      #ffd93d,
-      #ff6b6b,
-      #ffd93d
-    );
-  }
-}
-
 /* Reduced motion support for tour */
 @media (prefers-reduced-motion: reduce) {
-  .tour-tooltip-enter,
-  .tour-spotlight-border::before,
-  .tour-progress-dot-active,
-  .tour-button,
+  .tour-tooltip,
   .tour-backdrop {
-    animation: none !important;
     transition: none !important;
   }
 }

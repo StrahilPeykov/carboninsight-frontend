@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import OnboardingTour from './OnboardingTour';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 
 // Define proper interfaces for tour steps
 interface BaseTourStep {
@@ -46,7 +46,7 @@ interface TourProviderProps {
 const TOURS: Record<string, TourStep[]> = {
   'main-onboarding': [
     {
-      page: '/',
+      page: '*', // Available from any page
       target: '.company-selector-button',
       title: 'Welcome to CarbonInsight!',
       content: 'Let\'s create your first company to get started. Click on the company selector to begin.',
@@ -55,7 +55,7 @@ const TOURS: Record<string, TourStep[]> = {
       expectedAction: 'click-company-selector',
     },
     {
-      page: '/',
+      page: '*', // Available from any page
       target: 'a[href="/create-company"]',
       title: 'Create Your Company',
       content: 'Great! Now click on "Create" to set up your first company.',
@@ -146,6 +146,7 @@ export default function TourProvider({ children }: TourProviderProps) {
   const [completedTours, setCompletedTours] = useState<Set<string>>(new Set());
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
 
   // Ensure component is mounted
   useEffect(() => {
@@ -205,7 +206,25 @@ export default function TourProvider({ children }: TourProviderProps) {
   };
 
   const startTour = (tourId: string) => {
-    if (TOURS[tourId]) {
+    if (!TOURS[tourId]) {
+      console.warn(`Tour ${tourId} not found`);
+      return;
+    }
+
+    const tour = TOURS[tourId];
+    const firstStepPage = tour[0]?.page;
+    
+    // If the first step is not a wildcard and we're not on that page, navigate there
+    if (firstStepPage && firstStepPage !== '*' && pathname !== firstStepPage) {
+      // Save the tour state before navigating
+      setActiveTour(tourId);
+      setCurrentStep(0);
+      saveActiveTourState(tourId, 0);
+      
+      // Navigate to the first page of the tour
+      router.push(firstStepPage);
+    } else {
+      // We're already on the right page or it's a wildcard, start the tour
       setActiveTour(tourId);
       setCurrentStep(0);
       saveActiveTourState(tourId, 0);
@@ -246,8 +265,10 @@ export default function TourProvider({ children }: TourProviderProps) {
     
     const allSteps = TOURS[activeTour];
     
-    // Filter steps for current page
-    const currentPageSteps = allSteps.filter(step => step.page === pathname);
+    // Filter steps for current page or wildcard pages
+    const currentPageSteps = allSteps.filter(step => 
+      step.page === pathname || step.page === '*'
+    );
     
     return currentPageSteps;
   };
@@ -259,12 +280,16 @@ export default function TourProvider({ children }: TourProviderProps) {
     const allSteps = TOURS[activeTour];
     if (!allSteps) return;
 
-    // Find the index of the first step for the current page
-    const currentPageStepIndex = allSteps.findIndex(step => step.page === pathname);
+    // Find the index of the first step for the current page (including wildcards)
+    const currentPageStepIndex = allSteps.findIndex(step => 
+      step.page === pathname || step.page === '*'
+    );
     
     if (currentPageStepIndex !== -1) {
       // We're on a page that has tour steps
-      const stepsBeforeThisPage = allSteps.slice(0, currentPageStepIndex).length;
+      const stepsBeforeThisPage = allSteps.slice(0, currentPageStepIndex).filter(s => 
+        s.page !== '*' && s.page !== pathname
+      ).length;
       
       // If we're behind where we should be, update the step
       if (currentStep < stepsBeforeThisPage) {
@@ -285,61 +310,75 @@ export default function TourProvider({ children }: TourProviderProps) {
     }
   };
 
-  const handleStepComplete = (action?: string) => {
-    if (!activeTour) return;
-
-    const allSteps = TOURS[activeTour];
-    const currentStepData = allSteps[currentStep];
-
-    // Check if step has waitForAction property and it's true
-    if (currentStepData && 'waitForAction' in currentStepData && 
-        currentStepData.waitForAction && 
-        action === currentStepData.expectedAction) {
-      // Move to next step
-      if (currentStep < allSteps.length - 1) {
-        setCurrentTourStep(currentStep + 1);
-      } else {
-        handleCompleteTour();
-      }
-    }
-  };
-
-  // Listen for specific user actions
+  // Listen for tour actions (like clicking elements with waitForAction)
   useEffect(() => {
     if (!mounted || !activeTour) return;
+
+    const handleTourAction = (e: CustomEvent) => {
+      const { action } = e.detail;
+      const allSteps = TOURS[activeTour];
+      const currentStepData = allSteps[currentStep];
+
+      if (currentStepData && 'expectedAction' in currentStepData && 
+          currentStepData.expectedAction === action) {
+        // Move to next step
+        if (currentStep < allSteps.length - 1) {
+          const nextStep = currentStep + 1;
+          const nextStepData = allSteps[nextStep];
+          
+          // If next step is on a different page, navigate
+          if (nextStepData.page !== pathname && nextStepData.page !== '*') {
+            setCurrentTourStep(nextStep);
+            router.push(nextStepData.page);
+          } else {
+            setCurrentTourStep(nextStep);
+          }
+        } else {
+          handleCompleteTour();
+        }
+      }
+    };
 
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       
       // Check if company selector was clicked
       if (target.closest('.company-selector-button')) {
-        handleStepComplete('click-company-selector');
+        window.dispatchEvent(new CustomEvent('tourAction', { 
+          detail: { action: 'click-company-selector' } 
+        }));
+      }
+      
+      // Check if create company link was clicked
+      if (target.closest('a[href="/create-company"]')) {
+        window.dispatchEvent(new CustomEvent('tourAction', { 
+          detail: { action: 'navigate-to-create-company' } 
+        }));
       }
     };
 
-    const handleNavigation = () => {
-      // Check if we navigated to create company page
-      if (pathname === '/create-company') {
-        handleStepComplete('navigate-to-create-company');
-      }
-    };
-
-    // Add listeners
+    window.addEventListener('tourAction' as any, handleTourAction);
     document.addEventListener('click', handleClick);
-    
-    // Call navigation handler immediately in case we just navigated
-    handleNavigation();
 
     return () => {
+      window.removeEventListener('tourAction' as any, handleTourAction);
       document.removeEventListener('click', handleClick);
     };
-  }, [mounted, activeTour, currentStep, pathname]);
+  }, [mounted, activeTour, currentStep, pathname, router]);
 
   // Get steps to display for current page
   const stepsToDisplay = getCurrentTourSteps();
-  const globalStepIndex = activeTour && TOURS[activeTour] 
-    ? TOURS[activeTour].findIndex(step => step.page === pathname && stepsToDisplay[0] && step.target === stepsToDisplay[0].target)
+  
+  // Find the global index of the current step
+  const globalStepIndex = activeTour && TOURS[activeTour] && stepsToDisplay.length > 0
+    ? TOURS[activeTour].findIndex(step => 
+        (step.page === pathname || step.page === '*') && 
+        step.target === stepsToDisplay[0].target
+      )
     : -1;
+
+  // Calculate the local step index within the current page's steps
+  const localStepIndex = Math.max(0, currentStep - globalStepIndex);
 
   return (
     <TourContext.Provider
@@ -355,12 +394,12 @@ export default function TourProvider({ children }: TourProviderProps) {
     >
       {children}
       
-      {mounted && activeTour && stepsToDisplay.length > 0 && globalStepIndex >= currentStep && (
+      {mounted && activeTour && stepsToDisplay.length > 0 && globalStepIndex !== -1 && currentStep >= globalStepIndex && (
         <OnboardingTour
           steps={stepsToDisplay}
           onComplete={handleCompleteTour}
           onSkip={handleSkipTour}
-          currentStepIndex={currentStep - globalStepIndex}
+          currentStepIndex={localStepIndex}
           totalSteps={TOURS[activeTour].length}
           globalCurrentStep={currentStep}
         />

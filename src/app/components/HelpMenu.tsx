@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { HelpCircle, Sparkles, CheckCircle, Play } from 'lucide-react';
+import { HelpCircle, CheckCircle, Play, Sparkles } from 'lucide-react';
 import { useTour } from './TourProvider';
 import { usePathname } from 'next/navigation';
 

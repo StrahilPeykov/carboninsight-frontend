@@ -32,6 +32,7 @@ export default function OnboardingTour({
   const [isVisible, setIsVisible] = useState(true);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
 
   // Use totalSteps if provided, otherwise use steps.length
   const totalStepCount = totalSteps || steps.length;
@@ -51,18 +52,20 @@ export default function OnboardingTour({
     const updateTargetPosition = () => {
       if (currentStepData.placement === 'center') {
         setTargetRect(null);
+        setTargetElement(null);
         return;
       }
 
-      const targetElement = document.querySelector(currentStepData.target);
-      if (targetElement) {
-        const rect = targetElement.getBoundingClientRect();
+      const element = document.querySelector(currentStepData.target) as HTMLElement;
+      if (element) {
+        const rect = element.getBoundingClientRect();
         setTargetRect(rect);
+        setTargetElement(element);
         
         // Only scroll into view if element is not already visible
         const isInViewport = rect.top >= 0 && rect.bottom <= window.innerHeight;
         if (!isInViewport) {
-          targetElement.scrollIntoView({
+          element.scrollIntoView({
             behavior: 'smooth',
             block: 'center',
             inline: 'center'
@@ -71,6 +74,7 @@ export default function OnboardingTour({
       } else {
         console.warn(`Tour target not found: ${currentStepData.target}`);
         setTargetRect(null);
+        setTargetElement(null);
       }
     };
 
@@ -103,6 +107,29 @@ export default function OnboardingTour({
       observer.disconnect();
     };
   }, [localStep, currentStepData, isVisible]);
+
+  // Set up click handler for the target element when waitForAction is true
+  useEffect(() => {
+    if (!targetElement || !currentStepData?.waitForAction) return;
+
+    const handleTargetClick = () => {
+      console.log('Target element clicked, proceeding to next step');
+      
+      // Check if this matches the expected action
+      if (currentStepData.expectedAction) {
+        // Dispatch the expected action event
+        window.dispatchEvent(new CustomEvent('tourAction', { 
+          detail: { action: currentStepData.expectedAction } 
+        }));
+      }
+    };
+
+    targetElement.addEventListener('click', handleTargetClick);
+
+    return () => {
+      targetElement.removeEventListener('click', handleTargetClick);
+    };
+  }, [targetElement, currentStepData]);
 
   const handleNext = () => {
     if (!currentStepData.waitForAction) {
@@ -184,7 +211,10 @@ export default function OnboardingTour({
       {/* Backdrop with spotlight */}
       <div 
         className="fixed inset-0 z-[9998]"
-        style={{ pointerEvents: isWaitingForAction ? 'none' : 'auto' }}
+        style={{ 
+          pointerEvents: isWaitingForAction ? 'none' : 'auto' 
+        }}
+        onClick={!isWaitingForAction ? handleSkip : undefined}
       >
         <svg className="absolute inset-0 w-full h-full">
           <defs>
@@ -207,62 +237,31 @@ export default function OnboardingTour({
             y="0"
             width="100%"
             height="100%"
-            fill="rgba(0, 0, 0, 0.7)"
+            fill="rgba(0, 0, 0, 0.5)"
             mask="url(#spotlight-mask)"
-            className="tour-backdrop"
-            onClick={!isWaitingForAction ? handleSkip : undefined}
-            style={{ pointerEvents: 'auto' }}
           />
         </svg>
       </div>
 
-      {/* Click blocker for everything except the highlighted element */}
-      {isWaitingForAction && (
-        <div 
-          className="fixed inset-0 z-[9999]" 
-          style={{ pointerEvents: 'auto' }}
-          onClick={(e) => {
-            // Prevent clicks from going through
-            e.stopPropagation();
-            e.preventDefault();
-          }}
-        >
-          {/* Cut out hole for the target element */}
-          {targetRect && (
-            <div
-              style={{
-                position: 'absolute',
-                top: targetRect.top - spotlightPadding,
-                left: targetRect.left - spotlightPadding,
-                width: targetRect.width + spotlightPadding * 2,
-                height: targetRect.height + spotlightPadding * 2,
-                pointerEvents: 'none',
-              }}
-            />
-          )}
-        </div>
-      )}
-
-      {/* Animated border around target element */}
+      {/* Simple border around target element */}
       {targetRect && currentStepData.placement !== 'center' && (
         <div
-          className="fixed z-[9997] pointer-events-none animate-pulse"
+          className="fixed z-[9999] pointer-events-none"
           style={{
             top: targetRect.top - spotlightPadding - 2,
             left: targetRect.left - spotlightPadding - 2,
             width: targetRect.width + spotlightPadding * 2 + 4,
             height: targetRect.height + spotlightPadding * 2 + 4,
+            border: '2px solid #c20016',
+            borderRadius: '8px',
           }}
-        >
-          <div className="absolute inset-0 border-2 border-red-500 rounded-lg tour-spotlight-border" />
-          <div className="absolute inset-0 border-2 border-red-500 rounded-lg animate-ping" />
-        </div>
+        />
       )}
 
       {/* Tooltip */}
       <div
         ref={tooltipRef}
-        className="fixed z-[10000] bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-6 max-w-md tour-tooltip tour-tooltip-enter pointer-events-auto"
+        className="fixed z-[10000] bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-md pointer-events-auto"
         style={getTooltipPosition()}
       >
         {/* Header */}
@@ -275,7 +274,7 @@ export default function OnboardingTour({
           </div>
           <button
             onClick={handleSkip}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1"
             aria-label="Close tour"
           >
             <X className="w-5 h-5" />
@@ -292,9 +291,8 @@ export default function OnboardingTour({
 
         {/* Show waiting indicator if waiting for action */}
         {isWaitingForAction && (
-          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <p className="text-sm text-blue-700 dark:text-blue-300 flex items-center gap-2">
-              <span className="animate-pulse">👆</span>
+          <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               Click the highlighted element to continue
             </p>
           </div>
@@ -305,12 +303,12 @@ export default function OnboardingTour({
           {Array.from({ length: totalStepCount }).map((_, index) => (
             <div
               key={index}
-              className={`h-2 w-2 rounded-full transition-all duration-300 tour-progress-dot ${
+              className={`h-2 rounded-full transition-all duration-300 ${
                 index === globalCurrentStep
-                  ? 'bg-red-500 w-8 tour-progress-dot-active'
+                  ? 'bg-red-600 w-6'
                   : index < globalCurrentStep
-                  ? 'bg-red-300'
-                  : 'bg-gray-300 dark:bg-gray-600'
+                  ? 'bg-gray-400 w-2'
+                  : 'bg-gray-300 dark:bg-gray-600 w-2'
               }`}
             />
           ))}
@@ -329,7 +327,7 @@ export default function OnboardingTour({
             {localStep > 0 && !isWaitingForAction && (
               <button
                 onClick={handlePrevious}
-                className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors tour-button"
+                className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Previous
@@ -339,7 +337,7 @@ export default function OnboardingTour({
             {!isWaitingForAction && (
               <button
                 onClick={handleNext}
-                className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors tour-button"
+                className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
               >
                 {localStep === steps.length - 1 && globalCurrentStep === totalStepCount - 1 ? 'Finish' : 'Next'}
                 <ChevronRight className="w-4 h-4" />

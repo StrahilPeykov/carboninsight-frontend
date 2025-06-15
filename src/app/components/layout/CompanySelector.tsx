@@ -74,9 +74,18 @@ export default function CleanCompanySelector({
     }
   }, [isOpen, shouldShowSearch]);
 
-  // Close dropdown when clicking outside
+  // Close dropdown when clicking outside (but not during tour)
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
+      // Check if tour is active
+      const isTourActive = document.body.classList.contains('tour-active');
+      const activeTour = sessionStorage.getItem('activeTour');
+      
+      // Don't auto-close during tour
+      if (isTourActive && activeTour === 'main-onboarding') {
+        return;
+      }
+      
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         onClose();
         setSearchQuery("");
@@ -222,6 +231,7 @@ export default function CleanCompanySelector({
                 }}
                 className="flex flex-col items-center p-2 text-xs text-green-700 hover:text-green-800 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/30 rounded-md transition-colors border border-transparent hover:border-green-200 dark:hover:border-green-800"
                 title="Create New Company"
+                data-tour-target="create-company"
               >
                 <Plus size={14} className="mb-1" />
                 <span className="hidden sm:inline">Create</span>

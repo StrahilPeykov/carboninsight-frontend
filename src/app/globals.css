@@ -419,31 +419,25 @@ html.dark .support-email-text {
   scroll-behavior: smooth;
 }
 
-/* Ensure highlighted elements are clickable during tour */
-.tour-highlight-clickable {
-  position: relative;
-  z-index: 9999 !important;
-}
+/* Base z-index for tour elements */
+/* Visual backdrop: 9996 */
+/* Click blockers: 9997 */
+/* Border: 9999 */
+/* Tooltip: 10000 */
 
-/* Company selector specific fixes during tour */
+/* Ensure highlighted elements remain interactive */
 .tour-active .company-selector-button {
   position: relative !important;
-  z-index: auto !important;
 }
 
-/* Ensure dropdowns work properly during tour */
-[aria-expanded="true"] {
+/* Ensure dropdowns appear above tour elements */
+.tour-active .company-selector-wrapper > div:last-child {
   z-index: 10001 !important;
 }
 
-/* Tour z-index management */
+/* Navigation stays visible */
 .tour-active nav {
   z-index: 50 !important;
-}
-
-/* Ensure the dropdown appears above tour overlay */
-.tour-active .company-selector-wrapper > div:last-child {
-  z-index: 10002 !important;
 }
 
 /* Mobile adjustments */

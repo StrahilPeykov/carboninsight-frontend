@@ -206,15 +206,82 @@ export default function OnboardingTour({
   const spotlightPadding = currentStepData.spotlightPadding || 8;
   const isWaitingForAction = currentStepData.waitForAction;
 
+  // Calculate blocking areas around the spotlight
+  const getBlockingAreas = () => {
+    if (!targetRect || currentStepData.placement === 'center' || !isWaitingForAction) {
+      return null;
+    }
+
+    const spotlight = {
+      top: targetRect.top - spotlightPadding,
+      left: targetRect.left - spotlightPadding,
+      right: targetRect.right + spotlightPadding,
+      bottom: targetRect.bottom + spotlightPadding,
+    };
+
+    return (
+      <>
+        {/* Top blocker */}
+        <div
+          className="fixed bg-transparent"
+          style={{
+            top: 0,
+            left: 0,
+            right: 0,
+            height: spotlight.top,
+            pointerEvents: 'auto',
+            zIndex: 9997,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        />
+        {/* Bottom blocker */}
+        <div
+          className="fixed bg-transparent"
+          style={{
+            top: spotlight.bottom,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            pointerEvents: 'auto',
+            zIndex: 9997,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        />
+        {/* Left blocker */}
+        <div
+          className="fixed bg-transparent"
+          style={{
+            top: spotlight.top,
+            left: 0,
+            width: spotlight.left,
+            height: spotlight.bottom - spotlight.top,
+            pointerEvents: 'auto',
+            zIndex: 9997,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        />
+        {/* Right blocker */}
+        <div
+          className="fixed bg-transparent"
+          style={{
+            top: spotlight.top,
+            left: spotlight.right,
+            right: 0,
+            height: spotlight.bottom - spotlight.top,
+            pointerEvents: 'auto',
+            zIndex: 9997,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        />
+      </>
+    );
+  };
+
   return (
     <>
-      {/* Backdrop with spotlight */}
+      {/* Visual backdrop with spotlight */}
       <div 
-        className="fixed inset-0 z-[9998]"
-        style={{ 
-          pointerEvents: isWaitingForAction ? 'none' : 'auto' 
-        }}
-        onClick={!isWaitingForAction ? handleSkip : undefined}
+        className="fixed inset-0 z-[9996] pointer-events-none"
       >
         <svg className="absolute inset-0 w-full h-full">
           <defs>
@@ -242,6 +309,17 @@ export default function OnboardingTour({
           />
         </svg>
       </div>
+
+      {/* Clickable backdrop for skipping (when not waiting for action) */}
+      {!isWaitingForAction && (
+        <div 
+          className="fixed inset-0 z-[9995]"
+          onClick={handleSkip}
+        />
+      )}
+
+      {/* Click blockers around spotlight (when waiting for action) */}
+      {getBlockingAreas()}
 
       {/* Simple border around target element */}
       {targetRect && currentStepData.placement !== 'center' && (

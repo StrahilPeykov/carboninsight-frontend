@@ -55,11 +55,11 @@ const TOURS: Record<string, TourStep[]> = {
       expectedAction: 'click-company-selector',
     },
     {
-      page: '*', // Available from any page
-      target: 'a[href="/create-company"]',
+      page: '*', // Still on the same page with dropdown open
+      target: '[data-tour-target="create-company"]',
       title: 'Create Your Company',
       content: 'Great! Now click on "Create" to set up your first company.',
-      placement: 'bottom',
+      placement: 'left',
       waitForAction: true,
       expectedAction: 'navigate-to-create-company',
     },
@@ -128,7 +128,7 @@ const TOURS: Record<string, TourStep[]> = {
       target: '.company-settings-button',
       title: 'Company Settings',
       content: 'Manage company details, edit information, and configure your company profile.',
-      placement: 'bottom',
+      placement: 'left',
     },
     {
       page: '/list-companies',
@@ -280,6 +280,22 @@ export default function TourProvider({ children }: TourProviderProps) {
     const allSteps = TOURS[activeTour];
     if (!allSteps) return;
 
+    // Check if we just navigated to a page that matches our expected next step
+    const currentStepData = allSteps[currentStep];
+    
+    // If we're waiting for navigation to create-company and we just arrived there
+    if (currentStepData && 
+        'expectedAction' in currentStepData &&
+        currentStepData.expectedAction === 'navigate-to-create-company' && 
+        pathname === '/create-company') {
+      // Move to the next step
+      const nextStep = currentStep + 1;
+      if (nextStep < allSteps.length) {
+        setCurrentTourStep(nextStep);
+      }
+      return;
+    }
+
     // Find the index of the first step for the current page (including wildcards)
     const currentPageStepIndex = allSteps.findIndex(step => 
       step.page === pathname || step.page === '*'
@@ -296,7 +312,7 @@ export default function TourProvider({ children }: TourProviderProps) {
         setCurrentTourStep(currentPageStepIndex);
       }
     }
-  }, [pathname, activeTour, mounted]);
+  }, [pathname, activeTour, mounted, currentStep]);
 
   const handleCompleteTour = () => {
     if (activeTour) {
@@ -329,6 +345,11 @@ export default function TourProvider({ children }: TourProviderProps) {
           // If next step is on a different page, navigate
           if (nextStepData.page !== pathname && nextStepData.page !== '*') {
             setCurrentTourStep(nextStep);
+            // For navigation actions, let the natural navigation happen
+            if (action === 'navigate-to-create-company') {
+              // The link click will handle navigation
+              return;
+            }
             router.push(nextStepData.page);
           } else {
             setCurrentTourStep(nextStep);
@@ -341,28 +362,72 @@ export default function TourProvider({ children }: TourProviderProps) {
 
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
+      const allSteps = TOURS[activeTour];
+      const currentStepData = allSteps[currentStep];
       
-      // Check if company selector was clicked
-      if (target.closest('.company-selector-button')) {
-        window.dispatchEvent(new CustomEvent('tourAction', { 
-          detail: { action: 'click-company-selector' } 
-        }));
+      // Only process clicks if we're waiting for an action
+      if (!currentStepData || !('waitForAction' in currentStepData) || !currentStepData.waitForAction) {
+        return;
       }
       
-      // Check if create company link was clicked
-      if (target.closest('a[href="/create-company"]')) {
+      // Check if the clicked element matches the expected target
+      const expectedTarget = currentStepData.target;
+      const clickedElement = target.closest(expectedTarget);
+      
+      if (clickedElement) {
+        // Prevent the company selector from closing during tour
+        if (currentStepData.expectedAction === 'click-company-selector') {
+          // Keep the dropdown open
+          setTimeout(() => {
+            const dropdown = document.querySelector('.company-selector-button');
+            if (dropdown && dropdown.getAttribute('aria-expanded') === 'false') {
+              (dropdown as HTMLButtonElement).click();
+            }
+          }, 50);
+        }
+        
+        // Handle navigation to create company
+        if (currentStepData.expectedAction === 'navigate-to-create-company') {
+          // The button's onClick will handle navigation
+          // Just dispatch the action to progress the tour
+          window.dispatchEvent(new CustomEvent('tourAction', { 
+            detail: { action: currentStepData.expectedAction } 
+          }));
+          return;
+        }
+        
         window.dispatchEvent(new CustomEvent('tourAction', { 
-          detail: { action: 'navigate-to-create-company' } 
+          detail: { action: currentStepData.expectedAction } 
         }));
       }
     };
 
+    // Also listen for navigation events to progress tour
+    const handleNavigation = () => {
+      const allSteps = TOURS[activeTour];
+      const currentStepData = allSteps[currentStep];
+      
+      // Check if we navigated to the expected page
+      if (currentStepData && pathname === '/create-company' && 
+          currentStepData.expectedAction === 'navigate-to-create-company') {
+        // We've reached the create company page, move to next step
+        const nextStep = currentStep + 1;
+        if (nextStep < allSteps.length) {
+          setCurrentTourStep(nextStep);
+        }
+      }
+    };
+
     window.addEventListener('tourAction' as any, handleTourAction);
-    document.addEventListener('click', handleClick);
+    document.addEventListener('click', handleClick, true); // Use capture phase
+    
+    // Small delay to ensure page has rendered
+    const navigationTimer = setTimeout(handleNavigation, 100);
 
     return () => {
       window.removeEventListener('tourAction' as any, handleTourAction);
-      document.removeEventListener('click', handleClick);
+      document.removeEventListener('click', handleClick, true);
+      clearTimeout(navigationTimer);
     };
   }, [mounted, activeTour, currentStep, pathname, router]);
 

@@ -219,6 +219,14 @@ export default function Navbar() {
   };
 
   const handleCreateCompany = () => {
+    // Check if tour is active
+    const activeTour = sessionStorage.getItem('activeTour');
+    if (activeTour === 'main-onboarding') {
+      // During tour, dispatch the action before navigating
+      window.dispatchEvent(new CustomEvent('tourAction', { 
+        detail: { action: 'navigate-to-create-company' } 
+      }));
+    }
     router.push("/create-company");
   };
 

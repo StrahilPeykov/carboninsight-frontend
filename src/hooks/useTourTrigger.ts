@@ -40,7 +40,7 @@ export function useTourTrigger() {
 
     // Only trigger context-specific tours if user has completed onboarding or has a company
     if (isTourCompleted('main-onboarding') || hasCompany) {
-      // Product tour - only if user has a company
+    // Product tour - only if user has a company and hasn't completed it
       if (pathname === '/product-list' && hasCompany && !isTourCompleted('product-list-tour')) {
         const hasSeenProductList = sessionStorage.getItem('hasSeenProductListTour') === 'true';
         if (!hasSeenProductList) {
@@ -51,7 +51,7 @@ export function useTourTrigger() {
         }
       }
 
-      // Company tour
+      // Company tour - available to all authenticated users
       if (pathname === '/list-companies' && !isTourCompleted('company-tour')) {
         const hasSeenCompanyList = sessionStorage.getItem('hasSeenCompanyListTour') === 'true';
         if (!hasSeenCompanyList) {

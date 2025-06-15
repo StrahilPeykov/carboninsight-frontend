@@ -102,40 +102,40 @@ const TOURS: Record<string, TourStep[]> = {
     },
     {
       page: '/product-list',
-      target: '.export-button',
+      target: 'tbody tr:first-child .export-button, .max-w-7xl',
       title: 'Export Digital Product Passports',
-      content: 'Export your product data in various formats including PDF reports and AAS packages.',
-      placement: 'left',
+      content: 'Once you have products, you can export your product data in various formats including PDF reports and AAS packages.',
+      placement: 'center',
     },
     {
       page: '/product-list',
-      target: '.ai-button',
+      target: 'tbody tr:first-child .ai-button, .max-w-7xl',
       title: 'AI-Powered Insights',
-      content: 'Get personalized recommendations for reducing your product\'s carbon footprint.',
-      placement: 'left',
+      content: 'Get personalized recommendations for reducing your product\'s carbon footprint using our AI assistant.',
+      placement: 'center',
     },
   ],
   'company-tour': [
     {
       page: '/list-companies',
-      target: '.company-selector-button',
+      target: 'h1',
       title: 'Company Management',
-      content: 'Click here to access company management features like settings, users, and data sharing.',
+      content: 'This is where you manage all your companies. You can create new companies, switch between them, and manage their settings.',
       placement: 'bottom',
     },
     {
       page: '/list-companies',
-      target: '.company-settings-button',
-      title: 'Company Settings',
-      content: 'Manage company details, edit information, and configure your company profile.',
-      placement: 'left',
-    },
-    {
-      page: '/list-companies',
-      target: 'a[href="/create-company"]',
+      target: '[href="/create-company"]',
       title: 'Create Additional Companies',
       content: 'You can create multiple companies if you manage different businesses or subsidiaries.',
       placement: 'bottom',
+    },
+    {
+      page: '/list-companies',
+      target: '.grid > div:first-child',
+      title: 'Company Cards',
+      content: 'Each company is displayed as a card. Click "Select Company" to work with a specific company, or use the quick action buttons to manage users, view products, or handle data sharing.',
+      placement: 'right',
     },
   ],
 };
@@ -158,7 +158,7 @@ export default function TourProvider({ children }: TourProviderProps) {
     };
   }, []);
 
-  // Load tour state from sessionStorage on mount
+  // Load tour state from storage on mount
   useEffect(() => {
     if (!mounted) return;
     
@@ -172,7 +172,7 @@ export default function TourProvider({ children }: TourProviderProps) {
       }
     }
 
-    // Load active tour state from sessionStorage (for persistence across pages)
+    // Load active tour state from sessionStorage
     const activeTourStored = sessionStorage.getItem('activeTour');
     const currentStepStored = sessionStorage.getItem('currentTourStep');
     
@@ -211,27 +211,18 @@ export default function TourProvider({ children }: TourProviderProps) {
       return;
     }
 
-    const tour = TOURS[tourId];
-    const firstStepPage = tour[0]?.page;
+    console.log('Starting tour:', tourId);
     
-    // If the first step is not a wildcard and we're not on that page, navigate there
-    if (firstStepPage && firstStepPage !== '*' && pathname !== firstStepPage) {
-      // Save the tour state before navigating
-      setActiveTour(tourId);
-      setCurrentStep(0);
-      saveActiveTourState(tourId, 0);
-      
-      // Navigate to the first page of the tour
-      router.push(firstStepPage);
-    } else {
-      // We're already on the right page or it's a wildcard, start the tour
-      setActiveTour(tourId);
-      setCurrentStep(0);
-      saveActiveTourState(tourId, 0);
-    }
+    // Always start from step 0, regardless of current page
+    setActiveTour(tourId);
+    setCurrentStep(0);
+    saveActiveTourState(tourId, 0);
+    
+    // Don't auto-navigate - let the tour guide the user
   };
 
   const completeTour = (tourId: string) => {
+    console.log('Completing tour:', tourId);
     const newCompleted = new Set(completedTours);
     newCompleted.add(tourId);
     setCompletedTours(newCompleted);
@@ -253,6 +244,7 @@ export default function TourProvider({ children }: TourProviderProps) {
   };
 
   const setCurrentTourStep = (step: number) => {
+    console.log('Setting tour step to:', step);
     setCurrentStep(step);
     if (activeTour) {
       saveActiveTourState(activeTour, step);
@@ -266,23 +258,55 @@ export default function TourProvider({ children }: TourProviderProps) {
     const allSteps = TOURS[activeTour];
     const currentStepData = allSteps[currentStep];
     
-    // If there's no current step, return empty
     if (!currentStepData) return [];
     
-    // Check if the current step is valid for the current page
-    // Handle both with and without trailing slash
+    // Normalize pathname
     const normalizedPathname = pathname.endsWith('/') && pathname !== '/' 
       ? pathname.slice(0, -1) 
       : pathname;
-    const normalizedStepPage = currentStepData.page.endsWith('/') && currentStepData.page !== '/'
+    
+    // Check if current step should be shown on this page
+    const stepPage = currentStepData.page.endsWith('/') && currentStepData.page !== '/'
       ? currentStepData.page.slice(0, -1)
       : currentStepData.page;
     
-    const isCurrentStepOnThisPage = normalizedStepPage === normalizedPathname || currentStepData.page === '*';
-    if (!isCurrentStepOnThisPage) return [];
+    const isStepOnThisPage = stepPage === '*' || stepPage === normalizedPathname;
     
-    // Return the current step (we'll display one step at a time)
+    if (!isStepOnThisPage) return [];
+    
     return [currentStepData];
+  };
+
+  // Handle step progression - defined inside component to access state
+  const handleStepProgressionRef = React.useRef<() => void>(() => {});
+  
+  handleStepProgressionRef.current = () => {
+    if (!activeTour) return;
+    
+    const allSteps = TOURS[activeTour];
+    const nextStep = currentStep + 1;
+    
+    console.log('Progressing from step', currentStep, 'to', nextStep);
+    
+    if (nextStep < allSteps.length) {
+      const nextStepData = allSteps[nextStep];
+      const currentPage = pathname.endsWith('/') && pathname !== '/' 
+        ? pathname.slice(0, -1) 
+        : pathname;
+      
+      // Check if next step is on a different page
+      if (nextStepData.page !== '*' && nextStepData.page !== currentPage) {
+        // Save the step progression before navigation
+        setCurrentTourStep(nextStep);
+        router.push(nextStepData.page);
+      } else {
+        // Same page, just advance the step
+        setCurrentTourStep(nextStep);
+      }
+    } else {
+      // Tour complete
+      completeTour(activeTour);
+    }
   };
 
   // Handle navigation between pages during tour
@@ -290,34 +314,23 @@ export default function TourProvider({ children }: TourProviderProps) {
     if (!mounted || !activeTour) return;
 
     const allSteps = TOURS[activeTour];
-    if (!allSteps) return;
-
     const currentStepData = allSteps[currentStep];
     
-    // Normalize pathname (remove trailing slash except for root)
+    if (!currentStepData) return;
+    
+    // Check if we just navigated to the expected page
     const normalizedPathname = pathname.endsWith('/') && pathname !== '/' 
       ? pathname.slice(0, -1) 
       : pathname;
     
-    console.log('Navigation check:', {
-      pathname,
-      normalizedPathname,
-      currentStep,
-      expectedAction: currentStepData && 'expectedAction' in currentStepData ? currentStepData.expectedAction : 'none'
-    });
-    
-    // Check if we're on the expected page for a navigation action
-    if (currentStepData && 
-        'expectedAction' in currentStepData &&
-        currentStepData.expectedAction === 'navigate-to-create-company' && 
-        normalizedPathname === '/create-company') {
-      // We've successfully navigated, now move to the next step
-      const nextStep = currentStep + 1;
-      if (nextStep < allSteps.length) {
-        console.log('Navigation completed, advancing to step:', nextStep);
-        setCurrentTourStep(nextStep);
+    // If current step expects us to be on a specific page and we just arrived there
+    if (currentStepData.page !== '*' && currentStepData.page === normalizedPathname) {
+      // Check if the previous step was a navigation action
+      const prevStep = currentStep > 0 ? allSteps[currentStep - 1] : null;
+      if (prevStep && 'expectedAction' in prevStep && prevStep.expectedAction === 'navigate-to-create-company') {
+        // We've completed the navigation, the step has already been advanced
+        console.log('Navigation complete, now on step:', currentStep);
       }
-      return;
     }
   }, [pathname, activeTour, mounted, currentStep]);
 
@@ -333,7 +346,7 @@ export default function TourProvider({ children }: TourProviderProps) {
     }
   };
 
-  // Listen for tour actions (like clicking elements with waitForAction)
+  // Listen for tour actions
   useEffect(() => {
     if (!mounted || !activeTour) return;
 
@@ -346,32 +359,23 @@ export default function TourProvider({ children }: TourProviderProps) {
 
       if (currentStepData && 'expectedAction' in currentStepData && 
           currentStepData.expectedAction === action) {
-        // Special handling for navigation actions
+        
+        // For navigation actions, advance the step immediately
         if (action === 'navigate-to-create-company') {
-          // Don't advance the step yet - wait for the actual navigation
-          // The navigation will be handled by the useEffect that watches pathname changes
-          console.log('Navigation action detected, waiting for actual navigation...');
+          const nextStep = currentStep + 1;
+          console.log('Navigation action - advancing to step:', nextStep);
+          setCurrentTourStep(nextStep);
           return;
         }
         
-        // For non-navigation actions, proceed normally
-        if (currentStep < allSteps.length - 1) {
-          const nextStep = currentStep + 1;
-          const nextStepData = allSteps[nextStep];
-          
-          console.log('Moving to next step:', nextStep, 'Next step data:', nextStepData);
-          
-          // If next step is on a different page, navigate
-          if (nextStepData.page !== pathname && nextStepData.page !== '*') {
-            setCurrentTourStep(nextStep);
-            router.push(nextStepData.page);
-          } else {
-            setCurrentTourStep(nextStep);
-          }
-        } else {
-          handleCompleteTour();
-        }
+        // For other actions, use normal progression
+        handleStepProgressionRef.current?.();
       }
+    };
+
+    const handleNextStep = () => {
+      console.log('Next step requested from tour UI');
+      handleStepProgressionRef.current?.();
     };
 
     const handleClick = (e: MouseEvent) => {
@@ -379,80 +383,62 @@ export default function TourProvider({ children }: TourProviderProps) {
       const allSteps = TOURS[activeTour];
       const currentStepData = allSteps[currentStep];
       
-      // Only process clicks if we're waiting for an action
       if (!currentStepData || !('waitForAction' in currentStepData) || !currentStepData.waitForAction) {
         return;
       }
       
-      // Check if the clicked element matches the expected target
       const expectedTarget = currentStepData.target;
       const clickedElement = target.closest(expectedTarget);
       
       if (clickedElement) {
-        // Handle different action types
-        if (currentStepData.expectedAction === 'click-company-selector') {
-          // Dispatch the action to progress the tour
-          window.dispatchEvent(new CustomEvent('tourAction', { 
-            detail: { action: currentStepData.expectedAction } 
-          }));
-          
-          // Don't prevent the default click behavior - let the dropdown open naturally
-          return;
-        }
+        console.log('Clicked expected element for action:', currentStepData.expectedAction);
         
-        // Handle navigation to create company
-        if (currentStepData.expectedAction === 'navigate-to-create-company') {
-          // The button's onClick will handle navigation
-          // Just dispatch the action to progress the tour
-          window.dispatchEvent(new CustomEvent('tourAction', { 
-            detail: { action: currentStepData.expectedAction } 
-          }));
-          return;
-        }
-        
-        // For other actions, dispatch the event
+        // Dispatch the action event
         window.dispatchEvent(new CustomEvent('tourAction', { 
           detail: { action: currentStepData.expectedAction } 
         }));
       }
     };
 
+    const handlePrevStep = () => {
+      console.log('Previous step requested from tour UI');
+      if (currentStep > 0) {
+        const prevStep = currentStep - 1;
+        const allSteps = TOURS[activeTour];
+        const prevStepData = allSteps[prevStep];
+        const currentPage = pathname.endsWith('/') && pathname !== '/' 
+          ? pathname.slice(0, -1) 
+          : pathname;
+        
+        // Check if prev step is on a different page
+        if (prevStepData.page !== '*' && prevStepData.page !== currentPage) {
+          // Save the step before navigation
+          setCurrentTourStep(prevStep);
+          router.push(prevStepData.page);
+        } else {
+          // Same page, just go back
+          setCurrentTourStep(prevStep);
+        }
+      }
+    };
+
     window.addEventListener('tourAction' as any, handleTourAction);
-    document.addEventListener('click', handleClick, true); // Use capture phase
+    window.addEventListener('tourNextStep' as any, handleNextStep);
+    window.addEventListener('tourPrevStep' as any, handlePrevStep);
+    document.addEventListener('click', handleClick, true);
 
     return () => {
       window.removeEventListener('tourAction' as any, handleTourAction);
+      window.removeEventListener('tourNextStep' as any, handleNextStep);
+      window.removeEventListener('tourPrevStep' as any, handlePrevStep);
       document.removeEventListener('click', handleClick, true);
     };
   }, [mounted, activeTour, currentStep, pathname, router]);
 
-  // Get steps to display for current page
+  // Get steps to display
   const stepsToDisplay = getCurrentTourSteps();
-  
-  // Get current step data
   const allSteps = activeTour && TOURS[activeTour] ? TOURS[activeTour] : [];
-  const currentStepData = allSteps[currentStep];
-  
-  // Only show tour if we have valid steps
-  const shouldShowTour = mounted && 
-    activeTour && 
-    stepsToDisplay.length > 0 && 
-    currentStepData;
-
-  // Debug logging
-  useEffect(() => {
-    if (activeTour && currentStepData) {
-      console.log('Tour state:', {
-        activeTour,
-        currentStep,
-        pathname,
-        normalizedPathname: pathname.endsWith('/') && pathname !== '/' ? pathname.slice(0, -1) : pathname,
-        currentStepData,
-        stepsToDisplay: stepsToDisplay.length,
-        shouldShowTour
-      });
-    }
-  }, [activeTour, currentStep, pathname, currentStepData, stepsToDisplay.length, shouldShowTour]);
+  const shouldShowTour = mounted && activeTour && stepsToDisplay.length > 0;
 
   return (
     <TourContext.Provider
@@ -473,7 +459,7 @@ export default function TourProvider({ children }: TourProviderProps) {
           steps={stepsToDisplay}
           onComplete={handleCompleteTour}
           onSkip={handleSkipTour}
-          currentStepIndex={0} // Always show the first (and only) step in the array
+          currentStepIndex={0}
           totalSteps={allSteps.length}
           globalCurrentStep={currentStep}
         />

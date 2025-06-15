@@ -133,10 +133,22 @@ export default function OnboardingTour({
 
   const handleNext = () => {
     if (!currentStepData.waitForAction) {
-      if (localStep < steps.length - 1) {
-        setLocalStep(localStep + 1);
+      // For multi-page tours, we need to tell the provider to advance
+      if (totalSteps && globalCurrentStep !== undefined) {
+        // This is part of a multi-page tour
+        if (globalCurrentStep < totalSteps - 1) {
+          // Dispatch event to advance the global tour
+          window.dispatchEvent(new CustomEvent('tourNextStep'));
+        } else {
+          handleComplete();
+        }
       } else {
-        handleComplete();
+        // Single page tour logic
+        if (localStep < steps.length - 1) {
+          setLocalStep(localStep + 1);
+        } else {
+          handleComplete();
+        }
       }
     }
   };

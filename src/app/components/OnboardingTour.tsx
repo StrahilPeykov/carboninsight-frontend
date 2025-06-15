@@ -201,7 +201,7 @@ export default function OnboardingTour({
     return position;
   };
 
-  if (!isVisible) return null;
+  if (!isVisible || !currentStepData) return null;
 
   const spotlightPadding = currentStepData.spotlightPadding || 8;
   const isWaitingForAction = currentStepData.waitForAction;

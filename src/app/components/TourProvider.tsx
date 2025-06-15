@@ -264,13 +264,25 @@ export default function TourProvider({ children }: TourProviderProps) {
     if (!activeTour || !TOURS[activeTour]) return [];
     
     const allSteps = TOURS[activeTour];
+    const currentStepData = allSteps[currentStep];
     
-    // Filter steps for current page or wildcard pages
-    const currentPageSteps = allSteps.filter(step => 
-      step.page === pathname || step.page === '*'
-    );
+    // If there's no current step, return empty
+    if (!currentStepData) return [];
     
-    return currentPageSteps;
+    // Check if the current step is valid for the current page
+    // Handle both with and without trailing slash
+    const normalizedPathname = pathname.endsWith('/') && pathname !== '/' 
+      ? pathname.slice(0, -1) 
+      : pathname;
+    const normalizedStepPage = currentStepData.page.endsWith('/') && currentStepData.page !== '/'
+      ? currentStepData.page.slice(0, -1)
+      : currentStepData.page;
+    
+    const isCurrentStepOnThisPage = normalizedStepPage === normalizedPathname || currentStepData.page === '*';
+    if (!isCurrentStepOnThisPage) return [];
+    
+    // Return the current step (we'll display one step at a time)
+    return [currentStepData];
   };
 
   // Handle navigation between pages during tour
@@ -280,37 +292,32 @@ export default function TourProvider({ children }: TourProviderProps) {
     const allSteps = TOURS[activeTour];
     if (!allSteps) return;
 
-    // Check if we just navigated to a page that matches our expected next step
     const currentStepData = allSteps[currentStep];
     
-    // If we're waiting for navigation to create-company and we just arrived there
+    // Normalize pathname (remove trailing slash except for root)
+    const normalizedPathname = pathname.endsWith('/') && pathname !== '/' 
+      ? pathname.slice(0, -1) 
+      : pathname;
+    
+    console.log('Navigation check:', {
+      pathname,
+      normalizedPathname,
+      currentStep,
+      expectedAction: currentStepData && 'expectedAction' in currentStepData ? currentStepData.expectedAction : 'none'
+    });
+    
+    // Check if we're on the expected page for a navigation action
     if (currentStepData && 
         'expectedAction' in currentStepData &&
         currentStepData.expectedAction === 'navigate-to-create-company' && 
-        pathname === '/create-company') {
-      // Move to the next step
+        normalizedPathname === '/create-company') {
+      // We've successfully navigated, now move to the next step
       const nextStep = currentStep + 1;
       if (nextStep < allSteps.length) {
+        console.log('Navigation completed, advancing to step:', nextStep);
         setCurrentTourStep(nextStep);
       }
       return;
-    }
-
-    // Find the index of the first step for the current page (including wildcards)
-    const currentPageStepIndex = allSteps.findIndex(step => 
-      step.page === pathname || step.page === '*'
-    );
-    
-    if (currentPageStepIndex !== -1) {
-      // We're on a page that has tour steps
-      const stepsBeforeThisPage = allSteps.slice(0, currentPageStepIndex).filter(s => 
-        s.page !== '*' && s.page !== pathname
-      ).length;
-      
-      // If we're behind where we should be, update the step
-      if (currentStep < stepsBeforeThisPage) {
-        setCurrentTourStep(currentPageStepIndex);
-      }
     }
   }, [pathname, activeTour, mounted, currentStep]);
 
@@ -335,21 +342,28 @@ export default function TourProvider({ children }: TourProviderProps) {
       const allSteps = TOURS[activeTour];
       const currentStepData = allSteps[currentStep];
 
+      console.log('Tour action received:', action, 'Current step:', currentStep);
+
       if (currentStepData && 'expectedAction' in currentStepData && 
           currentStepData.expectedAction === action) {
-        // Move to next step
+        // Special handling for navigation actions
+        if (action === 'navigate-to-create-company') {
+          // Don't advance the step yet - wait for the actual navigation
+          // The navigation will be handled by the useEffect that watches pathname changes
+          console.log('Navigation action detected, waiting for actual navigation...');
+          return;
+        }
+        
+        // For non-navigation actions, proceed normally
         if (currentStep < allSteps.length - 1) {
           const nextStep = currentStep + 1;
           const nextStepData = allSteps[nextStep];
           
+          console.log('Moving to next step:', nextStep, 'Next step data:', nextStepData);
+          
           // If next step is on a different page, navigate
           if (nextStepData.page !== pathname && nextStepData.page !== '*') {
             setCurrentTourStep(nextStep);
-            // For navigation actions, let the natural navigation happen
-            if (action === 'navigate-to-create-company') {
-              // The link click will handle navigation
-              return;
-            }
             router.push(nextStepData.page);
           } else {
             setCurrentTourStep(nextStep);
@@ -375,15 +389,15 @@ export default function TourProvider({ children }: TourProviderProps) {
       const clickedElement = target.closest(expectedTarget);
       
       if (clickedElement) {
-        // Prevent the company selector from closing during tour
+        // Handle different action types
         if (currentStepData.expectedAction === 'click-company-selector') {
-          // Keep the dropdown open
-          setTimeout(() => {
-            const dropdown = document.querySelector('.company-selector-button');
-            if (dropdown && dropdown.getAttribute('aria-expanded') === 'false') {
-              (dropdown as HTMLButtonElement).click();
-            }
-          }, 50);
+          // Dispatch the action to progress the tour
+          window.dispatchEvent(new CustomEvent('tourAction', { 
+            detail: { action: currentStepData.expectedAction } 
+          }));
+          
+          // Don't prevent the default click behavior - let the dropdown open naturally
+          return;
         }
         
         // Handle navigation to create company
@@ -396,54 +410,49 @@ export default function TourProvider({ children }: TourProviderProps) {
           return;
         }
         
+        // For other actions, dispatch the event
         window.dispatchEvent(new CustomEvent('tourAction', { 
           detail: { action: currentStepData.expectedAction } 
         }));
       }
     };
 
-    // Also listen for navigation events to progress tour
-    const handleNavigation = () => {
-      const allSteps = TOURS[activeTour];
-      const currentStepData = allSteps[currentStep];
-      
-      // Check if we navigated to the expected page
-      if (currentStepData && pathname === '/create-company' && 
-          currentStepData.expectedAction === 'navigate-to-create-company') {
-        // We've reached the create company page, move to next step
-        const nextStep = currentStep + 1;
-        if (nextStep < allSteps.length) {
-          setCurrentTourStep(nextStep);
-        }
-      }
-    };
-
     window.addEventListener('tourAction' as any, handleTourAction);
     document.addEventListener('click', handleClick, true); // Use capture phase
-    
-    // Small delay to ensure page has rendered
-    const navigationTimer = setTimeout(handleNavigation, 100);
 
     return () => {
       window.removeEventListener('tourAction' as any, handleTourAction);
       document.removeEventListener('click', handleClick, true);
-      clearTimeout(navigationTimer);
     };
   }, [mounted, activeTour, currentStep, pathname, router]);
 
   // Get steps to display for current page
   const stepsToDisplay = getCurrentTourSteps();
   
-  // Find the global index of the current step
-  const globalStepIndex = activeTour && TOURS[activeTour] && stepsToDisplay.length > 0
-    ? TOURS[activeTour].findIndex(step => 
-        (step.page === pathname || step.page === '*') && 
-        step.target === stepsToDisplay[0].target
-      )
-    : -1;
+  // Get current step data
+  const allSteps = activeTour && TOURS[activeTour] ? TOURS[activeTour] : [];
+  const currentStepData = allSteps[currentStep];
+  
+  // Only show tour if we have valid steps
+  const shouldShowTour = mounted && 
+    activeTour && 
+    stepsToDisplay.length > 0 && 
+    currentStepData;
 
-  // Calculate the local step index within the current page's steps
-  const localStepIndex = Math.max(0, currentStep - globalStepIndex);
+  // Debug logging
+  useEffect(() => {
+    if (activeTour && currentStepData) {
+      console.log('Tour state:', {
+        activeTour,
+        currentStep,
+        pathname,
+        normalizedPathname: pathname.endsWith('/') && pathname !== '/' ? pathname.slice(0, -1) : pathname,
+        currentStepData,
+        stepsToDisplay: stepsToDisplay.length,
+        shouldShowTour
+      });
+    }
+  }, [activeTour, currentStep, pathname, currentStepData, stepsToDisplay.length, shouldShowTour]);
 
   return (
     <TourContext.Provider
@@ -459,13 +468,13 @@ export default function TourProvider({ children }: TourProviderProps) {
     >
       {children}
       
-      {mounted && activeTour && stepsToDisplay.length > 0 && globalStepIndex !== -1 && currentStep >= globalStepIndex && (
+      {shouldShowTour && (
         <OnboardingTour
           steps={stepsToDisplay}
           onComplete={handleCompleteTour}
           onSkip={handleSkipTour}
-          currentStepIndex={localStepIndex}
-          totalSteps={TOURS[activeTour].length}
+          currentStepIndex={0} // Always show the first (and only) step in the array
+          totalSteps={allSteps.length}
           globalCurrentStep={currentStep}
         />
       )}

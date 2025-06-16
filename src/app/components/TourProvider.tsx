@@ -12,6 +12,7 @@ interface BaseTourStep {
   content: string;
   placement: 'top' | 'bottom' | 'left' | 'right' | 'center';
   spotlightPadding?: number;
+  allowSkip?: boolean;
 }
 
 interface InteractiveTourStep extends BaseTourStep {
@@ -53,6 +54,7 @@ const TOURS: Record<string, TourStep[]> = {
       placement: 'bottom',
       waitForAction: true,
       expectedAction: 'click-company-selector',
+      allowSkip: true,
     },
     {
       page: '*', // Still on the same page with dropdown open
@@ -62,6 +64,7 @@ const TOURS: Record<string, TourStep[]> = {
       placement: 'left',
       waitForAction: true,
       expectedAction: 'navigate-to-create-company',
+      allowSkip: true,
     },
     {
       page: '/create-company',
@@ -70,6 +73,7 @@ const TOURS: Record<string, TourStep[]> = {
       content: 'Enter your company name here. This will be used throughout the platform to identify your organization.',
       placement: 'right',
       spotlightPadding: 20,
+      allowSkip: false, // Don't allow skipping once on create company page
     },
     {
       page: '/create-company',
@@ -78,6 +82,7 @@ const TOURS: Record<string, TourStep[]> = {
       content: 'Enter your company\'s VAT number. This helps us verify your business and enables compliance features.',
       placement: 'right',
       spotlightPadding: 20,
+      allowSkip: false, // Don't allow skipping
     },
     {
       page: '/create-company',
@@ -86,6 +91,7 @@ const TOURS: Record<string, TourStep[]> = {
       content: 'Once you\'ve filled in all the details, click Submit to create your company. You\'ll then be able to add products and calculate their carbon footprint.',
       placement: 'top',
       spotlightPadding: 20,
+      allowSkip: false, // Don't allow skipping
     },
   ],
   'product-list-tour': [

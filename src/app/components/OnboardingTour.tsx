@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ChevronRight, ChevronLeft, X, Sparkles } from 'lucide-react';
 
 interface TourStep {
@@ -9,6 +9,7 @@ interface TourStep {
   spotlightPadding?: number;
   waitForAction?: boolean;
   expectedAction?: string;
+  allowSkip?: boolean; // New prop to control if skip is allowed
 }
 
 interface OnboardingTourProps {
@@ -33,7 +34,8 @@ export default function OnboardingTour({
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
-  const [isSearchingForElement, setIsSearchingForElement] = useState(false);
+  const observerRef = useRef<MutationObserver | null>(null);
+  const scrollPositionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
   // Use totalSteps if provided, otherwise use steps.length
   const totalStepCount = totalSteps || steps.length;
@@ -42,122 +44,184 @@ export default function OnboardingTour({
   const displayStepNumber = globalCurrentStep + 1;
 
   const currentStepData = steps[localStep];
+  // Default to allowing skip for backward compatibility
+  const canSkip = currentStepData?.allowSkip !== false;
 
   useEffect(() => {
     setLocalStep(currentStepIndex);
-    // Reset states when step changes
-    setTargetRect(null);
-    setTargetElement(null);
-    setIsSearchingForElement(false);
   }, [currentStepIndex]);
+
+  // Prevent scrolling during tour
+  useEffect(() => {
+    if (!isVisible) return;
+
+    // Store current scroll position
+    scrollPositionRef.current = {
+      x: window.scrollX,
+      y: window.scrollY
+    };
+
+    const preventScroll = (e: Event) => {
+      // Allow scrolling only if we're programmatically scrolling to an element
+      if (!targetElement) return;
+      
+      e.preventDefault();
+      window.scrollTo(scrollPositionRef.current.x, scrollPositionRef.current.y);
+    };
+
+    // Disable scrolling
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('scroll', preventScroll, { passive: false });
+    window.addEventListener('wheel', preventScroll, { passive: false });
+    window.addEventListener('touchmove', preventScroll, { passive: false });
+
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('scroll', preventScroll);
+      window.removeEventListener('wheel', preventScroll);
+      window.removeEventListener('touchmove', preventScroll);
+    };
+  }, [isVisible, targetElement]);
+
+  // Focus trap
+  useEffect(() => {
+    if (!isVisible || !tooltipRef.current) return;
+
+    const tooltip = tooltipRef.current;
+    const focusableElements = tooltip.querySelectorAll(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    const firstFocusable = focusableElements[0] as HTMLElement;
+    const lastFocusable = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+    const trapFocus = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstFocusable) {
+          e.preventDefault();
+          lastFocusable?.focus();
+        }
+      } else {
+        if (document.activeElement === lastFocusable) {
+          e.preventDefault();
+          firstFocusable?.focus();
+        }
+      }
+    };
+
+    // Focus the tooltip initially
+    tooltip.focus();
+    document.addEventListener('keydown', trapFocus);
+
+    return () => {
+      document.removeEventListener('keydown', trapFocus);
+    };
+  }, [isVisible, localStep]);
+
+  // Better element finding with MutationObserver
+  const findTargetElement = useCallback((target: string) => {
+    // Clean up previous observer
+    if (observerRef.current) {
+      observerRef.current.disconnect();
+    }
+
+    const attemptFind = () => {
+      const element = document.querySelector(target) as HTMLElement;
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        setTargetRect(rect);
+        setTargetElement(element);
+        
+        // Scroll into view if needed
+        const isInViewport = rect.top >= 0 && rect.bottom <= window.innerHeight;
+        if (!isInViewport) {
+          scrollPositionRef.current = {
+            x: window.scrollX,
+            y: window.scrollY
+          };
+          element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'center'
+          });
+          
+          // Update scroll position after scrolling
+          setTimeout(() => {
+            scrollPositionRef.current = {
+              x: window.scrollX,
+              y: window.scrollY
+            };
+          }, 500);
+        }
+        return true;
+      }
+      return false;
+    };
+
+    // Try to find immediately
+    if (!attemptFind()) {
+      // If not found, set up observer to watch for the element
+      observerRef.current = new MutationObserver(() => {
+        if (attemptFind() && observerRef.current) {
+          observerRef.current.disconnect();
+        }
+      });
+
+      observerRef.current.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['class', 'style']
+      });
+
+      // Timeout fallback - stop trying after 5 seconds
+      setTimeout(() => {
+        if (observerRef.current) {
+          observerRef.current.disconnect();
+          console.warn(`Tour target not found after timeout: ${target}`);
+          setTargetRect(null);
+          setTargetElement(null);
+        }
+      }, 5000);
+    }
+  }, []);
 
   useEffect(() => {
     if (!isVisible || !currentStepData) return;
 
-    const updateTargetPosition = () => {
-      if (currentStepData.placement === 'center') {
-        setTargetRect(null);
-        setTargetElement(null);
-        return;
-      }
+    if (currentStepData.placement === 'center') {
+      setTargetRect(null);
+      setTargetElement(null);
+      return;
+    }
 
-      // Add a small delay to ensure dropdown is open before looking for elements
-      const findElement = () => {
-        const element = document.querySelector(currentStepData.target) as HTMLElement;
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          setTargetRect(rect);
-          setTargetElement(element);
-          
-          // Only scroll into view if element is not already visible
-          const isInViewport = rect.top >= 0 && rect.bottom <= window.innerHeight;
-          if (!isInViewport) {
-            element.scrollIntoView({
-              behavior: 'smooth',
-              block: 'center',
-              inline: 'center'
-            });
-          }
-        } else {
-          console.warn(`Tour target not found: ${currentStepData.target}`);
-          setTargetRect(null);
-          setTargetElement(null);
-        }
-      };
-
-      // For dropdown elements, wait a bit longer and retry if not found
-      if (currentStepData.target.includes('create-company') || currentStepData.target.includes('data-tour-target')) {
-        let retries = 0;
-        const maxRetries = 20; // Increase retries for dropdown elements
-        setIsSearchingForElement(true);
-        
-        const tryFindElement = () => {
-          const element = document.querySelector(currentStepData.target) as HTMLElement;
-          if (element) {
-            const rect = element.getBoundingClientRect();
-            setTargetRect(rect);
-            setTargetElement(element);
-            setIsSearchingForElement(false);
-            
-            // Only scroll into view if element is not already visible
-            const isInViewport = rect.top >= 0 && rect.bottom <= window.innerHeight;
-            if (!isInViewport) {
-              element.scrollIntoView({
-                behavior: 'smooth',
-                block: 'center',
-                inline: 'center'
-              });
-            }
-          } else if (retries < maxRetries) {
-            retries++;
-            console.log(`Retrying to find element: ${currentStepData.target} (${retries}/${maxRetries})`);
-            setTimeout(tryFindElement, 150); // Slightly longer delay between retries
-          } else {
-            console.warn(`Tour target not found after ${maxRetries} retries: ${currentStepData.target}`);
-            // Keep the tour visible but without highlighting
-            setTargetRect(null);
-            setTargetElement(null);
-            setIsSearchingForElement(false);
-          }
-        };
-        
-        // Initial delay before starting to look for dropdown elements
-        setTimeout(tryFindElement, 400);
-      } else {
-        setIsSearchingForElement(false);
-        findElement();
-      }
-    };
-
-    // Small delay to ensure DOM is ready
-    const timeoutId = setTimeout(updateTargetPosition, 100);
-    
-    const handleUpdate = () => {
-      requestAnimationFrame(updateTargetPosition);
-    };
-
-    window.addEventListener('scroll', handleUpdate, true);
-    window.addEventListener('resize', handleUpdate);
-
-    // Set up mutation observer to watch for DOM changes
-    const observer = new MutationObserver(() => {
-      updateTargetPosition();
-    });
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['class', 'style']
-    });
+    findTargetElement(currentStepData.target);
 
     return () => {
-      clearTimeout(timeoutId);
-      window.removeEventListener('scroll', handleUpdate, true);
-      window.removeEventListener('resize', handleUpdate);
-      observer.disconnect();
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
     };
-  }, [localStep, currentStepData, isVisible]);
+  }, [localStep, currentStepData, isVisible, findTargetElement]);
+
+  // Update position on window events
+  useEffect(() => {
+    if (!targetElement) return;
+
+    const updatePosition = () => {
+      if (targetElement) {
+        const rect = targetElement.getBoundingClientRect();
+        setTargetRect(rect);
+      }
+    };
+
+    window.addEventListener('resize', updatePosition);
+    
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+    };
+  }, [targetElement]);
 
   // Set up click handler for the target element when waitForAction is true
   useEffect(() => {
@@ -216,8 +280,10 @@ export default function OnboardingTour({
   };
 
   const handleSkip = () => {
-    setIsVisible(false);
-    onSkip?.();
+    if (canSkip) {
+      setIsVisible(false);
+      onSkip?.();
+    }
   };
 
   const getTooltipPosition = () => {
@@ -264,6 +330,21 @@ export default function OnboardingTour({
     return position;
   };
 
+  // Handle keyboard navigation
+  useEffect(() => {
+    if (!isVisible) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only allow Escape if skip is allowed
+      if (e.key === "Escape" && canSkip) {
+        handleSkip();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isVisible, canSkip]);
+
   if (!isVisible || !currentStepData) return null;
 
   const spotlightPadding = currentStepData.spotlightPadding || 8;
@@ -273,7 +354,7 @@ export default function OnboardingTour({
   const getBlockingAreas = () => {
     // Always show blocking areas to prevent clicks outside
     if (!targetRect || currentStepData.placement === 'center') {
-      // For center placement or when target not found, block the entire screen but allow skip
+      // For center placement or when target not found, block the entire screen
       return (
         <div
           className="fixed inset-0 bg-transparent"
@@ -283,7 +364,8 @@ export default function OnboardingTour({
           }}
           onClick={(e) => {
             e.stopPropagation();
-            if (!isWaitingForAction) {
+            // Only skip if allowed
+            if (canSkip) {
               handleSkip();
             }
           }}
@@ -296,6 +378,14 @@ export default function OnboardingTour({
       left: targetRect.left - spotlightPadding,
       right: targetRect.right + spotlightPadding,
       bottom: targetRect.bottom + spotlightPadding,
+    };
+
+    const handleBlockerClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      // Only skip if allowed
+      if (canSkip) {
+        handleSkip();
+      }
     };
 
     return (
@@ -311,13 +401,7 @@ export default function OnboardingTour({
             pointerEvents: 'auto',
             zIndex: 9997,
           }}
-          onClick={(e) => {
-            e.stopPropagation();
-            // Only skip on backdrop click if NOT waiting for action
-            if (!isWaitingForAction) {
-              handleSkip();
-            }
-          }}
+          onClick={handleBlockerClick}
         />
         {/* Bottom blocker */}
         <div
@@ -330,13 +414,7 @@ export default function OnboardingTour({
             pointerEvents: 'auto',
             zIndex: 9997,
           }}
-          onClick={(e) => {
-            e.stopPropagation();
-            // Only skip on backdrop click if NOT waiting for action
-            if (!isWaitingForAction) {
-              handleSkip();
-            }
-          }}
+          onClick={handleBlockerClick}
         />
         {/* Left blocker */}
         <div
@@ -349,13 +427,7 @@ export default function OnboardingTour({
             pointerEvents: 'auto',
             zIndex: 9997,
           }}
-          onClick={(e) => {
-            e.stopPropagation();
-            // Only skip on backdrop click if NOT waiting for action
-            if (!isWaitingForAction) {
-              handleSkip();
-            }
-          }}
+          onClick={handleBlockerClick}
         />
         {/* Right blocker */}
         <div
@@ -368,13 +440,7 @@ export default function OnboardingTour({
             pointerEvents: 'auto',
             zIndex: 9997,
           }}
-          onClick={(e) => {
-            e.stopPropagation();
-            // Only skip on backdrop click if NOT waiting for action
-            if (!isWaitingForAction) {
-              handleSkip();
-            }
-          }}
+          onClick={handleBlockerClick}
         />
       </>
     );
@@ -437,6 +503,10 @@ export default function OnboardingTour({
         className="fixed z-[10000] bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-md pointer-events-auto"
         style={getTooltipPosition()}
         onClick={(e) => e.stopPropagation()}
+        tabIndex={-1}
+        role="dialog"
+        aria-labelledby="tour-title"
+        aria-describedby="tour-content"
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
@@ -446,30 +516,30 @@ export default function OnboardingTour({
               Step {displayStepNumber} of {totalStepCount}
             </span>
           </div>
-          <button
-            onClick={handleSkip}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1"
-            aria-label="Close tour"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {canSkip && (
+            <button
+              onClick={handleSkip}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1"
+              aria-label="Close tour"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {/* Content */}
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+        <h3 id="tour-title" className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
           {currentStepData.title}
         </h3>
-        <p className="text-gray-600 dark:text-gray-300 mb-6">
+        <p id="tour-content" className="text-gray-600 dark:text-gray-300 mb-6">
           {currentStepData.content}
         </p>
 
-        {/* Show waiting indicator if waiting for action or element */}
-        {(isWaitingForAction || isSearchingForElement) && (
+        {/* Show waiting indicator if waiting for action */}
+        {isWaitingForAction && (
           <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              {isSearchingForElement 
-                ? 'Waiting for dropdown to open...' 
-                : 'Click the highlighted element to continue'}
+              Click the highlighted element to continue
             </p>
           </div>
         )}
@@ -492,12 +562,16 @@ export default function OnboardingTour({
 
         {/* Navigation */}
         <div className="flex justify-between items-center">
-          <button
-            onClick={handleSkip}
-            className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-          >
-            Skip tour
-          </button>
+          {canSkip ? (
+            <button
+              onClick={handleSkip}
+              className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            >
+              Skip tour
+            </button>
+          ) : (
+            <div />
+          )}
           
           <div className="flex gap-2">
             {localStep > 0 && !isWaitingForAction && (

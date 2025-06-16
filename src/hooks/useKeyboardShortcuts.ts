@@ -86,8 +86,11 @@ export function useKeyboardShortcuts() {
   // Handle keyboard events
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
-      // Always allow Escape to close modals/menus
-      if (event.key === "Escape") {
+      // Check if tour is active - if so, don't interfere with tour keyboard handling
+      const isTourActive = document.body.classList.contains('tour-active');
+      
+      // Always allow Escape to close modals/menus UNLESS tour is active
+      if (event.key === "Escape" && !isTourActive) {
         // Find and close any open modals
         const modals = document.querySelectorAll('[role="dialog"][aria-modal="true"]');
         modals.forEach(modal => {

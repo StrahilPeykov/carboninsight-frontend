@@ -419,6 +419,13 @@ html.dark .support-email-text {
   scroll-behavior: smooth;
 }
 
+/* Lock body scroll when tour is active */
+body.tour-active {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+}
+
 /* Ensure highlighted elements remain interactive */
 .tour-active .company-selector-button {
   position: relative !important;

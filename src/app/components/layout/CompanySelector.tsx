@@ -61,6 +61,18 @@ export default function CleanCompanySelector({
     setSearchQuery("");
   };
 
+  // Handle navigation with tour support
+  const handleNavigation = (path: string, tourAction?: string) => {
+    const activeTour = sessionStorage.getItem('activeTour');
+    if (activeTour && tourAction) {
+      window.dispatchEvent(new CustomEvent('tourAction', { 
+        detail: { action: tourAction } 
+      }));
+    }
+    // The navigation will be handled by the parent component's onClose and navigation
+    onClose();
+  };
+
   // Smart truncation for company names
   const truncateCompanyName = (name: string, maxLength: number = 20) => {
     if (name.length <= maxLength) return name;

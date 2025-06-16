@@ -51,7 +51,7 @@ const TOURS: Record<string, TourStep[]> = {
       page: '*', // Available from any page
       target: '.company-selector-button',
       title: 'Welcome to CarbonInsight!',
-      content: 'Let\'s create your first company to get started. Click on the company selector to begin.',
+      content: 'Let\'s get you started by creating your first company. This will allow you to add products and calculate their carbon footprints. Click on the company selector to begin.',
       placement: 'bottom',
       waitForAction: true,
       expectedAction: 'click-company-selector',
@@ -61,8 +61,8 @@ const TOURS: Record<string, TourStep[]> = {
     {
       page: '*', // Still on the same page with dropdown open
       target: '[data-tour-target="create-company"]',
-      title: 'Create Your Company',
-      content: 'Great! Now click on "Create" to set up your first company.',
+      title: 'Create Your First Company',
+      content: 'Perfect! Now click on "Create" to set up your company profile. This is the foundation for all your carbon footprint calculations.',
       placement: 'left',
       waitForAction: true,
       expectedAction: 'navigate-to-create-company',
@@ -72,8 +72,8 @@ const TOURS: Record<string, TourStep[]> = {
     {
       page: '/create-company',
       target: 'input[name="name"]',
-      title: 'Company Details',
-      content: 'Enter your company name here. This will be used throughout the platform to identify your organization.',
+      title: 'Business Name',
+      content: 'Enter your company\'s legal business name. This will be used throughout the platform and in all generated reports and Digital Product Passports.',
       placement: 'right',
       spotlightPadding: 20,
       allowSkip: true,
@@ -83,7 +83,17 @@ const TOURS: Record<string, TourStep[]> = {
       page: '/create-company',
       target: 'input[name="vat_number"]',
       title: 'VAT Number',
-      content: 'Enter your company\'s VAT number. This helps us verify your business and enables compliance features.',
+      content: 'Enter your company\'s VAT (Value Added Tax) number. This helps us verify your business identity and is required for compliance reporting.',
+      placement: 'right',
+      spotlightPadding: 20,
+      allowSkip: true,
+      allowClickOutside: false,
+    },
+    {
+      page: '/create-company',
+      target: 'input[name="business_registration_number"]',
+      title: 'Business Registration Number',
+      content: 'Enter your official business registration number (Chamber of Commerce number, Company House number, etc.). This is used for legal identification and compliance.',
       placement: 'right',
       spotlightPadding: 20,
       allowSkip: true,
@@ -92,8 +102,8 @@ const TOURS: Record<string, TourStep[]> = {
     {
       page: '/create-company',
       target: 'button[type="submit"]',
-      title: 'Almost Done!',
-      content: 'Once you\'ve filled in all the details, click Submit to create your company. You\'ll then be able to add products and calculate their carbon footprint.',
+      title: 'Complete Setup!',
+      content: 'Once you\'ve filled in all the details, click Submit to create your company. You\'ll then be taken to the dashboard where you can start adding products and calculating their carbon footprint.',
       placement: 'top',
       spotlightPadding: 20,
       allowSkip: true,
@@ -102,18 +112,28 @@ const TOURS: Record<string, TourStep[]> = {
   ],
   'product-list-tour': [
     {
+      page: '*',
+      target: 'a[href="/product-list"], nav a:has-text("Products")',
+      title: 'Product Management Tour',
+      content: 'Let\'s explore how to manage your products and calculate their carbon footprints. Click on "Products" in the navigation to get started.',
+      placement: 'bottom',
+      waitForAction: true,
+      expectedAction: 'navigate-to-products',
+      allowClickOutside: true,
+    },
+    {
       page: '/product-list',
       target: '.add-product-button',
       title: 'Add Your First Product',
-      content: 'Click here to add a new product and start calculating its carbon footprint.',
+      content: 'This is where you can add new products to calculate their carbon footprint. Click here to start the product creation process.',
       placement: 'left',
-      allowClickOutside: true, // Default behavior for other tours
+      allowClickOutside: true,
     },
     {
       page: '/product-list',
       target: 'input[placeholder*="Search"]',
       title: 'Search Products',
-      content: 'Quickly find products by searching for their name, SKU, or manufacturer.',
+      content: 'Quickly find products by searching for their name, SKU, or manufacturer. The search works across all your product data.',
       placement: 'bottom',
       allowClickOutside: true,
     },
@@ -121,25 +141,45 @@ const TOURS: Record<string, TourStep[]> = {
       page: '/product-list',
       target: 'tbody tr:first-child .export-button, .max-w-7xl',
       title: 'Export Digital Product Passports',
-      content: 'Once you have products, you can export your product data in various formats including PDF reports and AAS packages.',
+      content: 'Once you have products, you can export your product data in various formats including PDF reports, AAS packages, and SCSN XML for supply chain sharing.',
       placement: 'center',
       allowClickOutside: true,
     },
     {
       page: '/product-list',
       target: 'tbody tr:first-child .ai-button, .max-w-7xl',
-      title: 'AI-Powered Insights',
-      content: 'Get personalized recommendations for reducing your product\'s carbon footprint using our AI assistant.',
+      title: 'AI-Powered Carbon Insights',
+      content: 'Get personalized recommendations for reducing your product\'s carbon footprint. Our AI analyzes your data to suggest practical improvements.',
       placement: 'center',
       allowClickOutside: true,
     },
   ],
   'company-tour': [
     {
+      page: '*',
+      target: 'a[href="/dashboard"], nav a:has-text("Dashboard")',
+      title: 'Company Management Tour',
+      content: 'Let\'s explore how to manage multiple companies. First, go to your dashboard where you can access company management features.',
+      placement: 'bottom',
+      waitForAction: true,
+      expectedAction: 'navigate-to-dashboard',
+      allowClickOutside: true,
+    },
+    {
+      page: '/dashboard',
+      target: 'a[href="/list-companies"]',
+      title: 'View All Companies',
+      content: 'From the dashboard, click on "Your Companies" to access the company management hub where you can view all your companies.',
+      placement: 'right',
+      waitForAction: true,
+      expectedAction: 'navigate-to-companies',
+      allowClickOutside: true,
+    },
+    {
       page: '/list-companies',
       target: 'h1',
-      title: 'Company Management',
-      content: 'This is where you manage all your companies. You can create new companies, switch between them, and manage their settings.',
+      title: 'Company Management Hub',
+      content: 'This is your company management hub. Here you can create new companies, switch between them, and manage company settings and users.',
       placement: 'bottom',
       allowClickOutside: true,
     },
@@ -147,15 +187,15 @@ const TOURS: Record<string, TourStep[]> = {
       page: '/list-companies',
       target: '[href="/create-company"]',
       title: 'Create Additional Companies',
-      content: 'You can create multiple companies if you manage different businesses or subsidiaries.',
+      content: 'You can create multiple companies if you manage different businesses, subsidiaries, or want to separate different product lines.',
       placement: 'bottom',
       allowClickOutside: true,
     },
     {
       page: '/list-companies',
       target: '.grid > div:first-child',
-      title: 'Company Cards',
-      content: 'Each company is displayed as a card. Click "Select Company" to work with a specific company, or use the quick action buttons to manage users, view products, or handle data sharing.',
+      title: 'Company Cards & Quick Actions',
+      content: 'Each company is displayed as a card. Click "Select Company" to work with that company, or use the quick action buttons to manage users, view products, or handle data sharing requests.',
       placement: 'right',
       allowClickOutside: true,
     },
@@ -383,15 +423,18 @@ export default function TourProvider({ children }: TourProviderProps) {
           currentStepData.expectedAction === action) {
         
         // For navigation actions, advance the step immediately
-        if (action === 'navigate-to-create-company') {
+        if (action === 'navigate-to-create-company' || 
+            action === 'navigate-to-products' || 
+            action === 'navigate-to-companies' ||
+            action === 'navigate-to-dashboard') {
           const nextStep = currentStep + 1;
           console.log('Navigation action - advancing to step:', nextStep);
           setCurrentTourStep(nextStep);
           return;
         }
         
-        // For click-company-selector, add a delay to ensure dropdown opens
-        if (action === 'click-company-selector') {
+        // For click-company-selector actions, add a delay to ensure dropdown opens
+        if (action === 'click-company-selector' || action === 'click-company-selector-for-tour') {
           // Wait for dropdown to open before advancing
           setTimeout(() => {
             handleStepProgressionRef.current?.();

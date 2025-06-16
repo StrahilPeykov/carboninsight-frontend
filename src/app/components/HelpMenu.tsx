@@ -21,23 +21,23 @@ export default function HelpMenu() {
     { 
       id: 'main-onboarding', 
       name: 'Getting Started Tour',
-      description: 'Learn the basics and create your first company',
+      description: 'Complete walkthrough: create your first company and learn the basics',
       available: true,
       canRestart: true
     },
     { 
       id: 'product-list-tour', 
       name: 'Product Management Tour',
-      description: 'Manage products and carbon footprints',
-      available: hasCompany && pathname === '/product-list',
-      canRestart: pathname === '/product-list'
+      description: 'Learn to add products, calculate carbon footprints, and export data',
+      available: hasCompany || pathname === '/product-list',
+      canRestart: hasCompany || pathname === '/product-list'
     },
     { 
       id: 'company-tour', 
       name: 'Company Management Tour',
-      description: 'Manage company settings and users',
-      available: pathname === '/list-companies',
-      canRestart: pathname === '/list-companies'
+      description: 'Manage multiple companies, users, and settings',
+      available: true, // Available from anywhere now
+      canRestart: true
     },
   ];
 
@@ -122,16 +122,6 @@ export default function HelpMenu() {
                         {!isAvailable && tour.id === 'product-list-tour' && !hasCompany && (
                           <div className="text-xs text-orange-500 mt-1">
                             Create a company first
-                          </div>
-                        )}
-                        {!isAvailable && tour.id === 'product-list-tour' && hasCompany && (
-                          <div className="text-xs text-orange-500 mt-1">
-                            Navigate to Products page
-                          </div>
-                        )}
-                        {!isAvailable && tour.id === 'company-tour' && (
-                          <div className="text-xs text-orange-500 mt-1">
-                            Navigate to Companies page
                           </div>
                         )}
                         {isAnyTourActive && (

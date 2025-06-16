@@ -55,6 +55,17 @@ export default function DashboardPage() {
     }
   }, [isLoading, router, mounted]);
 
+  // Handle navigation with tour support
+  const handleTourNavigation = (path: string, tourAction?: string) => {
+    const activeTour = sessionStorage.getItem('activeTour');
+    if (activeTour && tourAction) {
+      window.dispatchEvent(new CustomEvent('tourAction', { 
+        detail: { action: tourAction } 
+      }));
+    }
+    router.push(path);
+  };
+
   // Load dashboard data
   useEffect(() => {
     if (!mounted) return;
@@ -195,7 +206,10 @@ export default function DashboardPage() {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <Link href="/list-companies" className="block transition-transform hover:scale-105">
+        <button 
+          onClick={() => handleTourNavigation("/list-companies", "navigate-to-companies")}
+          className="block transition-transform hover:scale-105 w-full text-left"
+        >
           <Card className="bg-gradient-to-r from-red-50 to-white dark:from-red-900/20 dark:to-gray-800 cursor-pointer hover:shadow-lg">
             <div className="flex items-center">
               <div className="p-3 rounded-full bg-red-100 dark:bg-red-800">
@@ -209,9 +223,12 @@ export default function DashboardPage() {
               </div>
             </div>
           </Card>
-        </Link>
+        </button>
 
-        <Link href="/product-list" className="block transition-transform hover:scale-105">
+        <button 
+          onClick={() => handleTourNavigation("/product-list", "navigate-to-products")}
+          className="block transition-transform hover:scale-105 w-full text-left"
+        >
           <Card className="bg-gradient-to-r from-blue-50 to-white dark:from-blue-900/20 dark:to-gray-800 cursor-pointer hover:shadow-lg">
             <div className="flex items-center">
               <div className="p-3 rounded-full bg-blue-100 dark:bg-blue-800">
@@ -223,7 +240,7 @@ export default function DashboardPage() {
               </div>
             </div>
           </Card>
-        </Link>
+        </button>
 
         <Link href="/product-data-sharing" className="block transition-transform hover:scale-105">
           <Card className="bg-gradient-to-r from-green-50 to-white dark:from-green-900/20 dark:to-gray-800 cursor-pointer hover:shadow-lg">
@@ -255,17 +272,23 @@ export default function DashboardPage() {
             Create and manage companies, add authorized users, and handle data sharing requests.
           </p>
           <div className="space-y-3">
-            <Link href="/list-companies" className="block">
+            <button 
+              onClick={() => handleTourNavigation("/list-companies", "navigate-to-companies")}
+              className="block w-full"
+            >
               <Button className="w-full flex justify-between items-center">
                 <span>View Companies</span>
                 <Building2 className="ml-2 h-4 w-4" />
               </Button>
-            </Link>
-            <Link href="/create-company" className="block">
+            </button>
+            <button 
+              onClick={() => handleTourNavigation("/create-company", undefined)}
+              className="block w-full"
+            >
               <Button variant="outline" className="w-full">
                 Create New Company
               </Button>
-            </Link>
+            </button>
           </div>
         </Card>
 
@@ -276,17 +299,23 @@ export default function DashboardPage() {
             generate Digital Product Passports.
           </p>
           <div className="space-y-3">
-            <Link href="/product-list" className="block">
+            <button 
+              onClick={() => handleTourNavigation("/product-list", "navigate-to-products")}
+              className="block w-full"
+            >
               <Button className="w-full flex justify-between items-center">
                 <span>View Products</span>
                 <BoxesIcon className="ml-2 h-4 w-4" />
               </Button>
-            </Link>
-            <Link href="/product-list/product" className="block">
+            </button>
+            <button 
+              onClick={() => handleTourNavigation("/product-list/product", undefined)}
+              className="block w-full"
+            >
               <Button variant="outline" className="w-full">
                 Add New Product
               </Button>
-            </Link>
+            </button>
           </div>
         </Card>
       </div>

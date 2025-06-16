@@ -67,6 +67,11 @@ export default function Navbar() {
         window.dispatchEvent(new CustomEvent('tourAction', { 
           detail: { action: 'click-company-selector' } 
         }));
+      } else if (activeTour === 'company-tour') {
+        // Dispatch different action for company tour
+        window.dispatchEvent(new CustomEvent('tourAction', { 
+          detail: { action: 'click-company-selector-for-tour' } 
+        }));
       }
     }
   };
@@ -201,6 +206,29 @@ export default function Navbar() {
     }
   };
 
+  const handleCreateCompany = () => {
+    // Check if tour is active
+    const activeTour = sessionStorage.getItem('activeTour');
+    if (activeTour === 'main-onboarding') {
+      // During tour, dispatch the action before navigating
+      window.dispatchEvent(new CustomEvent('tourAction', { 
+        detail: { action: 'navigate-to-create-company' } 
+      }));
+    }
+    router.push("/create-company");
+  };
+
+  // Handle navigation clicks during tours
+  const handleNavigation = (path: string, tourAction?: string) => {
+    const activeTour = sessionStorage.getItem('activeTour');
+    if (activeTour && tourAction) {
+      window.dispatchEvent(new CustomEvent('tourAction', { 
+        detail: { action: tourAction } 
+      }));
+    }
+    router.push(path);
+  };
+
   // Enhanced company selector handlers
   const handleCompanySelect = (selectedCompanyId: string) => {
     console.log("Company selection started:", selectedCompanyId);
@@ -228,18 +256,6 @@ export default function Navbar() {
     if (pathname === "/list-companies" || (!companyId && pathname === "/")) {
       router.push("/dashboard");
     }
-  };
-
-  const handleCreateCompany = () => {
-    // Check if tour is active
-    const activeTour = sessionStorage.getItem('activeTour');
-    if (activeTour === 'main-onboarding') {
-      // During tour, dispatch the action before navigating
-      window.dispatchEvent(new CustomEvent('tourAction', { 
-        detail: { action: 'navigate-to-create-company' } 
-      }));
-    }
-    router.push("/create-company");
   };
 
   const handleCompanySettings = () => {
@@ -352,8 +368,8 @@ export default function Navbar() {
                       className="hidden md:flex md:items-center md:space-x-1 lg:space-x-2"
                       role="navigation"
                     >
-                      <Link
-                        href="/dashboard"
+                      <button
+                        onClick={() => handleNavigation("/dashboard", "navigate-to-dashboard")}
                         className={`flex items-center px-2 lg:px-3 py-2 rounded-md text-sm font-medium min-h-[44px]
                           ${
                             isActive("/dashboard")
@@ -364,10 +380,10 @@ export default function Navbar() {
                       >
                         <LayoutDashboardIcon size={16} className="mr-1" aria-hidden="true" />
                         <span className="hidden lg:inline">Dashboard</span>
-                      </Link>
+                      </button>
 
-                      <Link
-                        href="/product-list"
+                      <button
+                        onClick={() => handleNavigation("/product-list", "navigate-to-products")}
                         className={`flex items-center px-2 lg:px-3 py-2 rounded-md text-sm font-medium min-h-[44px]
                           ${
                             isActive("/product-list")
@@ -378,7 +394,7 @@ export default function Navbar() {
                       >
                         <Boxes size={16} className="mr-1" aria-hidden="true" />
                         <span className="hidden lg:inline">Products</span>
-                      </Link>
+                      </button>
                     </nav>
                   )}
 
@@ -496,25 +512,29 @@ export default function Navbar() {
                 {/* Only show main nav when company is selected */}
                 {companyId && (
                   <>
-                    <Link
-                      href="/dashboard"
-                      className={`flex items-center px-3 py-2 rounded-md text-base font-medium min-h-[44px]
+                    <button
+                      onClick={() => {
+                        handleNavigation("/dashboard", "navigate-to-dashboard");
+                        setIsMenuOpen(false);
+                      }}
+                      className={`flex items-center px-3 py-2 rounded-md text-base font-medium min-h-[44px] w-full text-left
                         ${isActive("/dashboard") ? "bg-red text-white" : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"}`}
-                      onClick={() => setIsMenuOpen(false)}
                     >
                       <LayoutDashboardIcon size={16} className="mr-2" aria-hidden="true" />
                       Dashboard
-                    </Link>
+                    </button>
 
-                    <Link
-                      href="/product-list"
-                      className={`flex items-center px-3 py-2 rounded-md text-base font-medium min-h-[44px]
+                    <button
+                      onClick={() => {
+                        handleNavigation("/product-list", "navigate-to-products");
+                        setIsMenuOpen(false);
+                      }}
+                      className={`flex items-center px-3 py-2 rounded-md text-base font-medium min-h-[44px] w-full text-left
                         ${isActive("/product-list") ? "bg-red text-white" : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"}`}
-                      onClick={() => setIsMenuOpen(false)}
                     >
                       <Boxes size={16} className="mr-2" aria-hidden="true" />
                       Products
-                    </Link>
+                    </button>
                   </>
                 )}
 

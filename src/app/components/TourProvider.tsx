@@ -69,6 +69,7 @@ const TOURS: Record<string, TourStep[]> = {
       title: 'Company Details',
       content: 'Enter your company name here. This will be used throughout the platform to identify your organization.',
       placement: 'right',
+      spotlightPadding: 20,
     },
     {
       page: '/create-company',
@@ -76,6 +77,7 @@ const TOURS: Record<string, TourStep[]> = {
       title: 'VAT Number',
       content: 'Enter your company\'s VAT number. This helps us verify your business and enables compliance features.',
       placement: 'right',
+      spotlightPadding: 20,
     },
     {
       page: '/create-company',
@@ -83,6 +85,7 @@ const TOURS: Record<string, TourStep[]> = {
       title: 'Almost Done!',
       content: 'Once you\'ve filled in all the details, click Submit to create your company. You\'ll then be able to add products and calculate their carbon footprint.',
       placement: 'top',
+      spotlightPadding: 20,
     },
   ],
   'product-list-tour': [
@@ -368,8 +371,14 @@ export default function TourProvider({ children }: TourProviderProps) {
           return;
         }
         
-        // For other actions, use normal progression
-        handleStepProgressionRef.current?.();
+        // For click-company-selector, add a delay to ensure dropdown opens
+        if (action === 'click-company-selector') {
+          // Wait for dropdown to open before advancing
+          setTimeout(() => {
+            handleStepProgressionRef.current?.();
+          }, 500); // Increased delay to ensure dropdown animation completes
+          return;
+        }
       }
     };
 

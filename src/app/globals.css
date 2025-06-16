@@ -413,17 +413,11 @@ html.dark .support-email-text {
   animation: hue-rotate 5s linear infinite;
 }
 
-/* Tour styles - Simple and clean */
+/* Tour styles */
 .tour-active {
   /* Ensure smooth scrolling during tour */
   scroll-behavior: smooth;
 }
-
-/* Base z-index for tour elements */
-/* Visual backdrop: 9996 */
-/* Click blockers: 9997 */
-/* Border: 9999 */
-/* Tooltip: 10000 */
 
 /* Ensure highlighted elements remain interactive */
 .tour-active .company-selector-button {
@@ -432,6 +426,11 @@ html.dark .support-email-text {
 
 /* Ensure dropdowns appear above tour elements */
 .tour-active .company-selector-wrapper > div:last-child {
+  z-index: 10001 !important;
+}
+
+/* Ensure the company dropdown is always above tour overlays */
+.company-selector-wrapper .fixed {
   z-index: 10001 !important;
 }
 

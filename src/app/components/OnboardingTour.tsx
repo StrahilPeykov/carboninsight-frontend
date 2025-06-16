@@ -33,6 +33,7 @@ export default function OnboardingTour({
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
+  const [isSearchingForElement, setIsSearchingForElement] = useState(false);
 
   // Use totalSteps if provided, otherwise use steps.length
   const totalStepCount = totalSteps || steps.length;
@@ -44,6 +45,10 @@ export default function OnboardingTour({
 
   useEffect(() => {
     setLocalStep(currentStepIndex);
+    // Reset states when step changes
+    setTargetRect(null);
+    setTargetElement(null);
+    setIsSearchingForElement(false);
   }, [currentStepIndex]);
 
   useEffect(() => {
@@ -56,25 +61,71 @@ export default function OnboardingTour({
         return;
       }
 
-      const element = document.querySelector(currentStepData.target) as HTMLElement;
-      if (element) {
-        const rect = element.getBoundingClientRect();
-        setTargetRect(rect);
-        setTargetElement(element);
-        
-        // Only scroll into view if element is not already visible
-        const isInViewport = rect.top >= 0 && rect.bottom <= window.innerHeight;
-        if (!isInViewport) {
-          element.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-            inline: 'center'
-          });
+      // Add a small delay to ensure dropdown is open before looking for elements
+      const findElement = () => {
+        const element = document.querySelector(currentStepData.target) as HTMLElement;
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          setTargetRect(rect);
+          setTargetElement(element);
+          
+          // Only scroll into view if element is not already visible
+          const isInViewport = rect.top >= 0 && rect.bottom <= window.innerHeight;
+          if (!isInViewport) {
+            element.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'center'
+            });
+          }
+        } else {
+          console.warn(`Tour target not found: ${currentStepData.target}`);
+          setTargetRect(null);
+          setTargetElement(null);
         }
+      };
+
+      // For dropdown elements, wait a bit longer and retry if not found
+      if (currentStepData.target.includes('create-company') || currentStepData.target.includes('data-tour-target')) {
+        let retries = 0;
+        const maxRetries = 20; // Increase retries for dropdown elements
+        setIsSearchingForElement(true);
+        
+        const tryFindElement = () => {
+          const element = document.querySelector(currentStepData.target) as HTMLElement;
+          if (element) {
+            const rect = element.getBoundingClientRect();
+            setTargetRect(rect);
+            setTargetElement(element);
+            setIsSearchingForElement(false);
+            
+            // Only scroll into view if element is not already visible
+            const isInViewport = rect.top >= 0 && rect.bottom <= window.innerHeight;
+            if (!isInViewport) {
+              element.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+                inline: 'center'
+              });
+            }
+          } else if (retries < maxRetries) {
+            retries++;
+            console.log(`Retrying to find element: ${currentStepData.target} (${retries}/${maxRetries})`);
+            setTimeout(tryFindElement, 150); // Slightly longer delay between retries
+          } else {
+            console.warn(`Tour target not found after ${maxRetries} retries: ${currentStepData.target}`);
+            // Keep the tour visible but without highlighting
+            setTargetRect(null);
+            setTargetElement(null);
+            setIsSearchingForElement(false);
+          }
+        };
+        
+        // Initial delay before starting to look for dropdown elements
+        setTimeout(tryFindElement, 400);
       } else {
-        console.warn(`Tour target not found: ${currentStepData.target}`);
-        setTargetRect(null);
-        setTargetElement(null);
+        setIsSearchingForElement(false);
+        findElement();
       }
     };
 
@@ -220,8 +271,24 @@ export default function OnboardingTour({
 
   // Calculate blocking areas around the spotlight
   const getBlockingAreas = () => {
-    if (!targetRect || currentStepData.placement === 'center' || !isWaitingForAction) {
-      return null;
+    // Always show blocking areas to prevent clicks outside
+    if (!targetRect || currentStepData.placement === 'center') {
+      // For center placement or when target not found, block the entire screen but allow skip
+      return (
+        <div
+          className="fixed inset-0 bg-transparent"
+          style={{
+            pointerEvents: 'auto',
+            zIndex: 9997,
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!isWaitingForAction) {
+              handleSkip();
+            }
+          }}
+        />
+      );
     }
 
     const spotlight = {
@@ -244,7 +311,13 @@ export default function OnboardingTour({
             pointerEvents: 'auto',
             zIndex: 9997,
           }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            // Only skip on backdrop click if NOT waiting for action
+            if (!isWaitingForAction) {
+              handleSkip();
+            }
+          }}
         />
         {/* Bottom blocker */}
         <div
@@ -257,7 +330,13 @@ export default function OnboardingTour({
             pointerEvents: 'auto',
             zIndex: 9997,
           }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            // Only skip on backdrop click if NOT waiting for action
+            if (!isWaitingForAction) {
+              handleSkip();
+            }
+          }}
         />
         {/* Left blocker */}
         <div
@@ -270,7 +349,13 @@ export default function OnboardingTour({
             pointerEvents: 'auto',
             zIndex: 9997,
           }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            // Only skip on backdrop click if NOT waiting for action
+            if (!isWaitingForAction) {
+              handleSkip();
+            }
+          }}
         />
         {/* Right blocker */}
         <div
@@ -283,7 +368,13 @@ export default function OnboardingTour({
             pointerEvents: 'auto',
             zIndex: 9997,
           }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            // Only skip on backdrop click if NOT waiting for action
+            if (!isWaitingForAction) {
+              handleSkip();
+            }
+          }}
         />
       </>
     );
@@ -322,15 +413,7 @@ export default function OnboardingTour({
         </svg>
       </div>
 
-      {/* Clickable backdrop for skipping (when not waiting for action) */}
-      {!isWaitingForAction && (
-        <div 
-          className="fixed inset-0 z-[9995]"
-          onClick={handleSkip}
-        />
-      )}
-
-      {/* Click blockers around spotlight (when waiting for action) */}
+      {/* Click blockers around spotlight */}
       {getBlockingAreas()}
 
       {/* Simple border around target element */}
@@ -353,6 +436,7 @@ export default function OnboardingTour({
         ref={tooltipRef}
         className="fixed z-[10000] bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-md pointer-events-auto"
         style={getTooltipPosition()}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
@@ -379,11 +463,13 @@ export default function OnboardingTour({
           {currentStepData.content}
         </p>
 
-        {/* Show waiting indicator if waiting for action */}
-        {isWaitingForAction && (
+        {/* Show waiting indicator if waiting for action or element */}
+        {(isWaitingForAction || isSearchingForElement) && (
           <div className="mb-4 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              Click the highlighted element to continue
+              {isSearchingForElement 
+                ? 'Waiting for dropdown to open...' 
+                : 'Click the highlighted element to continue'}
             </p>
           </div>
         )}

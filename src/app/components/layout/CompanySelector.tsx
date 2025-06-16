@@ -163,7 +163,7 @@ export default function CleanCompanySelector({
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute right-0 sm:left-0 mt-2 w-80 max-w-[calc(100vw-1rem)] bg-white dark:bg-gray-800 rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none z-50 border border-gray-200 dark:border-gray-700">
+        <div className="absolute right-0 sm:left-0 mt-2 w-80 max-w-[calc(100vw-1rem)] bg-white dark:bg-gray-800 rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none z-[10001] border border-gray-200 dark:border-gray-700">
           {/* Clear Header Section */}
           <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50 rounded-t-lg">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">

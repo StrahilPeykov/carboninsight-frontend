@@ -55,8 +55,20 @@ export default function Navbar() {
   };
 
   const toggleCompanyMenu = () => {
-    setIsCompanyMenuOpen(!isCompanyMenuOpen);
-    if (!isCompanyMenuOpen) setIsProfileMenuOpen(false); // Close profile menu when opening company
+    const newState = !isCompanyMenuOpen;
+    setIsCompanyMenuOpen(newState);
+    if (newState) {
+      setIsProfileMenuOpen(false); // Close profile menu when opening company
+      
+      // Check if tour is active and expecting this action
+      const activeTour = sessionStorage.getItem('activeTour');
+      if (activeTour === 'main-onboarding') {
+        // Dispatch tour action when dropdown opens
+        window.dispatchEvent(new CustomEvent('tourAction', { 
+          detail: { action: 'click-company-selector' } 
+        }));
+      }
+    }
   };
 
   // Close dropdowns when clicking outside

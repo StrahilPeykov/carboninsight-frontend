@@ -13,6 +13,7 @@ interface BaseTourStep {
   placement: 'top' | 'bottom' | 'left' | 'right' | 'center';
   spotlightPadding?: number;
   allowSkip?: boolean;
+  allowClickOutside?: boolean;
 }
 
 interface InteractiveTourStep extends BaseTourStep {
@@ -55,6 +56,7 @@ const TOURS: Record<string, TourStep[]> = {
       waitForAction: true,
       expectedAction: 'click-company-selector',
       allowSkip: true,
+      allowClickOutside: false,
     },
     {
       page: '*', // Still on the same page with dropdown open
@@ -65,6 +67,7 @@ const TOURS: Record<string, TourStep[]> = {
       waitForAction: true,
       expectedAction: 'navigate-to-create-company',
       allowSkip: true,
+      allowClickOutside: false,
     },
     {
       page: '/create-company',
@@ -73,7 +76,8 @@ const TOURS: Record<string, TourStep[]> = {
       content: 'Enter your company name here. This will be used throughout the platform to identify your organization.',
       placement: 'right',
       spotlightPadding: 20,
-      allowSkip: false, // Don't allow skipping once on create company page
+      allowSkip: true,
+      allowClickOutside: false,
     },
     {
       page: '/create-company',
@@ -82,7 +86,8 @@ const TOURS: Record<string, TourStep[]> = {
       content: 'Enter your company\'s VAT number. This helps us verify your business and enables compliance features.',
       placement: 'right',
       spotlightPadding: 20,
-      allowSkip: false, // Don't allow skipping
+      allowSkip: true,
+      allowClickOutside: false,
     },
     {
       page: '/create-company',
@@ -91,7 +96,8 @@ const TOURS: Record<string, TourStep[]> = {
       content: 'Once you\'ve filled in all the details, click Submit to create your company. You\'ll then be able to add products and calculate their carbon footprint.',
       placement: 'top',
       spotlightPadding: 20,
-      allowSkip: false, // Don't allow skipping
+      allowSkip: true,
+      allowClickOutside: false,
     },
   ],
   'product-list-tour': [
@@ -101,6 +107,7 @@ const TOURS: Record<string, TourStep[]> = {
       title: 'Add Your First Product',
       content: 'Click here to add a new product and start calculating its carbon footprint.',
       placement: 'left',
+      allowClickOutside: true, // Default behavior for other tours
     },
     {
       page: '/product-list',
@@ -108,6 +115,7 @@ const TOURS: Record<string, TourStep[]> = {
       title: 'Search Products',
       content: 'Quickly find products by searching for their name, SKU, or manufacturer.',
       placement: 'bottom',
+      allowClickOutside: true,
     },
     {
       page: '/product-list',
@@ -115,6 +123,7 @@ const TOURS: Record<string, TourStep[]> = {
       title: 'Export Digital Product Passports',
       content: 'Once you have products, you can export your product data in various formats including PDF reports and AAS packages.',
       placement: 'center',
+      allowClickOutside: true,
     },
     {
       page: '/product-list',
@@ -122,6 +131,7 @@ const TOURS: Record<string, TourStep[]> = {
       title: 'AI-Powered Insights',
       content: 'Get personalized recommendations for reducing your product\'s carbon footprint using our AI assistant.',
       placement: 'center',
+      allowClickOutside: true,
     },
   ],
   'company-tour': [
@@ -131,6 +141,7 @@ const TOURS: Record<string, TourStep[]> = {
       title: 'Company Management',
       content: 'This is where you manage all your companies. You can create new companies, switch between them, and manage their settings.',
       placement: 'bottom',
+      allowClickOutside: true,
     },
     {
       page: '/list-companies',
@@ -138,6 +149,7 @@ const TOURS: Record<string, TourStep[]> = {
       title: 'Create Additional Companies',
       content: 'You can create multiple companies if you manage different businesses or subsidiaries.',
       placement: 'bottom',
+      allowClickOutside: true,
     },
     {
       page: '/list-companies',
@@ -145,6 +157,7 @@ const TOURS: Record<string, TourStep[]> = {
       title: 'Company Cards',
       content: 'Each company is displayed as a card. Click "Select Company" to work with a specific company, or use the quick action buttons to manage users, view products, or handle data sharing.',
       placement: 'right',
+      allowClickOutside: true,
     },
   ],
 };

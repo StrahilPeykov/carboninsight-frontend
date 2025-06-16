@@ -9,7 +9,8 @@ interface TourStep {
   spotlightPadding?: number;
   waitForAction?: boolean;
   expectedAction?: string;
-  allowSkip?: boolean; // New prop to control if skip is allowed
+  allowSkip?: boolean;
+  allowClickOutside?: boolean;
 }
 
 interface OnboardingTourProps {
@@ -44,8 +45,10 @@ export default function OnboardingTour({
   const displayStepNumber = globalCurrentStep + 1;
 
   const currentStepData = steps[localStep];
-  // Default to allowing skip for backward compatibility
+  // Keep skip button behavior tied to allowSkip
   const canSkip = currentStepData?.allowSkip !== false;
+  // Add new logic for click outside behavior
+  const allowClickOutside = currentStepData?.allowClickOutside !== false;
 
   useEffect(() => {
     setLocalStep(currentStepIndex);
@@ -364,8 +367,8 @@ export default function OnboardingTour({
           }}
           onClick={(e) => {
             e.stopPropagation();
-            // Only skip if allowed
-            if (canSkip) {
+            // Only skip if click outside is allowed AND skip is allowed
+            if (allowClickOutside && canSkip) {
               handleSkip();
             }
           }}
@@ -382,8 +385,8 @@ export default function OnboardingTour({
 
     const handleBlockerClick = (e: React.MouseEvent) => {
       e.stopPropagation();
-      // Only skip if allowed
-      if (canSkip) {
+      // Only skip if click outside is allowed AND skip is allowed
+      if (allowClickOutside && canSkip) {
         handleSkip();
       }
     };

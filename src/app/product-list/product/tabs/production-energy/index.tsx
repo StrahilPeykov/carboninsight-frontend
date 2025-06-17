@@ -2,16 +2,12 @@
 
 // ── Imports ────────────────────────────────────────────────────────────────
 import React, { forwardRef, useImperativeHandle, useState, useEffect } from "react";
-import { DataPassedToTabs, TabHandle } from "../page";
-import {
-  lifecycleStages,
-  productionEnergyApi,
-  ProductionEnergyEmission,
-} from "@/lib/api/productionEmissionApi";
-import { EmissionReference, emissionReferenceApi } from "@/lib/api/emissionReferenceApi";
-import { bomApi, LineItem } from "@/lib/api/bomApi";
+import { DataPassedToTabs, TabHandle } from "../../page";
+import { ProductionEnergyEmission } from "@/lib/api/productionEmissionApi";
+import { EmissionReference } from "@/lib/api/emissionReferenceApi";
+import { LineItem } from "@/lib/api/bomApi";
 import Button from "@/app/components/ui/Button";
-import { Plus, Trash, Edit, X, AlertCircle, ChevronDown } from "lucide-react";
+import { Info, Plus, X, AlertCircle, ChevronDown } from "lucide-react";
 import {
   Combobox,
   ComboboxButton,
@@ -22,7 +18,11 @@ import {
   DialogPanel,
   DialogTitle,
 } from "@headlessui/react";
-import { LifecycleStage, OverrideFactor } from "@/lib/api";
+import { Tooltip } from "../components/ToolTip";
+import { OurTable } from "@/app/components/ui/OurTable";
+import * as apiCalls from "./api-calls";
+import * as Helpers from "./helpers";
+import { FormData, getProductionEnergyColumns, lifecycleOptions } from "./types";
 
 // ── ProductionEnergy Tab: Handles production energy emissions CRUD ──────────
 const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
@@ -33,12 +33,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [currentEmission, setCurrentEmission] = useState<ProductionEnergyEmission | null>(null);
-    const [formData, setFormData] = useState<{
-      energy_consumption: string;
-      reference: string;
-      override_factors: OverrideFactor[];
-      line_items: number[];
-    }>({
+    const [formData, setFormData] = useState<FormData>({
       energy_consumption: "",
       reference: "",
       override_factors: [],
@@ -91,242 +86,30 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
     // ── Fetch emissions and BOM items on mount ──────────────────
     useEffect(() => {
       if (productIdString) {
-        fetchEmissions();
-        fetchBomLineItems();
+        apiCalls.fetchEmissions(setIsLoading, company_pk, productId, setEmissions);
+        apiCalls.fetchBomLineItems(company_pk, productId, setBomLineItems);
       }
     }, [productIdString]);
 
-    // ── Fetch all production energy emissions ────────────────────
-    const fetchEmissions = async () => {
-      setIsLoading(true);
-      try {
-        const data = await productionEnergyApi.getAllProductionEmissions(company_pk, productId());
-        setEmissions(data);
-      } catch (error) {
-        console.error("Error fetching emissions:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // ── Open modal for add/edit emission ────────────────────────
-    const handleOpenModal = (emission: ProductionEnergyEmission | null = null) => {
-      if (emission) {
-        setCurrentEmission(emission);
-        setFormData({
-          energy_consumption: emission.energy_consumption.toString(),
-          reference: emission.reference?.toString() || "",
-          override_factors: emission.override_factors || [],
-          line_items: emission.line_items || [],
-        });
-      } else {
-        setCurrentEmission(null);
-        setFormData({
-          energy_consumption: "",
-          reference: "",
-          override_factors: [],
-          line_items: [],
-        });
-      }
-      fetchBomLineItems();
-      setIsModalOpen(true);
-    };
-
-    // ── Close add/edit modal ─────────────────────────────────────
-    const handleCloseModal = () => {
-      setIsModalOpen(false);
-      setCurrentEmission(null);
-    };
-
-    // ── Handle submit for add/edit emission ──────────────────────
-    const handleSubmit = async () => {
-      const energyConsumption = parseFloat(formData.energy_consumption);
-      if (isNaN(energyConsumption) || energyConsumption < 1) {
-        alert("Please enter a valid energy consumption value (must be 1 or greater)");
-        return;
-      }
-      if (
-        formData.override_factors.some(
-          factor =>
-            typeof factor.lifecycle_stage !== "string" ||
-            factor.lifecycle_stage.trim() === "" ||
-            typeof factor.co_2_emission_factor_biogenic !== "number" ||
-            isNaN(factor.co_2_emission_factor_biogenic) ||
-            typeof factor.co_2_emission_factor_non_biogenic !== "number" ||
-            isNaN(factor.co_2_emission_factor_non_biogenic)
-        )
-      ) {
-        alert("Please fill in all overrides fields correctly.");
-        return;
-      }
-
-      setIsSubmitting(true);
-      try {
-        const reference = formData.reference ? parseInt(formData.reference) : null;
-
-        const data = {
-          energy_consumption: energyConsumption,
-          reference,
-          override_factors:
-            formData.override_factors.length > 0 ? formData.override_factors : undefined,
-          line_items: formData.line_items.length > 0 ? formData.line_items : undefined,
-        };
-
-        if (currentEmission) {
-          // Update existing emission
-          await productionEnergyApi.updateProductionEmission(
-            company_pk,
-            productId(),
-            currentEmission.id,
-            data
-          );
-        } else {
-          // Create new emission
-          await productionEnergyApi.createProductionEmission(company_pk, productId(), data);
-        }
-
-        // Refresh the list of emissions
-        await fetchEmissions();
-        setIsModalOpen(false);
-        onFieldChange(); // Notify parent component of changes
-      } catch (error) {
-        console.error("Error saving emission:", error);
-      } finally {
-        setIsSubmitting(false);
-      }
-    };
-
-    // ── Confirm delete modal ─────────────────────────────────────
-    const handleConfirmDelete = (emissionId: number) => {
-      setDeletingEmissionId(emissionId);
-      setIsDeleteModalOpen(true);
-    };
-
-    // ── Delete emission ──────────────────────────────────────────
-    const handleDelete = async () => {
-      if (deletingEmissionId === null) return;
-
-      try {
-        await productionEnergyApi.deleteProductionEmission(
-          company_pk,
-          productId(),
-          deletingEmissionId
-        );
-        setEmissions(emissions.filter(emission => emission.id !== deletingEmissionId));
-        setIsDeleteModalOpen(false);
-        setDeletingEmissionId(null);
-        onFieldChange(); // Notify parent component of changes
-      } catch (error) {
-        console.error("Error deleting emission:", error);
-      }
-    };
-
-    // ── Add an override factor field ─────────────────────────────
-    const handleAddOverrideFactor = () => {
-      setFormData({
-        ...formData,
-        override_factors: [
-          ...formData.override_factors,
-          {
-            lifecycle_stage: undefined,
-            co_2_emission_factor_biogenic: 1,
-            co_2_emission_factor_non_biogenic: 1,
-          },
-        ],
-      });
-    };
-
-    // ── Update an override factor ────────────────────────────────
-    const handleOverrideFactorChange = (
-      index: number,
-      field: "name" | "biogenic" | "non_biogenic",
-      value: string
-    ) => {
-      const updatedFactors = [...formData.override_factors];
-      if (field === "name") {
-        if (lifecycleStages.includes(value)) {
-          updatedFactors[index].lifecycle_stage = value as LifecycleStage;
-        } else {
-          updatedFactors[index].lifecycle_stage = undefined;
-        }
-      } else if (field === "biogenic") {
-        updatedFactors[index].co_2_emission_factor_biogenic = parseFloat(value);
-      } else {
-        updatedFactors[index].co_2_emission_factor_non_biogenic = parseFloat(value);
-      }
-
-      setFormData({
-        ...formData,
-        override_factors: updatedFactors,
-      });
-    };
-
-    // ── Remove an override factor ────────────────────────────────
-    const handleRemoveOverrideFactor = (index: number) => {
-      const updatedFactors = [...formData.override_factors];
-      updatedFactors.splice(index, 1);
-      setFormData({
-        ...formData,
-        override_factors: updatedFactors,
-      });
-    };
-
-    // ── Fetch BOM line items ─────────────────────────────────────
-    const fetchBomLineItems = async () => {
-      try {
-        const data = await bomApi.getAllLineItems(company_pk, productId());
-        setBomLineItems(data);
-      } catch (error) {
-        console.error("Error fetching BOM items:", error);
-      }
-    };
-
-    // ── Lifecycle options for override factors ───────────────────
-    const lifecycleOptions = [
-      "A1 - Raw material supply (and upstream production)",
-      "A2 - Cradle-to-gate transport to factory",
-      "A3 - A3 - Production",
-      "A4 - Transport to final destination",
-      "A5 - Installation",
-      "A1-A3 - Raw material supply and production",
-      "A4-A5 - Transport to final destination and installation",
-      "B1 - Usage phase",
-      "B2 - Maintenance",
-      "B3 - Repair",
-      "B4 - Replacement",
-      "B5 - Update/upgrade, refurbishing",
-      "B6 - Operational energy use",
-      "B7 - Operational water use",
-      "B1-B7 - Entire usage phase",
-      "C1 - Reassembly",
-      "C2 - Transport to recycler",
-      "C3 - Recycling, waste treatment",
-      "C4 - Landfill",
-      "C1-C4 - Decommissioning",
-      "C2-C4 - Transport to recycler and landfill",
-      "D - Reuse",
-      "Other",
-    ];
-
-    // ── Helper to get enum value from display string ─────────────
-    const getLifecycleEnumValue = (displayString: string | null): string => {
-      if (!displayString) return "";
-      return displayString.split(" - ")[0];
-    };
-
     // ── Fetch emission references on mount ───────────────────────
     useEffect(() => {
-      const fetchReferences = async () => {
-        try {
-          const data = await emissionReferenceApi.getAllProductionEnergyReferences();
-          setReferences(data);
-        } catch (error) {
-          console.error("Error fetching references:", error);
-        }
-      };
-
-      fetchReferences();
+      apiCalls.fetchReferences(setReferences);
     }, []);
+
+    // ── Define columns of table. ─────────────────────────────────
+    const columns = getProductionEnergyColumns(
+      references,
+      setShowFactorsForEmission,
+      setShowBomItemsForEmission,
+      setCurrentEmission,
+      setFormData,
+      company_pk,
+      productId,
+      setBomLineItems,
+      setIsModalOpen,
+      setDeletingEmissionId,
+      setIsDeleteModalOpen
+    );
 
     // ── Render ───────────────────────────────────────────────────
     return (
@@ -337,185 +120,37 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
           <p className="mb-4">Track energy consumption during manufacturing process.</p>
         </div>
 
-        {/* ── Emissions list - mobile view ───────────────────────── */}
-        <div className="md:hidden">
-          {isLoading ? (
-            <div className="text-center py-4">Loading...</div>
-          ) : emissions.length === 0 ? (
-            <div className="text-center text-gray-500 py-4">
-              No production energy emissions added yet.
-            </div>
-          ) : (
-            emissions.map(emission => (
-              <div key={emission.id} className="border rounded-lg p-4 mb-4 shadow-sm">
-                {/* ── Emission header and actions ── */}
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-medium">Emission #{emission.id}</h3>
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => handleOpenModal(emission)}
-                      className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
-                    >
-                      <Edit className="w-4 h-4 text-blue-500" />
-                    </button>
-                    <button
-                      onClick={() => handleConfirmDelete(emission.id)}
-                      className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
-                    >
-                      <Trash className="w-4 h-4 text-red-500" />
-                    </button>
-                  </div>
-                </div>
-                {/* ── Emission details ── */}
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div className="text-gray-500">Energy Consumption:</div>
-                  <div>{emission.energy_consumption} kWh</div>
-                  {emission.reference && (
-                    <>
-                      <div className="text-gray-500">Reference:</div>
-                      <div>
-                        {references.find(ref => ref.id === emission.reference)?.name ||
-                          emission.reference}
-                      </div>
-                    </>
-                  )}
-                  {emission.override_factors && emission.override_factors.length > 0 && (
-                    <>
-                      <div className="text-gray-500">Overrides:</div>
-                      <div>
-                        <button
-                          onClick={() => setShowFactorsForEmission(emission)}
-                          className="underline"
-                        >
-                          View override ({emission.override_factors.length})
-                        </button>
-                      </div>
-                    </>
-                  )}
-                  {emission.line_items && emission.line_items.length > 0 && (
-                    <>
-                      <div className="text-gray-500">BOM Items:</div>
-                      <div>
-                        <button
-                          onClick={e => {
-                            e.stopPropagation();
-                            setShowBomItemsForEmission(emission);
-                          }}
-                          className="underline"
-                        >
-                          View items ({emission.line_items.length})
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* ── Emissions list - desktop view ──────────────────────── */}
-        <div className="hidden md:block overflow-x-auto">
-          <table className="min-w-full text-sm">
-            <thead>
-              <tr className="text-left border-b">
-                <th className="p-2">ID</th>
-                <th className="p-2">Reference</th>
-                <th className="p-2">Energy Consumption (kWh)</th>
-                <th className="p-2">Overrides</th>
-                <th className="p-2">BOM Items</th>
-                <th className="p-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                <tr>
-                  <td colSpan={5} className="text-center py-4">
-                    Loading...
-                  </td>
-                </tr>
-              ) : emissions.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="text-center text-gray-500 py-4">
-                    No production energy emissions added yet.
-                  </td>
-                </tr>
-              ) : (
-                emissions.map(emission => (
-                  <tr
-                    key={emission.id}
-                    className="border-b hover:bg-gray-50 dark:hover:bg-gray-700"
-                  >
-                    <td className="p-2">{emission.id}</td>
-                    <td className="p-2">
-                      {emission.reference
-                        ? references.find(ref => ref.id === emission.reference)?.name ||
-                          emission.reference
-                        : "—"}
-                    </td>
-                    <td className="p-2">{emission.energy_consumption}</td>
-                    <td className="p-2">
-                      {emission.override_factors && emission.override_factors.length > 0 ? (
-                        <button
-                          onClick={() => setShowFactorsForEmission(emission)}
-                          className="underline hover:underline text-sm flex items-center"
-                        >
-                          View override{emission.override_factors.length !== 1 ? "s" : ""} (
-                          {emission.override_factors.length})
-                        </button>
-                      ) : (
-                        "-"
-                      )}
-                    </td>
-                    <td className="p-2">
-                      {emission.line_items && emission.line_items.length > 0 ? (
-                        <button
-                          onClick={e => {
-                            e.stopPropagation();
-                            setShowBomItemsForEmission(emission);
-                          }}
-                          className="underline"
-                        >
-                          View item{emission.line_items.length !== 1 ? "s" : ""} (
-                          {emission.line_items.length})
-                        </button>
-                      ) : (
-                        "-"
-                      )}
-                    </td>
-                    <td className="p-2">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleOpenModal(emission)}
-                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
-                          aria-label="Edit emission"
-                        >
-                          <Edit className="w-4 h-4 text-blue-500" />
-                        </button>
-                        <button
-                          onClick={() => handleConfirmDelete(emission.id)}
-                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
-                          aria-label="Delete emission"
-                        >
-                          <Trash className="w-4 h-4 text-red-500" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        {/* ── Emission List ───────────────────────────────────────── */}
+        {isLoading ? (
+          <div className="text-center py-6">Data loading...</div>
+        ) : emissions.length === 0 ? (
+          <div className="text-center py-6">No production energy emissions yet.</div>
+        ) : (
+          <OurTable
+            caption="A table displaying the production energy emissions of this product."
+            cardTitle="Emission #"
+            items={emissions}
+            columns={columns}
+          />
+        )}
 
         {/* ── Add the Emission button ────────────────────────────── */}
         <div className="mt-6">
           <Button
-            onClick={() => handleOpenModal()}
+            onClick={() =>
+              Helpers.handleOpenModal(
+                setCurrentEmission,
+                setFormData,
+                company_pk,
+                productId,
+                setBomLineItems,
+                setIsModalOpen
+              )
+            }
             className="flex items-center gap-2"
             variant="primary"
           >
-            <Plus className="w-4 h-4" /> Add Production Energy
+            <Plus className="w-4 h-4" aria-hidden="true" /> Add Production Energy
           </Button>
         </div>
 
@@ -524,7 +159,8 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
           open={isModalOpen}
           as="div"
           className="fixed inset-0 z-20 pt-12 overflow-y-auto"
-          onClose={handleCloseModal}
+          onClose={() => Helpers.handleCloseModal(setIsModalOpen, setCurrentEmission)}
+          aria-labelledby="emission-modal-title"
         >
           <div className="min-h-screen px-4 text-center">
             {/* Static backdrop */}
@@ -538,16 +174,18 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
             <DialogPanel className="relative inline-block w-full max-w-lg p-6 my-8 overflow-visible text-left align-middle bg-white dark:bg-gray-800 shadow-xl rounded-lg z-30">
               <div className="flex justify-between items-center mb-4">
                 <DialogTitle
+                  id="emission-modal-title"
                   as="h3"
                   className="text-lg font-semibold text-gray-900 dark:text-white"
                 >
                   {currentEmission ? "Edit" : "Add"} Production Energy
                 </DialogTitle>
                 <button
-                  onClick={handleCloseModal}
-                  className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900"
+                  onClick={() => Helpers.handleCloseModal(setIsModalOpen, setCurrentEmission)}
+                  className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  aria-label="Close production energy dialog"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-5 h-5" aria-hidden="true" />
                 </button>
               </div>
 
@@ -567,15 +205,19 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                     step="0.01"
                     value={formData.energy_consumption}
                     onChange={e => setFormData({ ...formData, energy_consumption: e.target.value })}
-                    className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     required
+                    aria-describedby="energy-consumption-help"
                   />
+                  <span id="energy-consumption-help" className="sr-only">
+                    Enter the energy consumption in kilowatt hours
+                  </span>
                 </div>
 
                 {/* ── Reference Section ── */}
                 <div>
                   <label
-                    htmlFor="reference"
+                    htmlFor="reference-select"
                     className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
                   >
                     Reference
@@ -603,15 +245,20 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                     >
                       <div className="relative w-full cursor-default overflow-hidden rounded-lg bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-left">
                         <ComboboxInput
+                          id="reference-select"
                           className="w-full border-none py-2 pl-3 pr-10 text-sm leading-5 text-gray-900 dark:text-white focus:ring-0 bg-white dark:bg-gray-700"
                           displayValue={(value: string) => value}
                           onChange={event => setReferenceQuery(event.target.value)}
                           placeholder="Select a reference"
+                          aria-describedby="reference-help"
                         />
                         <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
                           <ChevronDown className="h-5 w-5 text-gray-400" aria-hidden="true" />
                         </ComboboxButton>
                       </div>
+                      <span id="reference-help" className="sr-only">
+                        Select an emission reference database for calculations
+                      </span>
                       <div className="relative w-full">
                         <ComboboxOptions className="absolute z-[200] max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
                           {references
@@ -643,13 +290,18 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
 
                   {/* Display selected BOM items as tags */}
                   {formData.line_items.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-2">
+                    <div
+                      className="flex flex-wrap gap-2 mb-2"
+                      role="list"
+                      aria-label="Selected BOM items"
+                    >
                       {formData.line_items.map(itemId => {
                         const item = bomLineItems.find(i => i.id === itemId);
                         return (
                           <div
                             key={itemId}
                             className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md text-sm flex items-center gap-1"
+                            role="listitem"
                           >
                             <span>{item ? item.line_item_product.name : `Item #${itemId}`}</span>
                             <button
@@ -660,9 +312,10 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                                   line_items: formData.line_items.filter(id => id !== itemId),
                                 });
                               }}
-                              className="text-gray-500 hover:text-red-500"
+                              className="text-gray-500 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 rounded"
+                              aria-label={`Remove ${item ? item.line_item_product.name : `Item ${itemId}`} from selection`}
                             >
-                              <X className="w-3 h-3" />
+                              <X className="w-3 h-3" aria-hidden="true" />
                             </button>
                           </div>
                         );
@@ -689,11 +342,15 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                           displayValue={() => bomLineItemQuery}
                           onChange={event => setBomLineItemQuery(event.target.value)}
                           placeholder="Select BOM items to associate"
+                          aria-describedby="bom-items-help"
                         />
                         <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
                           <ChevronDown className="h-5 w-5 text-gray-400" aria-hidden="true" />
                         </ComboboxButton>
                       </div>
+                      <span id="bom-items-help" className="sr-only">
+                        Select bill of materials items to associate with this emission
+                      </span>
                       <div className="relative w-full">
                         <ComboboxOptions className="absolute z-[200] max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-gray-700 py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
                           {bomLineItems.length === 0 ? (
@@ -743,14 +400,14 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Overrides
+                      Override Reference Emissions
                     </label>
                     <button
                       type="button"
-                      onClick={handleAddOverrideFactor}
-                      className="text-sm text-red hover:text-red-800"
+                      onClick={() => Helpers.handleAddOverrideFactor(setFormData, formData)}
+                      className="text-sm text-red hover:text-red-800 focus:outline-none focus:ring-2 focus:ring-red-500 rounded px-2 py-1"
                     >
-                      + Add Factor
+                      + Add Override
                     </button>
                   </div>
 
@@ -761,10 +418,13 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                     >
                       <button
                         type="button"
-                        onClick={() => handleRemoveOverrideFactor(index)}
-                        className="absolute top-2 right-2 p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                        onClick={() =>
+                          Helpers.handleRemoveOverrideFactor(formData, setFormData, index)
+                        }
+                        className="absolute top-2 right-2 p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded focus:outline-none focus:ring-2 focus:ring-red-500"
+                        aria-label={`Remove override factor ${index + 1}`}
                       >
-                        <X className="w-4 h-4" />
+                        <X className="w-4 h-4" aria-hidden="true" />
                       </button>
 
                       <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -780,8 +440,14 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                               : "") ?? ""
                           }
                           onChange={value => {
-                            const enumValue = getLifecycleEnumValue(value);
-                            handleOverrideFactorChange(index, "name", enumValue);
+                            const enumValue = Helpers.getLifecycleEnumValue(value);
+                            Helpers.handleOverrideFactorChange(
+                              formData,
+                              setFormData,
+                              index,
+                              "name",
+                              enumValue
+                            );
                           }}
                         >
                           <div className="relative w-full cursor-default overflow-hidden rounded-lg bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-left">
@@ -790,6 +456,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                               displayValue={(value: string | null) => value || ""}
                               onChange={event => setQuery(event.target.value)}
                               placeholder="Select lifecycle stage"
+                              aria-label={`Lifecycle stage for override factor ${index + 1}`}
                             />
                             <ComboboxButton className="absolute inset-y-0 right-0 flex items-center pr-2">
                               <ChevronDown className="h-5 w-5 text-gray-400" aria-hidden="true" />
@@ -828,30 +495,71 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Biogenic CO₂ Factor
+                            Impact (biogenic) kg CO₂-eq
+                            <Tooltip
+                              content={
+                                <div className="text-sm text-gray-900 dark:text-white">
+                                  <div>LCIA method: IPCC 2021 (incl. biogenic CO2)</div>
+                                  <div>Impact category: climate change: biogenic (incl. CO2)</div>
+                                  <div>Indicator: GWP100</div>
+                                </div>
+                              }
+                            >
+                              <Info className="w-4 h-4 text-gray-400" />
+                            </Tooltip>
                           </label>
                           <input
+                            id={`biogenic-factor-${index}`}
                             type="number"
                             value={factor.co_2_emission_factor_biogenic}
                             onChange={e =>
-                              handleOverrideFactorChange(index, "biogenic", e.target.value)
+                              Helpers.handleOverrideFactorChange(
+                                formData,
+                                setFormData,
+                                index,
+                                "biogenic",
+                                e.target.value
+                              )
                             }
                             min={0}
-                            className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            aria-label={`Biogenic CO2 emission factor for override ${index + 1}`}
                           />
                         </div>
                         <div>
                           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Non-Biogenic CO₂ Factor
+                            Impact (non-biogenic) kg CO₂-eq
+                            <Tooltip
+                              content={
+                                <div className="text-sm text-gray-900 dark:text-white">
+                                  <div>LCIA method: IPCC 2021</div>
+                                  <div>
+                                    Impact category: climate change: total (excl. biogenic CO2,
+                                    incl. SLCFs)
+                                  </div>
+                                  <div>Indicator: GWP100</div>
+                                </div>
+                              }
+                            >
+                              <Info className="w-4 h-4 text-gray-400" />
+                            </Tooltip>
                           </label>
                           <input
+                            id={`non-biogenic-factor-${index}`}
                             type="number"
                             value={factor.co_2_emission_factor_non_biogenic}
                             onChange={e =>
-                              handleOverrideFactorChange(index, "non_biogenic", e.target.value)
+                              Helpers.handleOverrideFactorChange(
+                                formData,
+                                setFormData,
+                                index,
+                                "non_biogenic",
+                                e.target.value
+                              )
                             }
                             min={0}
-                            className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            className="w-full p-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            aria-label={`Non-biogenic CO2 emission factor for override ${index + 1}`}
                           />
                         </div>
                       </div>
@@ -862,13 +570,29 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
 
               {/* ── Modal Actions ── */}
               <div className="flex justify-end gap-2 mt-6 pt-4 border-t dark:border-t-gray-700">
-                <Button onClick={handleCloseModal} variant="outline">
+                <Button
+                  onClick={() => Helpers.handleCloseModal(setIsModalOpen, setCurrentEmission)}
+                  variant="outline"
+                >
                   Cancel
                 </Button>
                 <Button
-                  onClick={handleSubmit}
+                  onClick={() =>
+                    apiCalls.handleSubmit(
+                      formData,
+                      setIsSubmitting,
+                      currentEmission,
+                      company_pk,
+                      productId,
+                      setIsModalOpen,
+                      onFieldChange,
+                      setIsLoading,
+                      setEmissions
+                    )
+                  }
                   variant="primary"
                   disabled={isSubmitting || !formData.energy_consumption}
+                  aria-busy={isSubmitting}
                 >
                   {isSubmitting ? "Saving..." : "Save"}
                 </Button>
@@ -884,6 +608,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
             as="div"
             className="fixed inset-0 z-20 overflow-y-auto"
             onClose={() => setIsDeleteModalOpen(false)}
+            aria-labelledby="delete-modal-title"
           >
             <div className="min-h-screen px-4 text-center">
               {/* Static backdrop */}
@@ -895,8 +620,12 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
               </span>
 
               <DialogPanel className="relative inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle bg-white dark:bg-gray-800 shadow-xl rounded-lg z-30">
-                <DialogTitle as="h3" className="flex items-center gap-3 mb-4 text-red">
-                  <AlertCircle className="w-6 h-6" />
+                <DialogTitle
+                  id="delete-modal-title"
+                  as="h3"
+                  className="flex items-center gap-3 mb-4 text-red"
+                >
+                  <AlertCircle className="w-6 h-6" aria-hidden="true" />
                   <span className="text-lg font-semibold">Confirm Deletion</span>
                 </DialogTitle>
 
@@ -910,7 +639,18 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
                     Cancel
                   </Button>
                   <Button
-                    onClick={handleDelete}
+                    onClick={() =>
+                      apiCalls.handleDelete(
+                        deletingEmissionId,
+                        company_pk,
+                        productId,
+                        setEmissions,
+                        emissions,
+                        setIsDeleteModalOpen,
+                        setDeletingEmissionId,
+                        onFieldChange
+                      )
+                    }
                     variant="primary"
                     className="bg-red hover:bg-red-800 text-white"
                   >
@@ -928,6 +668,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
           as="div"
           className="fixed inset-0 z-20 overflow-y-auto"
           onClose={() => setShowFactorsForEmission(null)}
+          aria-labelledby="factors-modal-title"
         >
           <div className="min-h-screen px-4 text-center">
             {/* Static backdrop */}
@@ -940,6 +681,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
 
             <DialogPanel className="relative inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle bg-white dark:bg-gray-800 shadow-xl rounded-lg z-30">
               <DialogTitle
+                id="factors-modal-title"
                 as="h3"
                 className="text-lg font-medium leading-6 text-gray-900 dark:text-white"
               >
@@ -949,26 +691,47 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
               <div className="mt-4">
                 {showFactorsForEmission?.override_factors &&
                 showFactorsForEmission.override_factors.length > 0 ? (
-                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                    <thead>
-                      <tr>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <table
+                    className="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+                    role="table"
+                  >
+                    <caption className="sr-only">
+                      Override factors for emission {showFactorsForEmission.id}
+                    </caption>
+                    <thead role="rowgroup">
+                      <tr role="row">
+                        <th
+                          scope="col"
+                          className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                        >
                           Lifecycle Stage
                         </th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        <th
+                          scope="col"
+                          className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                        >
                           CO₂ Emission Factor
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    <tbody
+                      className="divide-y divide-gray-200 dark:divide-gray-700"
+                      role="rowgroup"
+                    >
                       {showFactorsForEmission.override_factors.map((factor, index) => (
-                        <tr key={index}>
-                          <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
+                        <tr key={index} role="row">
+                          <td
+                            className="px-4 py-2 text-sm text-gray-900 dark:text-white"
+                            role="cell"
+                          >
                             {lifecycleOptions.find(opt =>
                               opt.startsWith(factor.lifecycle_stage ?? "")
                             ) || factor.lifecycle_stage}
                           </td>
-                          <td className="px-4 py-2 text-sm text-gray-900 dark:text-white">
+                          <td
+                            className="px-4 py-2 text-sm text-gray-900 dark:text-white"
+                            role="cell"
+                          >
                             <div>Bio: {factor.co_2_emission_factor_biogenic}</div>
                             <div>Non-bio: {factor.co_2_emission_factor_non_biogenic}</div>
                           </td>
@@ -1000,6 +763,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
           as="div"
           className="fixed inset-0 z-20 overflow-y-auto"
           onClose={() => setShowBomItemsForEmission(null)}
+          aria-labelledby="bom-items-modal-title"
         >
           <div className="min-h-screen px-4 text-center">
             <div className="fixed inset-0 bg-black/50" />
@@ -1008,6 +772,7 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
             </span>
             <DialogPanel className="relative inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle bg-white dark:bg-gray-800 shadow-xl rounded-lg z-30">
               <DialogTitle
+                id="bom-items-modal-title"
                 as="h3"
                 className="text-lg font-medium leading-6 text-gray-900 dark:text-white"
               >
@@ -1017,30 +782,52 @@ const ProductionEnergy = forwardRef<TabHandle, DataPassedToTabs>(
               <div className="mt-4">
                 {showBomItemsForEmission?.line_items && bomLineItems.length > 0 ? (
                   <div className="overflow-y-auto max-h-96">
-                    <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                      <thead>
-                        <tr>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    <table
+                      className="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+                      role="table"
+                    >
+                      <caption className="sr-only">
+                        BOM items associated with emission {showBomItemsForEmission.id}
+                      </caption>
+                      <thead role="rowgroup">
+                        <tr role="row">
+                          <th
+                            scope="col"
+                            className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                          >
                             ID
                           </th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          <th
+                            scope="col"
+                            className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                          >
                             Product Name
                           </th>
-                          <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                          <th
+                            scope="col"
+                            className="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                          >
                             Quantity
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                      <tbody
+                        className="divide-y divide-gray-200 dark:divide-gray-700"
+                        role="rowgroup"
+                      >
                         {showBomItemsForEmission.line_items.map(itemId => {
                           const item = bomLineItems.find(i => i.id === itemId);
                           return (
-                            <tr key={itemId}>
-                              <td className="px-4 py-2">{itemId}</td>
-                              <td className="px-4 py-2">
+                            <tr key={itemId} role="row">
+                              <td className="px-4 py-2" role="cell">
+                                {itemId}
+                              </td>
+                              <td className="px-4 py-2" role="cell">
                                 {item ? item.line_item_product.name : "Unknown Item"}
                               </td>
-                              <td className="px-4 py-2">{item ? item.quantity : "-"}</td>
+                              <td className="px-4 py-2" role="cell">
+                                {item ? item.quantity : "-"}
+                              </td>
                             </tr>
                           );
                         })}

@@ -300,8 +300,6 @@ export default function TourProvider({ children }: TourProviderProps) {
       return;
     }
 
-    console.log("Starting tour:", tourId);
-
     // Always start from step 0, regardless of current page
     setActiveTour(tourId);
     setCurrentStep(0);
@@ -311,7 +309,6 @@ export default function TourProvider({ children }: TourProviderProps) {
   };
 
   const completeTour = (tourId: string) => {
-    console.log("Completing tour:", tourId);
     const newCompleted = new Set(completedTours);
     newCompleted.add(tourId);
     setCompletedTours(newCompleted);
@@ -333,7 +330,6 @@ export default function TourProvider({ children }: TourProviderProps) {
   };
 
   const setCurrentTourStep = (step: number) => {
-    console.log("Setting tour step to:", step);
     setCurrentStep(step);
     if (activeTour) {
       saveActiveTourState(activeTour, step);
@@ -343,7 +339,6 @@ export default function TourProvider({ children }: TourProviderProps) {
   // Get current tour steps based on active tour and current page
   const getCurrentTourSteps = () => {
     if (!activeTour || !TOURS[activeTour]) {
-      console.log("No active tour or tour not found:", activeTour);
       return [];
     }
 
@@ -351,7 +346,6 @@ export default function TourProvider({ children }: TourProviderProps) {
     const currentStepData = allSteps[currentStep];
 
     if (!currentStepData) {
-      console.log("No current step data for step:", currentStep);
       return [];
     }
 
@@ -367,17 +361,7 @@ export default function TourProvider({ children }: TourProviderProps) {
 
     const isStepOnThisPage = stepPage === "*" || stepPage === normalizedPathname;
 
-    console.log("Tour step check:", {
-      activeTour,
-      currentStep,
-      stepPage,
-      normalizedPathname,
-      isStepOnThisPage,
-      target: currentStepData.target,
-    });
-
     if (!isStepOnThisPage) {
-      console.log("Step not for this page, returning empty array");
       return [];
     }
 
@@ -392,8 +376,6 @@ export default function TourProvider({ children }: TourProviderProps) {
 
     const allSteps = TOURS[activeTour];
     const nextStep = currentStep + 1;
-
-    console.log("Progressing from step", currentStep, "to", nextStep);
 
     if (nextStep < allSteps.length) {
       const nextStepData = allSteps[nextStep];
@@ -438,7 +420,6 @@ export default function TourProvider({ children }: TourProviderProps) {
         prevStep.expectedAction === "navigate-to-create-company"
       ) {
         // We've completed the navigation, the step has already been advanced
-        console.log("Navigation complete, now on step:", currentStep);
       }
     }
   }, [pathname, activeTour, mounted, currentStep]);
@@ -464,8 +445,6 @@ export default function TourProvider({ children }: TourProviderProps) {
       const allSteps = TOURS[activeTour];
       const currentStepData = allSteps[currentStep];
 
-      console.log("Tour action received:", action, "Current step:", currentStep);
-
       if (
         currentStepData &&
         "expectedAction" in currentStepData &&
@@ -479,7 +458,6 @@ export default function TourProvider({ children }: TourProviderProps) {
           action === "navigate-to-dashboard"
         ) {
           const nextStep = currentStep + 1;
-          console.log("Navigation action - advancing to step:", nextStep);
           setCurrentTourStep(nextStep);
           return;
         }
@@ -496,7 +474,6 @@ export default function TourProvider({ children }: TourProviderProps) {
     };
 
     const handleNextStep = () => {
-      console.log("Next step requested from tour UI");
       handleStepProgressionRef.current?.();
     };
 
@@ -517,8 +494,6 @@ export default function TourProvider({ children }: TourProviderProps) {
       const clickedElement = target.closest(expectedTarget);
 
       if (clickedElement) {
-        console.log("Clicked expected element for action:", currentStepData.expectedAction);
-
         // Dispatch the action event
         window.dispatchEvent(
           new CustomEvent("tourAction", {
@@ -529,7 +504,6 @@ export default function TourProvider({ children }: TourProviderProps) {
     };
 
     const handlePrevStep = () => {
-      console.log("Previous step requested from tour UI");
       if (currentStep > 0) {
         const prevStep = currentStep - 1;
         const allSteps = TOURS[activeTour];

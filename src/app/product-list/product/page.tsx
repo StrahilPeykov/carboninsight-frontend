@@ -181,8 +181,9 @@ export default function ProductClientPage() {
   /* ----------------------------------------------------- */
 
   // ── finish handler: require first tab saved ───────────────────────────────
-  const handleAddProduct = () => {
-    if (!productInfoSavedOnce) {
+  const handleAddProduct = async () => {
+    const error = await onSaveProductInfoTab();
+    if (error) {
       setTabConfig(cfg =>
         cfg.map((t, i) =>
           i === activeTab
@@ -211,45 +212,19 @@ export default function ProductClientPage() {
   };
 
   // ── delegate save/update to active tab via refs ─────────────────────────
-  const onSaveTab = async () => {
+  const onSaveProductInfoTab = async () => {
     let errorMessage: string = "Failed to save. Please try again.";
-    switch (tabConfig[activeTab].key) {
-      case "productInfo":
-        errorMessage =
-          (await (mode === Mode.ADD && !productInfoSavedOnce
-            ? productInfoRef.current?.saveTab()
-            : productInfoRef.current?.updateTab())) ?? errorMessage;
-        break;
-      case "billOfMaterials":
-        errorMessage =
-          (await (mode === Mode.ADD
-            ? billOfMaterialsRef.current?.saveTab()
-            : billOfMaterialsRef.current?.updateTab())) ?? errorMessage;
-        break;
-      case "productionEnergy":
-        errorMessage =
-          (await (mode === Mode.ADD
-            ? productionEnergyRef.current?.saveTab()
-            : productionEnergyRef.current?.updateTab())) ?? errorMessage;
-        break;
-      case "userEnergy":
-        errorMessage =
-          (await (mode === Mode.ADD
-            ? userEnergyRef.current?.saveTab()
-            : userEnergyRef.current?.updateTab())) ?? errorMessage;
-        break;
-      case "transportation":
-        errorMessage =
-          (await (mode === Mode.ADD
-            ? transportationRef.current?.saveTab()
-            : transportationRef.current?.updateTab())) ?? errorMessage;
-        break;
-    }
+    errorMessage =
+      (await (mode === Mode.ADD && !productInfoSavedOnce
+        ? productInfoRef.current?.saveTab()
+        : productInfoRef.current?.updateTab())) ?? errorMessage;
 
     if (errorMessage) {
       onTabSaveError(errorMessage);
+      return true;
     } else {
-      onTabSaved(tabConfig[activeTab].key);
+      onTabSaved(tabConfig[0].key);
+      return false;
     }
   };
 
@@ -262,9 +237,36 @@ export default function ProductClientPage() {
     setActiveTab(i => Math.max(i - 1, 0));
   };
 
+  // Keyboard navigation for tabs
+  const handleTabKeyDown = (event: React.KeyboardEvent, tabIndex: number) => {
+    if (event.key === "ArrowLeft" && tabIndex > 0) {
+      event.preventDefault();
+      setActiveTab(tabIndex - 1);
+      tabButtonRefs.current[tabIndex - 1]?.focus();
+    } else if (event.key === "ArrowRight" && tabIndex < tabConfig.length - 1) {
+      event.preventDefault();
+      setActiveTab(tabIndex + 1);
+      tabButtonRefs.current[tabIndex + 1]?.focus();
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      setActiveTab(0);
+      tabButtonRefs.current[0]?.focus();
+    } else if (event.key === "End") {
+      event.preventDefault();
+      setActiveTab(tabConfig.length - 1);
+      tabButtonRefs.current[tabConfig.length - 1]?.focus();
+    }
+  };
+
   // ── render ─────────────────────────────────────────────────────────
   return (
-    <Suspense fallback={<div className="text-center py-10">Loading…</div>}>
+    <Suspense
+      fallback={
+        <div className="text-center py-10" role="status" aria-live="polite">
+          <span>Loading…</span>
+        </div>
+      }
+    >
       <div
         className="
           py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8
@@ -272,11 +274,16 @@ export default function ProductClientPage() {
         "
       >
         {/* Page Title */}
-        <div className="text-center mb-12">
+        <header className="text-center mb-12">
           <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
             {mode === Mode.ADD ? "Add Product" : "Edit Product"}
           </h1>
-        </div>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">
+            {mode === Mode.ADD
+              ? "Create a new product and calculate its carbon footprint"
+              : "Update product information and emissions data"}
+          </p>
+        </header>
 
         <Card
           className="
@@ -285,22 +292,33 @@ export default function ProductClientPage() {
             border border-gray-200 dark:border-gray-700
             shadow-sm dark:shadow-none
           "
+          aria-labelledby="product-form-heading"
         >
+<<<<<<< HEAD
+=======
+          <h2 id="product-form-heading" className="sr-only">
+            Product form with multiple steps
+          </h2>
+
+>>>>>>> main
           {/* Stepper Tabs */}
           <TabGroup selectedIndex={activeTab} onChange={setActiveTab}>
             <TabList
               ref={tabListRef}
               className="flex relative justify-between mb-10 px-6 overflow-x-auto sm:overflow-visible whitespace-nowrap"
+              aria-label="Product creation steps"
             >
               {tabConfig.map((t, index) => (
                 <div key={t.key} className="relative flex-1 flex justify-center min-w-[120px]">
                   <Tab
                     as="button"
                     disabled={t.disabled}
-                    className="flex flex-col items-center focus:outline-none group"
+                    className="flex flex-col items-center focus:outline-none group disabled:cursor-not-allowed"
                     ref={el => {
                       tabButtonRefs.current[index] = el;
                     }}
+                    onKeyDown={e => handleTabKeyDown(e, index)}
+                    aria-describedby={t.errorBannerText ? `error-${t.key}` : undefined}
                   >
                     {({ selected }) => (
                       <>
@@ -312,10 +330,15 @@ export default function ProductClientPage() {
                             ${
                               selected
                                 ? "bg-red-600 dark:bg-red-500"
-                                : "bg-gray-600 dark:bg-gray-500"
-                            }`}
+                                : t.disabled
+                                  ? "bg-gray-400 dark:bg-gray-600"
+                                  : "bg-gray-600 dark:bg-gray-500"
+                            }
+                            ${t.saved && !selected ? "ring-2 ring-green-500" : ""}
+                          `}
+                          aria-hidden="true"
                         >
-                          {index + 1}
+                          {t.saved && !selected ? "✓" : index + 1}
                         </div>
                         {/* step label */}
                         <div
@@ -324,16 +347,21 @@ export default function ProductClientPage() {
                             ${
                               selected
                                 ? "text-red dark:text-red font-semibold"
-                                : "text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300"
-                            }`}
+                                : t.disabled
+                                  ? "text-gray-400 dark:text-gray-500"
+                                  : "text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300"
+                            }
+                          `}
                         >
                           {t.label}
+                          {t.saved && <span className="sr-only"> (completed)</span>}
+                          {t.disabled && <span className="sr-only"> (disabled)</span>}
                         </div>
                       </>
                     )}
                   </Tab>
                   {index < tabConfig.length - 1 && (
-                    <div className="absolute top-4 left-1/2 w-full">
+                    <div className="absolute top-4 left-1/2 w-full" aria-hidden="true">
                       <div className="h-0.5 bg-gray-400 dark:bg-gray-600 w-full transform translate-x-4" />
                     </div>
                   )}
@@ -341,21 +369,29 @@ export default function ProductClientPage() {
               ))}
             </TabList>
 
+            {/* Progress indicator for screen readers */}
+            <div className="sr-only" aria-live="polite" aria-atomic="true">
+              Step {activeTab + 1} of {tabConfig.length}: {tabConfig[activeTab].label}
+              {tabConfig[activeTab].saved && " (completed)"}
+            </div>
+
             <TabPanels>
               {tabConfig.map(t => (
                 <TabPanel key={t.key} unmount={false}>
-                  <t.Comp
-                    ref={t.ref}
-                    productId={productId}
-                    tabKey={t.key}
-                    mode={mode}
-                    setProductId={setProductId}
-                    onFieldChange={() =>
-                      setTabConfig(cfg =>
-                        cfg.map((tab, i) => (i === activeTab ? { ...tab, saved: false } : tab))
-                      )
-                    }
-                  />
+                  <div role="tabpanel" aria-labelledby={`tab-${t.key}`}>
+                    <t.Comp
+                      ref={t.ref}
+                      productId={productId}
+                      tabKey={t.key}
+                      mode={mode}
+                      setProductId={setProductId}
+                      onFieldChange={() =>
+                        setTabConfig(cfg =>
+                          cfg.map((tab, i) => (i === activeTab ? { ...tab, saved: false } : tab))
+                        )
+                      }
+                    />
+                  </div>
                 </TabPanel>
               ))}
             </TabPanels>
@@ -363,16 +399,23 @@ export default function ProductClientPage() {
 
           {/* Error Banner */}
           {tabConfig[activeTab].errorBannerText && (
-            <div className="mt-4 text-red-500 dark:text-red-400">
-              {tabConfig[activeTab].errorBannerText}
+            <div
+              className="mt-4 p-4 bg-red-50 border border-red-200 rounded-md text-red-700 dark:bg-red-900/20 dark:border-red-900 dark:text-red-300"
+              role="alert"
+              aria-live="assertive"
+              id={`error-${tabConfig[activeTab].key}`}
+            >
+              <strong className="font-semibold">Error:</strong>
+              <span className="ml-1">{tabConfig[activeTab].errorBannerText}</span>
             </div>
           )}
 
           {/* Navigation Buttons */}
-          <div
+          <nav
             className="
               flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 mt-6
             "
+            aria-label="Form navigation"
           >
             <div className="flex flex-1">
               <Button
@@ -380,6 +423,11 @@ export default function ProductClientPage() {
                 disabled={activeTab === 0}
                 variant={activeTab === 0 ? "outline" : "primary"}
                 className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 w-full sm:w-auto"
+                aria-label={
+                  activeTab === 0
+                    ? "Back (disabled, first step)"
+                    : `Go back to ${activeTab > 0 ? tabConfig[activeTab - 1].label : "previous step"}`
+                }
               >
                 Back
               </Button>
@@ -387,12 +435,15 @@ export default function ProductClientPage() {
 
             {activeTab === 0 && (
               <Button
-                onClick={onSaveTab}
+                onClick={onSaveProductInfoTab}
                 disabled={tabConfig[activeTab].saved}
                 variant={tabConfig[activeTab].saved ? "outline" : "primary"}
                 className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 w-full sm:w-auto"
+                aria-label={
+                  tabConfig[activeTab].saved ? "Save (already saved)" : "Save current step"
+                }
               >
-                Save
+                {tabConfig[activeTab].saved ? "Saved" : "Save"}
               </Button>
             )}
 
@@ -407,6 +458,13 @@ export default function ProductClientPage() {
                   : "primary"
               }
               className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 w-full sm:w-auto"
+              aria-label={
+                activeTab === tabConfig.length - 1
+                  ? "Next (disabled, last step)"
+                  : !productInfoSavedOnce && mode === Mode.ADD
+                    ? "Next (disabled, save product info first)"
+                    : `Continue to ${activeTab < tabConfig.length - 1 ? tabConfig[activeTab + 1].label : "next step"}`
+              }
             >
               Next
             </Button>
@@ -416,10 +474,11 @@ export default function ProductClientPage() {
               disabled={false}
               variant={!productInfoSavedOnce ? "outline" : "primary"}
               className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 w-full sm:w-auto"
+              aria-label={mode === Mode.ADD ? "Finish creating product" : "Finish updating product"}
             >
               Finish
             </Button>
-          </div>
+          </nav>
 
           {/* Success Modal */}
           {showSuccessModal && (
@@ -440,8 +499,8 @@ export default function ProductClientPage() {
             >
               <p className="text-gray-800 dark:text-gray-200">
                 {mode === Mode.EDIT
-                  ? "Your product has been updated."
-                  : "Your new product has been added."}
+                  ? "Your product has been updated successfully. You can now view the updated emission calculations."
+                  : "Your new product has been added successfully. You can now view its carbon footprint analysis."}
               </p>
             </PopupModal>
           )}

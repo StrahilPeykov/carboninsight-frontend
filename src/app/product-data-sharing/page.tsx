@@ -4,12 +4,11 @@ import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Trash } from "lucide-react";
+import { Check, Trash, X } from "lucide-react";
 import { productApi, ProductSharingRequest } from "@/lib/api/productApi";
 import { companyApi } from "@/lib/api/companyApi";
 import { useAuth } from "../context/AuthContext";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
-import { TableRow } from "../components/ui/tableRow";
 import { Column, OurTable } from "../components/ui/OurTable";
 
 interface DataSharingRequestDisplay {
@@ -197,25 +196,29 @@ export default function ProductDataSharing() {
       key: "actions",
       label: "Actions",
       render: (_value, request) => (
-        <div className="flex justify-end items-center gap-4">
-          <button
-            className="text-green-500 hover:text-green-700"
-            onClick={() => {
+        <div className="flex justify-end items-center gap-2">
+          <Button
+            size="sm"
+            className="flex items-center gap-1 text-xs !bg-green-500 !border-green-500 !text-white hover:cursor-pointer"
+            onClick={e => {
+              e.stopPropagation();
               setRequestToApprove(request.id.toString());
               setApprovingModal(true);
             }}
           >
-            <Check size={24} />
-          </button>
-          <button
-            className="text-red-500 hover:text-red-700"
-            onClick={() => {
+            <Check className="w-4 h-4 text-white" />
+          </Button>
+          <Button
+            size="sm"
+            className="flex items-center gap-1 text-xs !bg-red-500 !border-red-500 !text-white hover:cursor-pointer"
+            onClick={e => {
+              e.stopPropagation();
               setRequestToDeny(request.id.toString());
               setDenyModal(true);
             }}
           >
-            <Trash size={24} />
-          </button>
+            <X className="w-4 h-4 text-white" />
+          </Button>
         </div>
       ),
     },
@@ -307,11 +310,13 @@ export default function ProductDataSharing() {
         ) : requests.length === 0 ? (
           <div className="text-center py-6">No data sharing requests found.</div>
         ) : (
-          <OurTable
-            caption="A table displaying the data sharing requests of this company."
-            items={requests}
-            columns={columns}
-          />
+          <Card>
+            <OurTable
+              caption="A table displaying the data sharing requests of this company."
+              items={requests}
+              columns={columns}
+            />
+          </Card>
         )}
       </div>
     </div>

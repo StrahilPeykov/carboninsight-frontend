@@ -109,28 +109,30 @@ export default function PopupModal({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 
-  return ReactDOM.createPortal(
-    <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-        onClick={onClose}
-        aria-hidden="true"
-      />
+return ReactDOM.createPortal(
+  <>
+    {/* Backdrop */}
+    <div
+      className="fixed inset-0 bg-black/50 z-55"
+      onClick={onClose}
+      aria-hidden="true"
+    />
 
-      {/* Modal */}
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId.current}
-        aria-describedby="modal-description"
-      >
+    {/* Modal Container: full height flex column to center modal */}
+    <div
+      className="fixed inset-0 z-100 overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId.current}
+      aria-describedby="modal-description"
+    >
+      <div className="flex min-h-full items-center justify-center px-4 py-8">
         <div
           ref={modalRef}
-          className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-md p-6 relative"
+          className="relative inline-block w-full max-w-xl p-6 bg-white dark:bg-gray-800 shadow-xl rounded-lg"
           tabIndex={-1}
         >
+          {/* Modal content */}
           <header className="flex justify-between items-center mb-4">
             <h2
               id={titleId.current}
@@ -165,6 +167,7 @@ export default function PopupModal({
             {children}
           </div>
 
+          {/* Confirmation input */}
           {confirmationRequiredText && (
             <div className="mb-4">
               <label
@@ -217,7 +220,8 @@ export default function PopupModal({
           )}
         </div>
       </div>
-    </>,
-    document.body
-  );
+    </div>
+  </>,
+  document.body
+);
 }

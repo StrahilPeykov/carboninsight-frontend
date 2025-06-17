@@ -318,7 +318,10 @@ export default function CleanCompanySelector({
                           size={16}
                           className="mr-3 flex-shrink-0 text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200"
                         />
-                        <span className="truncate font-medium min-w-0 flex-1" title={company.name}>
+                        <span
+                          className="truncate font-medium min-w-0 flex-1 text-left"
+                          title={company.name}
+                        >
                           {company.name}
                         </span>
                       </div>

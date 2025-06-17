@@ -10,16 +10,7 @@ import {
   exportProductPDFReport,
   getExportFormats,
 } from "@/utils/backendExportUtils";
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  manufacturer_name: string;
-  sku: string;
-  supplier: string;
-  emission_total: string;
-}
+import { Product } from "@/lib/api/productApi";
 
 interface ExportModalProps {
   isOpen: boolean;

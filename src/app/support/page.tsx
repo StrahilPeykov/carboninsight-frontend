@@ -198,8 +198,8 @@ Thank you for your assistance.`;
               What file formats can I export?
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              CarbonInsight supports AASX, XML, JSON, CSV, XLSX, and PDF export formats for Digital
-              Product Passports.
+              CarbonInsight supports AASX, XML, JSON, CSV, XLSX, and PDF export formats for Carbon
+              Footprint Reports.
             </p>
           </div>
 

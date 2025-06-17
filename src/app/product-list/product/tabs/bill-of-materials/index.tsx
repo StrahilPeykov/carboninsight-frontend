@@ -1,0 +1,542 @@
+"use client";
+
+import { useState, useEffect, forwardRef, useImperativeHandle } from "react";
+import { Plus, X, Search, ChevronRight, AlertCircle } from "lucide-react";
+import Card from "@/app/components/ui/Card";
+import Button from "@/app/components/ui/Button";
+import { DataPassedToTabs, TabHandle } from "../../page";
+import { Company } from "@/lib/api/companyApi";
+import { Product } from "@/lib/api/productApi";
+import { Mode } from "../../enums";
+import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import * as apiCalls from "./api-calls";
+import * as Helpers from "./helpers";
+import { OurTable } from "@/app/components/ui/OurTable";
+import { Material, getBomColumns } from "./types";
+
+// ── BillOfMaterials Tab: Handles BoM CRUD (Create, Read, Update, Delete) and UI ───────────────
+const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
+  ({ productId: productId_string, mode, onFieldChange }, ref) => {
+    // ── State for modal, steps, selections, and data ─────────────
+    const [materials, setMaterials] = useState<Material[]>([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [currentStep, setCurrentStep] = useState(1);
+    const [companies, setCompanies] = useState<Company[]>([]);
+    const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+    const [products, setProducts] = useState<Product[]>([]);
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [quantity, setQuantity] = useState<string>("1");
+    const [searchCompany, setSearchCompany] = useState("");
+    const [searchProduct, setSearchProduct] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [newQuantity, setNewQuantity] = useState<string>("1");
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [deleteMaterial, setDeleteMaterial] = useState<Material | null>(null);
+    const [addMaterialError, setAddMaterialError] = useState<string | null>(null);
+    const [isEstimationMode, setIsEstimationMode] = useState(false);
+
+    useEffect(() => {
+      // ── Fetch companies when searching in modal ────────────────
+      if (
+        isModalOpen &&
+        currentStep === 1 &&
+        (searchCompany.length >= 4 || searchCompany.length === 0)
+      ) {
+        apiCalls.fetchCompanies(setIsLoading, setCompanies, searchCompany);
+      }
+      // ── Fetch products when searching in modal ─────────────────
+      if (
+        selectedCompany &&
+        currentStep === 2 &&
+        (searchProduct.length >= 2 || searchProduct.length === 0)
+      ) {
+        apiCalls.fetchProducts(setIsLoading, setProducts, selectedCompany.id, searchProduct);
+      }
+      // ── Fetch all BoM data if editing ───────────────────────────
+      if (mode == Mode.EDIT) {
+        apiCalls.fetchBOMItems(company_pk, productId, setMaterials);
+      }
+    }, [isModalOpen, searchCompany, selectedCompany, searchProduct, currentStep, mode]);
+
+    // ── Get company ID from localStorage ────────────────────────
+    let company_pk_string = localStorage.getItem("selected_company_id");
+
+    if (!company_pk_string) {
+      console.error("company_pk is null");
+      return;
+    }
+
+    const company_pk = parseInt(company_pk_string, 10);
+
+    // ── Check if supplied productId is valid ───────────────────
+    const productId = () => {
+      const id = parseInt(productId_string, 10);
+
+      if (isNaN(id)) {
+        throw new Error("productId is not a number");
+      }
+
+      return id;
+    };
+
+    // ── Expose saveTab/updateTab to parent ──────────────────────
+    useImperativeHandle(ref, () => ({ saveTab, updateTab }));
+
+    // ── Save/Update stubs for parent API ────────────────────────
+    const saveTab = async (): Promise<string> => {
+      return "";
+    };
+
+    const updateTab = async (): Promise<string> => {
+      return "";
+    };
+
+    // ── Define columns of table. ─────────────────────────────────
+    const columns = getBomColumns(
+      materials,
+      company_pk,
+      setEditingMaterial,
+      setNewQuantity,
+      setIsEditModalOpen,
+      setDeleteMaterial,
+      setIsDeleteModalOpen,
+      setMaterials
+    );
+
+    // ── Render ─────────────────────────────────────────────────
+    return (
+      <>
+        <div>
+          <h2 className="text-xl font-semibold mb-4">Bill of Materials</h2>
+          <p className="mb-4">Add product parts to the bill of materials.</p>
+        </div>
+
+        {/* ── BOM Table ───────────────────────────────────────── */}
+        {isLoading ? (
+          <div className="text-center py-6">Data loading...</div>
+        ) : materials.length === 0 ? (
+          <div className="text-center py-6">No BOM items yet.</div>
+        ) : (
+          <OurTable
+            caption="A table displaying the BOM items of this product."
+            items={materials}
+            columns={columns}
+          />
+        )}
+
+        {/* Add Material button */}
+        <div className="mt-6">
+          <Button
+            onClick={() => {
+              Helpers.handleAddMaterial(
+                setIsModalOpen,
+                setCurrentStep,
+                setSelectedCompany,
+                setSelectedProduct,
+                setQuantity,
+                setSearchCompany,
+                setSearchProduct
+              );
+            }}
+            className="flex items-center gap-2"
+            variant="primary"
+          >
+            <Plus className="w-4 h-4" /> Add a material
+          </Button>
+        </div>
+
+        {/* Add Material Modal */}
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-black/50 z-60 overflow-y-auto py-8">
+            <div className="min-h-full flex items-center justify-center p-4">
+              <Card className="w-full max-w-2xl my-auto">
+                <div className="p-3 sm:p-5">
+                  {/* Header with title and close button */}
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold truncate pr-2">
+                      {currentStep === 1 ? "Step 1: Select a Supplier" : "Step 2: Select a Product"}
+                    </h3>
+                    <button
+                      onClick={() => {
+                        Helpers.closeModal(
+                          setIsModalOpen,
+                          setAddMaterialError,
+                          setCurrentStep,
+                          setSelectedCompany,
+                          setSelectedProduct,
+                          setQuantity,
+                          setIsEstimationMode
+                        );
+                      }}
+                      className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900 flex-shrink-0"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {/* Stepper UI */}
+                  <div className="flex items-center justify-center mb-6">
+                    <div className="flex items-center">
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 1 ? "bg-gray-100 dark:bg-gray-600" : "bg-red text-white"}`}
+                      >
+                        1
+                      </div>
+                      <div className="mx-2 w-16 h-0.5 bg-gray-300"></div>
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 dark:bg-gray-600`}
+                      >
+                        2
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step content */}
+                  {currentStep === 1 && (
+                    <>
+                      <div>
+                        <div className="relative mb-4">
+                          <input
+                            type="text"
+                            placeholder="Search companies..."
+                            value={searchCompany}
+                            onChange={e => setSearchCompany(e.target.value)}
+                            className="w-full p-2 pl-10 border rounded-lg"
+                          />
+                          <Search className="w-5 h-5 absolute left-2 top-2.5 text-gray-400" />
+                        </div>
+
+                        <div className="max-h-[40vh] sm:max-h-80 overflow-y-auto">
+                          {isLoading ? (
+                            <div className="text-center py-4">Loading...</div>
+                          ) : companies.length > 0 ? (
+                            companies.map(company => (
+                              <button
+                                key={company.id}
+                                onClick={() =>
+                                  Helpers.handleSelectCompany(
+                                    setSelectedCompany,
+                                    setCurrentStep,
+                                    setSearchProduct,
+                                    setProducts,
+                                    company
+                                  )
+                                }
+                                onKeyDown={e => {
+                                  if (e.key === "Enter" || e.key === " ") {
+                                    e.preventDefault();
+                                    Helpers.handleSelectCompany(
+                                      setSelectedCompany,
+                                      setCurrentStep,
+                                      setSearchProduct,
+                                      setProducts,
+                                      company
+                                    );
+                                  }
+                                }}
+                                className="w-full p-3 border-b hover:bg-gray-50 dark:hover:bg-gray-900 focus:bg-gray-50 dark:focus:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-inset cursor-pointer flex justify-between items-center text-left transition-colors"
+                                type="button"
+                                aria-label={`Select company ${company.name}${company.business_registration_number ? `, registration: ${company.business_registration_number}` : ""}`}
+                              >
+                                <div className="overflow-hidden">
+                                  <p className="font-medium truncate">{company.name}</p>
+                                  {company.business_registration_number && (
+                                    <p className="text-xs text-gray-500 truncate">
+                                      Reg: {company.business_registration_number}
+                                    </p>
+                                  )}
+                                </div>
+                                <ChevronRight
+                                  className="w-5 h-5 text-gray-400 flex-shrink-0"
+                                  aria-hidden="true"
+                                />
+                              </button>
+                            ))
+                          ) : (
+                            <div className="text-center py-4 text-gray-500">No companies found</div>
+                          )}
+                        </div>
+                      </div>
+                      <Button 
+                        onClick={() => 
+                          apiCalls.handleEstimationButton(
+                            setIsEstimationMode, 
+                            setSelectedCompany, 
+                            setCurrentStep, 
+                            setSearchProduct)} 
+                        className="mt-4"
+                      >
+                        Add by estimation
+                      </Button>
+                    </>
+                  )}
+
+                  {/* Step 2: Select Product */}
+                  {currentStep === 2 && selectedCompany && (
+                    <div>
+                      <div className="mb-4">
+                        <p className="text-sm text-gray-500 dark:text-gray-300 font-medium">
+                          {isEstimationMode ? "Estimation Mode:" : "Selected Supplier:"}
+                        </p>
+                        <p className="font-medium truncate">{selectedCompany.name}</p>
+                        {isEstimationMode && (
+                          <p className="text-xs text-amber-600 mt-1">
+                            Using reference values for estimation purposes
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        {/* Error message display */}
+                        {addMaterialError && (
+                          <div className="mb-4 p-3 text-sm bg-red-100 border border-red-200 text-red-800 rounded-lg">
+                            <p>{addMaterialError}</p>
+                          </div>
+                        )}
+
+                        <div className="relative mb-4">
+                          <input
+                            type="text"
+                            placeholder="Search products..."
+                            value={searchProduct}
+                            onChange={e => setSearchProduct(e.target.value)}
+                            className="w-full p-2 pl-10 border rounded-lg"
+                          />
+                          <Search className="w-5 h-5 absolute left-2 top-2.5 text-gray-400" />
+                        </div>
+
+                        <div className="max-h-60 overflow-y-auto mb-4">
+                          {isLoading ? (
+                            <div className="text-center py-4">Loading products...</div>
+                          ) : products.length > 0 ? (
+                            products.map(product => (
+                              <div
+                                key={product.id}
+                                onClick={() => setSelectedProduct(product)}
+                                className={`p-3 border rounded-lg mb-2 cursor-pointer ${selectedProduct?.id === product.id ? "bg-grey-50 dark:bg-gray-700" : "hover:bg-gray-50 dark:hover:bg-gray-900"}`}
+                              >
+                                <p className="font-medium">{product.name}</p>
+                                <div className="flex justify-between text-sm text-gray-500 mt-1">
+                                  <span>SKU: {product.sku || "N/A"}</span>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-center py-4 text-gray-500">No products found</div>
+                          )}
+                        </div>
+
+                        {selectedProduct && (
+                          <div className="mb-4">
+                            <label className="block text-sm font-medium text-gray-500 dark:text-gray-300 mb-1">
+                              Quantity ({selectedProduct.reference_impact_unit})
+                            </label>
+                            <input
+                              type="number"
+                              min="0"
+                              value={quantity}
+                              onChange={e => setQuantity(e.target.value)}
+                              className="w-full p-2 border rounded-lg"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Footer with buttons */}
+                  <div className="flex justify-between mt-6 pt-4 border-t">
+                    {currentStep === 2 ? (
+                      <>
+                        <Button
+                          onClick={() => {
+                            setCurrentStep(1);
+                            setIsEstimationMode(false);
+                            setAddMaterialError(null);
+                          }}
+                          variant="outline"
+                          className="mr-2"
+                        >
+                          Back
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            apiCalls.handleAddProduct(
+                              setAddMaterialError,
+                              quantity,
+                              selectedProduct,
+                              selectedCompany,
+                              company_pk,
+                              productId,
+                              materials,
+                              setMaterials,
+                              setIsModalOpen,
+                              onFieldChange
+                            );
+                          }}
+                          variant="primary"
+                          disabled={!selectedProduct || parseInt(quantity) <= 0 || quantity === ""}
+                        >
+                          Add Material
+                        </Button>
+                      </>
+                    ) : (
+                      <Button
+                        onClick={() => {
+                          Helpers.closeModal(
+                            setIsModalOpen,
+                            setAddMaterialError,
+                            setCurrentStep,
+                            setSelectedCompany,
+                            setSelectedProduct,
+                            setQuantity,
+                            setIsEstimationMode
+                          );
+                        }}
+                        variant="outline"
+                        className="ml-auto"
+                      >
+                        Cancel
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+        )}
+
+        {/* Edit Material Modal */}
+        {isEditModalOpen && editingMaterial && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-20">
+            <Card className="w-11/12 max-w-md">
+              <div>
+                {/* Header with title and close button */}
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Edit Material Quantity</h3>
+                  <button
+                    onClick={() => setIsEditModalOpen(false)}
+                    className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Material Information */}
+                <div className="mb-4">
+                  <p className="text-sm text-gray-500 dark:text-gray-300 font-medium">Product:</p>
+                  <p className="font-medium">{editingMaterial.productName}</p>
+
+                  <p className="text-sm text-gray-500 mt-2 dark:text-gray-300 font-medium">
+                    Supplier:
+                  </p>
+                  <p className="font-medium">{editingMaterial.manufacturerName}</p>
+                </div>
+
+                {/* Quantity Input */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 font-medium mb-1">
+                    Quantity
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={newQuantity}
+                    onChange={e => setNewQuantity(e.target.value)}
+                    className="w-full p-2 border rounded-lg"
+                  />
+                </div>
+
+                {/* Footer with buttons */}
+                <div className="flex justify-between mt-6 pt-4 border-t">
+                  <Button onClick={() => setIsEditModalOpen(false)} variant="outline">
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() =>
+                      apiCalls.handleUpdateQuantity(
+                        newQuantity,
+                        editingMaterial,
+                        company_pk,
+                        productId,
+                        materials,
+                        setMaterials,
+                        setIsEditModalOpen,
+                        setEditingMaterial,
+                        onFieldChange
+                      )
+                    }
+                    variant="primary"
+                    disabled={parseFloat(newQuantity) <= 0 || newQuantity === ""}
+                  >
+                    Update Quantity
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </div>
+        )}
+        {/* Delete Confirmation Modal */}
+        <Dialog
+          open={isDeleteModalOpen}
+          as="div"
+          className="fixed inset-0 z-20 overflow-y-auto"
+          onClose={() => Helpers.closeDeleteModal(setDeleteMaterial, setIsDeleteModalOpen)}
+        >
+          <div className="min-h-screen px-4 text-center">
+            {/* Static backdrop */}
+            <div className="fixed inset-0 bg-black/50" />
+
+            {/* This element centers the modal contents */}
+            <span className="inline-block h-screen align-middle" aria-hidden="true">
+              &#8203;
+            </span>
+
+            <DialogPanel className="relative inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle bg-white dark:bg-gray-800 shadow-xl rounded-lg z-30">
+              <DialogTitle as="h3" className="flex items-center gap-3 mb-4 text-red">
+                <AlertCircle className="w-6 h-6" />
+                <span className="text-lg font-semibold">Confirm Deletion</span>
+              </DialogTitle>
+
+              <p className="mb-6">
+                Are you sure you want to delete
+                <span className="font-medium"> {deleteMaterial?.productName}</span>? This action
+                cannot be undone.
+              </p>
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  onClick={() => Helpers.closeDeleteModal(setDeleteMaterial, setIsDeleteModalOpen)}
+                  variant="outline"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() =>
+                    apiCalls.confirmDelete(
+                      deleteMaterial,
+                      company_pk,
+                      productId,
+                      setMaterials,
+                      onFieldChange,
+                      setDeleteMaterial,
+                      setIsDeleteModalOpen
+                    )
+                  }
+                  variant="primary"
+                  className="bg-red hover:bg-red-800 text-white"
+                >
+                  Delete
+                </Button>
+              </div>
+            </DialogPanel>
+          </div>
+        </Dialog>
+      </>
+    );
+  }
+);
+
+BillOfMaterials.displayName = "BillOfMaterials";
+export default BillOfMaterials;

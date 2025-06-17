@@ -136,16 +136,18 @@ export default function ManageUserPage() {
       key: "actions",
       label: "Remove",
       render: (_value, user) => (
-        <button
-          className="flex justify-end items-center w-full text-red-500 hover:text-red-700"
-          onClick={() => {
+        <Button
+          size="sm"
+          className="flex items-center gap-1 text-xs !bg-red-500 !border-red-500 !text-white hover:cursor-pointer"
+          onClick={e => {
+            e.stopPropagation();
             setUserIdToRemove(user.id);
             setUserToRemove(user.username);
             setRemovingModal(true);
           }}
         >
-          <Trash size={18} />
-        </button>
+          <Trash className="w-4 h-4 text-white" />
+        </Button>
       ),
     },
   ];
@@ -245,7 +247,10 @@ export default function ManageUserPage() {
             </h2>
           </div>
           <div className="flex items-end">
-            <Button className="w-3xs mt-6" onClick={() => setAddingModal(true)}>
+            <Button
+              className="w-3xs mt-6 hover:cursor-pointer"
+              onClick={() => setAddingModal(true)}
+            >
               Add user
             </Button>
           </div>
@@ -263,11 +268,13 @@ export default function ManageUserPage() {
         ) : users.length === 0 ? (
           <div className="text-center py-6">No users found.</div>
         ) : (
-          <OurTable
-            caption="A table displaying the users of this company."
-            items={users}
-            columns={columns}
-          />
+          <Card>
+            <OurTable
+              caption="A table displaying the users of this company."
+              items={users}
+              columns={columns}
+            />
+          </Card>
         )}
       </div>
     </div>

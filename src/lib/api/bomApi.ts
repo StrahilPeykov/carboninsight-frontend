@@ -21,6 +21,7 @@ interface Product {
   name: string;
   description: string;
   manufacturer_name: string;
+  supplier_name: string;
   sku: string;
   is_public: boolean;
   reference_impact_unit: string;

@@ -57,7 +57,7 @@ export default function ListCompaniesPage() {
       window.dispatchEvent(new CustomEvent("companyChanged"));
     }
 
-    router.push("/dashboard");
+    window.location.href = "/dashboard";
   };
 
   if (authLoading || loading || !mounted) {
@@ -79,7 +79,7 @@ export default function ListCompaniesPage() {
           </h1>
           <p className="text-lg text-gray-500 dark:text-gray-400 mb-8 max-w-2xl mx-auto">
             You don't have any companies yet. Create your first company to start calculating product
-            carbon footprints and generating Digital Product Passports.
+            carbon footprints and generating Carbon Footprint Reports.
           </p>
           <Link href="/create-company">
             <Button size="lg" className="flex items-center gap-2 mx-auto">

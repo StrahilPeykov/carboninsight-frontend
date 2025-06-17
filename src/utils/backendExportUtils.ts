@@ -1,9 +1,10 @@
 import { apiRequest } from "@/lib/api/apiClient";
+import { Product } from "@/lib/api/productApi";
 
 // Export formats
 export type ExportFormat =
-  | "pdf" // Digital Product Passport report (frontend generated)
-  | "aasx" // AAS package (primary DPP format)
+  | "pdf" // Carbon Footprint Report report (frontend generated)
+  | "aasx" // AAS package (primary Carbon Footprint Report format)
   | "aas_xml" // AAS XML format
   | "aas_json" // AAS JSON format
   | "scsn_pcf_xml" // SCSN PCF XML (partial)
@@ -12,15 +13,6 @@ export type ExportFormat =
   | "xlsx" // Excel export
   | "zip"; // ZIP export
 
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  manufacturer_name: string;
-  sku: string;
-  supplier: string;
-  emission_total: string;
-}
 
 // Downloads a file from a blob response
 function downloadFile(blob: Blob, filename: string, mimeType: string) {
@@ -156,25 +148,64 @@ export async function exportProductPDFReport(companyId: string, product: Product
 
 // Generate HTML for PDF report
 function generatePDFReportHTML(product: Product, emissionTrace: any): string {
-  const formatEmissionsSubtotal = (subtotal: Record<string, number>): string => {
+  const formatEmissionsSubtotal = (
+    subtotal: Record<string, { biogenic: number; non_biogenic: number }>
+  ): string => {
     return Object.entries(subtotal)
-      .map(([stage, value]) => `<li>${stage}: ${value.toFixed(2)} kg CO₂e</li>`)
+      .map(([stage, value]) => {
+        const total = (value.biogenic + value.non_biogenic).toFixed(2);
+        const biogenic = value.biogenic.toFixed(2);
+        const non_biogenic = value.non_biogenic.toFixed(2);
+        return `<li>
+                  ${stage}: ${total} kg CO₂-eq<br />
+                  <span style="font-size: 0.9em;">
+                    • Biogenic: ${biogenic} kg CO₂-eq <br/>
+                    • Non-biogenic: ${non_biogenic} kg CO₂-eq
+                  </span>
+                </li>`;
+      })
       .join("");
   };
 
-  const renderEmissionTrace = (trace: any, depth: number = 0): string => {
-    const indent = "  ".repeat(depth);
+  const traceIsAnEmission = (trace: any): boolean => {
+    return (
+      trace.label === "Transport Emission" ||
+      trace.label === "Production energy consumption emission" ||
+      trace.label === "User energy consumption emission"
+    );
+  }
+
+  const renderEmissionTrace = (trace: any, depth: number = 0, quantity?: number): string => {
     const marginLeft = depth * 20;
+
+    const subtotal: { biogenic: number; non_biogenic: number }[] = Object.values(
+      trace.emissions_subtotal
+    );
+    const totalBiogenic = subtotal.reduce((sum, vals) => sum + vals.biogenic, 0).toFixed(2);
+    const totalNonBiogenic = subtotal.reduce((sum, vals) => sum + vals.non_biogenic, 0).toFixed(2);
 
     let html = `
       <div style="margin-left: ${marginLeft}px; margin-bottom: 15px; border-left: ${depth > 0 ? "2px solid #e5e5e5" : "none"}; padding-left: ${depth > 0 ? "15px" : "0"};">
-        <h${Math.min(depth + 3, 6)} style="color: #c20016; margin-bottom: 8px;">${trace.label}</h${Math.min(depth + 3, 6)}>
-        
+        <h${Math.min(depth + 3, 6)} 
+          style="color: #c20016; margin-bottom: 8px;">
+          ${
+            !traceIsAnEmission(trace)
+              ? quantity !== undefined
+                ? `${quantity} ${trace.reference_impact_unit} `
+                : ""
+              : ""
+          }
+          ${trace.label}
+        </h${Math.min(depth + 3, 6)}>
+
         ${trace.methodology ? `<p><strong>Method:</strong> ${trace.methodology}</p>` : ""}
-        ${trace.source ? `<p><strong>Source:</strong> ${trace.source}</p>` : ""}
         
-        <p style="color: #2d5a27; font-weight: bold; font-size: 1.1em;">
-          Total: ${trace.total} kg CO₂e
+        <p style="font-weight: bold; font-size: 1.1em;">
+          Total: ${trace.total} kg CO₂-eq <br/>
+          <span style="font-size: 0.9em; font-weight: normal;">
+            • Biogenic: ${totalBiogenic} kg CO₂-eq <br/>
+            • Non-biogenic: ${totalNonBiogenic} kg CO₂-eq
+          </span>
         </p>
         
         ${
@@ -204,26 +235,35 @@ function generatePDFReportHTML(product: Product, emissionTrace: any): string {
             : ""
         }
       </div>
+
+      <div style="border-top: 3px solid #999; margin: 30px 0;"></div>
     `;
 
     // Render children
     if (trace.children && trace.children.length > 0) {
       trace.children.forEach((child: any) => {
-        html += `<div style="margin-left: ${marginLeft + 20}px; font-size: 0.9em; color: #666;">
-          Quantity: ${child.quantity}x
-        </div>`;
-        html += renderEmissionTrace(child.emission_trace, depth + 1);
+        html += renderEmissionTrace(child.emission_trace, depth + 1, child.quantity);
       });
     }
 
     return html;
   };
 
+  // Calculate total Biogenic and Non-biogenic emissions.
+  type EmissionEntry = { biogenic: number; non_biogenic: number };
+  const values = Object.values(emissionTrace.emissions_subtotal) as EmissionEntry[];
+  let totalBiogenic = 0;
+  let totalNonBiogenic = 0;
+  values.forEach(entry => {
+    totalBiogenic += entry.biogenic;
+    totalNonBiogenic += entry.non_biogenic;
+  });
+
   return `
     <!DOCTYPE html>
     <html>
     <head>
-      <title>Digital Product Passport - ${product.name}</title>
+      <title>Carbon Footprint Report - ${product.name}</title>
       <style>
         @media print {
           body { margin: 0; }
@@ -283,11 +323,21 @@ function generatePDFReportHTML(product: Product, emissionTrace: any): string {
           background: #e8f5e8;
           padding: 15px;
           border-radius: 8px;
-          text-align: center;
           font-size: 1.3em;
           font-weight: bold;
           color: #2d5a27;
           margin: 20px 0;
+          display: flex;
+          justify-content: center;
+        }
+        .emissions-text {
+          text-align: left;
+          width: fit-content;    
+        }
+        .emissions-subtext {
+          color: #666;
+          font-size: 0.9em;
+          font-weight: normal;
         }
         .footer {
           text-align: center;
@@ -297,13 +347,6 @@ function generatePDFReportHTML(product: Product, emissionTrace: any): string {
           color: #666;
           font-size: 0.9em;
         }
-        .standards-note {
-          background: #f0f9ff;
-          border: 1px solid #0ea5e9;
-          border-radius: 8px;
-          padding: 15px;
-          margin: 20px 0;
-        }
         ul {
           list-style-type: disc;
           margin-left: 20px;
@@ -312,8 +355,7 @@ function generatePDFReportHTML(product: Product, emissionTrace: any): string {
     </head>
     <body>
       <div class="header">
-        <h1>Digital Product Passport</h1>
-        <h2>Carbon Footprint Report</h2>
+        <h1>Carbon Footprint Report</h1>
       </div>
 
       <div class="section">
@@ -324,19 +366,20 @@ function generatePDFReportHTML(product: Product, emissionTrace: any): string {
             <tr><td>SKU:</td><td>${product.sku}</td></tr>
             <tr><td>Description:</td><td>${product.description}</td></tr>
             <tr><td>Manufacturer:</td><td>${product.manufacturer_name}</td></tr>
-            <tr><td>Total Emissions:</td><td>${product.emission_total} kg CO₂e</td></tr>
+            <tr><td>Total Emissions:</td><td>${product.emission_total} kg CO₂-eq</td></tr>
             <tr><td>PCF Calculation Method:</td><td>${emissionTrace.pcf_calculation_method || "ISO 14040/14044"}</td></tr>
             <tr><td>Reference Impact Unit:</td><td>${emissionTrace.reference_impact_unit || "piece"}</td></tr>
           </table>
         </div>
         
         <div class="total-emissions">
-          Total Carbon Footprint: ${emissionTrace.total} kg CO₂e
-        </div>
-
-        <div class="standards-note">
-          <strong>Standards Compliance:</strong> This Digital Product Passport is generated in compliance with 
-          Asset Administration Shell (AAS) standards and is compatible with the Smart Connected Supplier Network (SCSN).
+          <div class="emissions-text">
+            Total Carbon Footprint: ${emissionTrace.total} kg CO₂-eq <br/>
+            <span class="emissions-subtext">
+              • Biogenic: ${totalBiogenic.toFixed(2)} kg CO₂-eq <br/>
+              • Non-biogenic: ${totalNonBiogenic.toFixed(2)} kg CO₂-eq
+            </span>
+          </div>
         </div>
       </div>
 
@@ -383,7 +426,7 @@ function generatePDFReportHTML(product: Product, emissionTrace: any): string {
 
       <div class="footer">
         <p>Generated on: ${new Date().toLocaleString()}</p>
-        <p>CarbonInsight - Digital Product Passport</p>
+        <p>CarbonInsight - Carbon Footprint Report</p>
         <p>This report contains confidential carbon footprint data calculated according to ${emissionTrace.pcf_calculation_method || "ISO 14040/14044"} standards.</p>
         <p>Compatible with Asset Administration Shell (AAS) and Smart Connected Supplier Network (SCSN) specifications.</p>
       </div>
@@ -407,12 +450,12 @@ export function getExportFormats(): Array<{
     {
       value: "pdf",
       label: "PDF Report",
-      description: "Complete Digital Product Passport report (opens print dialog)",
+      description: "Complete Carbon Footprint Report report (opens print dialog)",
     },
     {
       value: "aasx",
       label: "AASX Package",
-      description: "Asset Administration Shell package (primary DPP format)",
+      description: "Asset Administration Shell package (primary Carbon Footprint Report format)",
     },
     {
       value: "csv",

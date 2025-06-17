@@ -86,12 +86,12 @@ export default function Home() {
           <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-5xl md:text-6xl">
             <span className="block">CarbonInsight</span>
             <span className="block text-red text-3xl sm:text-4xl mt-2">
-              Digital Product Passports Made Simple
+              Carbon Footprint Calculations Made Simple
             </span>
           </h1>
           <p className="mt-6 max-w-2xl mx-auto text-lg text-gray-600 dark:text-gray-400 sm:text-xl">
             Calculate your product's carbon footprint across the entire supply chain and generate
-            industry-compliant Digital Product Passports. Designed for manufacturers who want to
+            industry-compliant Carbon Footprint Report. Designed for manufacturers who want to
             lead in sustainability.
           </p>
 
@@ -128,7 +128,7 @@ export default function Home() {
             </div>
             <h3 className="text-lg font-semibold mb-2">Regulatory Compliance</h3>
             <p className="text-gray-600 dark:text-gray-400">
-              Generate DPPs that meet EU regulations and industry standards including AAS and SCSN
+              Generate Carbon Footprint Reports that meet EU regulations and industry standards including AAS and SCSN
             </p>
           </Card>
 
@@ -149,7 +149,7 @@ export default function Home() {
       <div id="how-it-works" className="mt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
-            From Setup to Digital Product Passport in 5 Steps
+            From Setup to Carbon Footprint Report in 5 Steps
           </h2>
           <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500 dark:text-gray-400">
             Our guided process makes carbon footprint calculation straightforward
@@ -248,10 +248,10 @@ export default function Home() {
                   <FileText className="h-8 w-8 text-gray-400" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                  Export DPP
+                  Export Carbon Footprint Report
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Generate your Digital Product Passport
+                  Generate your Carbon Footprint Report
                 </p>
               </Card>
             </div>
@@ -325,7 +325,7 @@ export default function Home() {
                     Export in Any Format
                   </h3>
                   <p className="text-gray-600 dark:text-gray-400 text-sm">
-                    Generate Digital Product Passports that meet your needs - whether it's AAS for
+                    Generate Carbon Footprint Reports that meet your needs - whether it's AAS for
                     technical integration, SCSN for supply chain partners, or traditional PDFs and
                     spreadsheets for reporting.
                   </p>

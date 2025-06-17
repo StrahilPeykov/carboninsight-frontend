@@ -49,8 +49,8 @@ export default function PrivacyPage() {
             <p>
               To calculate carbon footprints, we collect company information (name, VAT number,
               registration number), product specifications, supply chain data, and emissions
-              calculations. This data is essential for generating accurate Digital Product
-              Passports.
+              calculations. This data is essential for generating accurate Carbon Footprint
+              Reports.
             </p>
           </div>
 
@@ -71,8 +71,8 @@ export default function PrivacyPage() {
           Your information enables us to provide comprehensive carbon footprint services.
         </p>
         <p className="text-gray-600 dark:text-gray-400">
-          We use your data to calculate product carbon footprints, generate Digital Product
-          Passports, and facilitate secure data sharing between supply chain partners. This
+          We use your data to calculate product carbon footprints, generate Carbon Footprint
+          Reports, and facilitate secure data sharing between supply chain partners. This
           information helps us improve our services, develop new features, and communicate important
           updates. We also use it to ensure platform security, prevent fraud, and comply with legal
           obligations.

@@ -2,7 +2,7 @@ import { Metadata } from "next";
 
 const baseTitle = "CarbonInsight";
 const baseDescription =
-  "Calculate your product carbon footprint and generate Digital Product Passports";
+  "Calculate your product carbon footprint and generate Carbon Footprint Reports";
 
 export function generateMetadata(pageTitle: string, pageDescription?: string): Metadata {
   return {

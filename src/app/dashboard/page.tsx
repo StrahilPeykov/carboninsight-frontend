@@ -5,18 +5,22 @@ import Link from "next/link";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
-import { Building2, BoxesIcon, Share2 } from "lucide-react";
+import { Building2, BoxesIcon, Share2, Network, Factory, GaugeCircle, Info } from "lucide-react";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 import { useRouter } from "next/navigation";
 import AuditLog from "../components/ui/AuditLog";
 import { productApi } from "@/lib/api/productApi";
 import { auditLogApi, LogItem } from "@/lib/api/auditLogApi";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface CompanyData {
   id: string;
   name: string;
   vat_number: string;
   business_registration_number: string;
+  total_emissions_across_products: number;
+  products_using_count: number;
+  companies_using_count: number;
 }
 
 export default function DashboardPage() {
@@ -34,6 +38,15 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [companyStats, setCompanyStats] = useState<{
+    total_emissions_across_products: number;
+    products_using_count: number;
+    companies_using_count: number;
+  }>({
+    total_emissions_across_products: 0,
+    products_using_count: 0,
+    companies_using_count: 0,
+  });
 
   // API URL from environment variables with fallback
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
@@ -156,6 +169,13 @@ export default function DashboardPage() {
           } catch (err) {
             console.error("Error fetching audit logs:", err);
           }
+
+          // fetch company details on external usage
+          setCompanyStats({
+            total_emissions_across_products: companyData.total_emissions_across_products || 0,
+            products_using_count: companyData.products_using_count || 0,
+            companies_using_count: companyData.companies_using_count || 0,
+          });
         }
 
         setError(null);
@@ -256,15 +276,98 @@ export default function DashboardPage() {
                   Pending Requests
                 </h3>
                 <p className="text-2xl font-semibold">{pendingRequestsCount}</p>
-                {pendingRequestsCount > 0 && (
+                {/* {pendingRequestsCount > 0 && (
                   <p className="text-xs text-green-600 dark:text-green-400">
                     {pendingRequestsCount} awaiting approval
                   </p>
-                )}
+                )} */}
               </div>
             </div>
           </Card>
         </Link>
+      </div>
+
+      {/* Updated second grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <TooltipProvider delayDuration={0}>
+          <Card className="bg-gradient-to-r from-purple-50 to-white dark:from-purple-900/20 dark:to-gray-800">
+            <div className="flex items-center">
+              <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-800">
+                <Factory className="h-6 w-6 text-purple-600 dark:text-purple-200" />
+              </div>
+              <div className="ml-4 flex-grow">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                  Companies using your products
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Info className="h-4 w-4 text-gray-400 hover:text-gray-500 cursor-help touch-none" />
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" sideOffset={5}>
+                      <p className="w-[200px] text-sm">
+                        Number of disctinct companies whose products' BOMs include at least one
+                        product supplied by this company.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </h3>
+                <p className="text-2xl font-semibold">{companyStats.companies_using_count}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="bg-gradient-to-r from-orange-50 to-white dark:from-orange-900/20 dark:to-gray-800">
+            <div className="flex items-center">
+              <div className="p-3 rounded-full bg-orange-100 dark:bg-orange-800">
+                <Network className="h-6 w-6 text-orange-600 dark:text-orange-200" />
+              </div>
+              <div className="ml-4 flex-grow">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                  Products using your products
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Info className="h-4 w-4 text-gray-400 hover:text-gray-500 cursor-help touch-none" />
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" sideOffset={5}>
+                      <p className="w-[200px] text-sm">
+                        Number of distinct products, from any company except this one, that include
+                        a product supplied by this company in their BOM.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </h3>
+                <p className="text-2xl font-semibold">{companyStats.products_using_count}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="bg-gradient-to-r from-teal-50 to-white dark:from-teal-900/20 dark:to-gray-800">
+            <div className="flex items-center">
+              <div className="p-3 rounded-full bg-teal-100 dark:bg-teal-800">
+                <GaugeCircle className="h-6 w-6 text-teal-600 dark:text-teal-200" />
+              </div>
+              <div className="ml-4 flex-grow">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                  Your impact on the planet
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Info className="h-4 w-4 text-gray-400 hover:text-gray-500 cursor-help touch-none" />
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" sideOffset={5}>
+                      <p className="w-[200px] text-sm">
+                        For each product this company supplies, the total numner of times it's used
+                        in any depth of any BoM, direct or indirect, then multiplying by that
+                        product's emissions and summing it all up.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </h3>
+                <p className="text-2xl font-semibold">
+                  {companyStats.total_emissions_across_products.toFixed(0)} kg CO₂-eq
+                </p>
+              </div>
+            </div>
+          </Card>
+        </TooltipProvider>
       </div>
 
       {/* Main Actions */}
@@ -299,7 +402,7 @@ export default function DashboardPage() {
           <h2 className="text-xl font-semibold mb-4">Manage Products</h2>
           <p className="text-gray-500 dark:text-gray-400 mb-4">
             Add products and calculate their carbon footprint using our step-by-step process to
-            generate Digital Product Passports.
+            generate Carbon Footprint Reports.
           </p>
           <div className="space-y-3">
             <button

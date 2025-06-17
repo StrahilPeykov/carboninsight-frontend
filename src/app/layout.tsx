@@ -12,7 +12,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "CarbonInsight - Product Carbon Footprint Calculator",
   description:
-    "Calculate your product carbon footprint and generate Digital Product Passports compliant with AAS standards",
+    "Calculate your product carbon footprint and generate Carbon Footprint Reports compliant with AAS standards",
   keywords: "carbon footprint, PCF, digital product passport, DPP, sustainability, AAS",
 };
 

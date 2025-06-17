@@ -46,9 +46,8 @@ export default function OnboardingTour({
   const displayStepNumber = globalCurrentStep + 1;
 
   const currentStepData = steps[localStep];
-  // Keep skip button behavior tied to allowSkip
   const canSkip = currentStepData?.allowSkip !== false;
-  // Add new logic for click outside behavior
+  // Click outside behavior
   const allowClickOutside = currentStepData?.allowClickOutside !== false;
 
   useEffect(() => {
@@ -126,8 +125,6 @@ export default function OnboardingTour({
   // Enhanced element finding with better retry logic
   const findTargetElement = useCallback(
     (target: string) => {
-      console.log("OnboardingTour: Attempting to find target:", target);
-
       // Clean up previous observer and timeout
       if (observerRef.current) {
         observerRef.current.disconnect();
@@ -137,8 +134,6 @@ export default function OnboardingTour({
       }
 
       const attemptFind = (attempt: number = 1): boolean => {
-        console.log(`OnboardingTour: Find attempt ${attempt} for target:`, target);
-
         // Try multiple selectors if comma-separated
         const selectors = target.split(",").map(s => s.trim());
         let element: HTMLElement | null = null;
@@ -164,7 +159,6 @@ export default function OnboardingTour({
             }
 
             if (element) {
-              console.log("OnboardingTour: Found element with selector:", selector);
               break;
             }
           } catch (error) {
@@ -212,8 +206,6 @@ export default function OnboardingTour({
               }, 500);
             }
             return true;
-          } else {
-            console.log("OnboardingTour: Element found but not visible, will retry");
           }
         }
         return false;
@@ -221,10 +213,6 @@ export default function OnboardingTour({
 
       // Try to find immediately
       if (!attemptFind()) {
-        console.log(
-          `OnboardingTour: Target not found immediately: ${target}, setting up observer and retries...`
-        );
-
         // Set up mutation observer to watch for the element
         observerRef.current = new MutationObserver(mutations => {
           // Debounce the observer calls
@@ -235,7 +223,6 @@ export default function OnboardingTour({
           retryTimeoutRef.current = setTimeout(() => {
             if (attemptFind() && observerRef.current) {
               observerRef.current.disconnect();
-              console.log(`OnboardingTour: Target found via observer: ${target}`);
             }
           }, 100);
         });
@@ -254,7 +241,6 @@ export default function OnboardingTour({
             if (!targetElement && attemptFind(index + 2)) {
               if (observerRef.current) {
                 observerRef.current.disconnect();
-                console.log(`OnboardingTour: Target found on retry ${index + 2}: ${target}`);
               }
             }
           }, delay);
@@ -281,10 +267,7 @@ export default function OnboardingTour({
   useEffect(() => {
     if (!isVisible || !currentStepData) return;
 
-    console.log("OnboardingTour: Finding target element:", currentStepData.target);
-
     if (currentStepData.placement === "center") {
-      console.log("OnboardingTour: Center placement, no target needed");
       setTargetRect(null);
       setTargetElement(null);
       return;
@@ -328,8 +311,6 @@ export default function OnboardingTour({
     if (!targetElement || !currentStepData?.waitForAction) return;
 
     const handleTargetClick = () => {
-      console.log("Target element clicked, proceeding to next step");
-
       // Check if this matches the expected action
       if (currentStepData.expectedAction) {
         // Dispatch the expected action event
@@ -389,14 +370,7 @@ export default function OnboardingTour({
   };
 
   const getTooltipPosition = () => {
-    console.log("OnboardingTour: Getting tooltip position", {
-      hasTargetRect: !!targetRect,
-      placement: currentStepData.placement,
-      hasTooltip: !!tooltipRef.current,
-    });
-
     if (!targetRect || !tooltipRef.current || currentStepData.placement === "center") {
-      console.log("OnboardingTour: Using center positioning");
       return { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
     }
 
@@ -442,7 +416,6 @@ export default function OnboardingTour({
       Math.min(position.left, window.innerWidth - tooltipRect.width - padding)
     );
 
-    console.log("OnboardingTour: Calculated position:", position);
     return position;
   };
 
@@ -462,17 +435,8 @@ export default function OnboardingTour({
   }, [isVisible, canSkip]);
 
   if (!isVisible || !currentStepData) {
-    console.log("OnboardingTour: Not visible or no step data");
     return null;
   }
-
-  console.log("OnboardingTour: Rendering tour step:", {
-    title: currentStepData.title,
-    target: currentStepData.target,
-    placement: currentStepData.placement,
-    hasTargetRect: !!targetRect,
-    hasTargetElement: !!targetElement,
-  });
 
   const spotlightPadding = currentStepData.spotlightPadding || 8;
   const isWaitingForAction = currentStepData.waitForAction;
@@ -481,7 +445,6 @@ export default function OnboardingTour({
   const getBlockingAreas = () => {
     // Always show blocking areas to prevent clicks outside
     if (!targetRect || currentStepData.placement === "center") {
-      console.log("OnboardingTour: Rendering full-screen blocker (center or no target)");
       // For center placement or when target not found, block the entire screen
       return (
         <div
@@ -492,7 +455,6 @@ export default function OnboardingTour({
           }}
           onClick={e => {
             e.stopPropagation();
-            console.log("OnboardingTour: Full-screen blocker clicked");
             // Only skip if click outside is allowed AND skip is allowed
             if (allowClickOutside && canSkip) {
               handleSkip();
@@ -502,7 +464,6 @@ export default function OnboardingTour({
       );
     }
 
-    console.log("OnboardingTour: Rendering spotlight blockers around target");
     const spotlight = {
       top: targetRect.top - spotlightPadding,
       left: targetRect.left - spotlightPadding,
@@ -512,7 +473,6 @@ export default function OnboardingTour({
 
     const handleBlockerClick = (e: React.MouseEvent) => {
       e.stopPropagation();
-      console.log("OnboardingTour: Spotlight blocker clicked");
       // Only skip if click outside is allowed AND skip is allowed
       if (allowClickOutside && canSkip) {
         handleSkip();

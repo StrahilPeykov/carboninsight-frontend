@@ -1,5 +1,6 @@
 import { apiRequest } from "./apiClient";
 import { EmissionReference } from "./emissionReferenceApi";
+import { LifecycleStageChoice } from "./overrideEmissionApi";
 import { OverrideFactor } from "./productionEmissionApi";
 
 export interface TransportEmission {
@@ -42,11 +43,6 @@ export interface TransportEmissionSchema {
       };
     };
   };
-}
-
-interface LifecycleStageChoice {
-  value: string;
-  display_name: string;
 }
 
 export const transportEmissionApi = {

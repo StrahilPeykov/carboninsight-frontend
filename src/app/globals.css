@@ -514,7 +514,6 @@ html.dark .border-gray-200 {
   animation: hue-rotate 5s linear infinite;
 }
 
-<<<<<<< HEAD
 /* Tour styles */
 .tour-active {
   /* Ensure smooth scrolling during tour */
@@ -561,7 +560,9 @@ body.tour-active {
   .tour-tooltip,
   .tour-backdrop {
     transition: none !important;
-=======
+  }
+}
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
@@ -637,6 +638,5 @@ body.tour-active {
   }
   body {
     @apply bg-background text-foreground;
->>>>>>> main
   }
 }

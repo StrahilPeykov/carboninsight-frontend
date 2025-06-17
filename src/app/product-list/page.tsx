@@ -406,177 +406,16 @@ export default function ProductListPage() {
             <div className="mb-4">
                 <h1 className="text-3xl font-bold mb-2">Products</h1>
 
-<<<<<<< HEAD
-  // Render
-  return (
-    <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Header  */}
-      <div className="mb-4">
-        <h1 className="text-3xl font-bold mb-2">Products</h1>
+                {dataLoading && (
+                    <div className="flex items-center text-sm text-gray-500 mb-2">
+                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-gray-500 mr-2"></div>
+                        Loading product data...
+                    </div>
+                )}
 
-        {dataLoading && (
-          <div className="flex items-center text-sm text-gray-500 mb-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-gray-500 mr-2"></div>
-            Loading product data...
-          </div>
-        )}
-
-        <p className="text-gray-500 dark:text-gray-400">
-          Manage your products and calculate their carbon footprint
-        </p>
-      </div>
-
-      {/* Search + Add Product */}
-      <div className="mb-6 flex items-center gap-2">
-        <input
-          type="text"
-          placeholder="Search by product, SKU or manufacturer name..."
-          value={searchQuery}
-          onChange={e => setSearchQuery(e.target.value)}
-          className="flex-grow border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <Button
-          onClick={() => router.push(`/product-list/product`)}
-          className="bg-black text-white rounded-md px-4 py-2 text-md add-product-button"
-          data-tour-target="add-product"
-        >
-          Add Product
-        </Button>
-      </div>
-
-      {error && <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md">{error}</div>}
-
-      {/* Table card */}
-      <Card className="p-4">
-        {dataLoading ? (
-          <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-gray-400"></div>
-            <span className="ml-3 text-gray-500">Loading products...</span>
-          </div>
-        ) : error ? (
-          <p className="text-red-500">{error}</p>
-        ) : (
-          <>
-            {/* Desktop and tablet table */}
-            <div className="hidden sm:block overflow-x-auto">
-              <table className="min-w-full table-auto text-base">
-                <thead>
-                  <tr className="text-left border-b">
-                    <th className="p-2">Manufacturer</th>
-                    <th className="p-2">Product name</th>
-                    <th className="p-2">SKU</th>
-                    <th className="p-2">PCF</th>
-                    <th className="p-2 text-right">Actions</th>
-                  </tr>
-                </thead>
-
-                <tbody className="text-base">
-                  {paginatedProducts.map(product => (
-                    <TableRow
-                      key={product.id}
-                      editMode={editMode}
-                      onClick={() => handleProductClick(product.id)}
-                    >
-                      <td className="p-2">{product.manufacturer_name}</td>
-                      <td className="p-2">{product.name}</td>
-                      <td className="p-2">{product.sku}</td>
-                      <td className="p-2 flex items-center gap-1">
-                        {product.emission_total} kg
-                        <Info className="w-4 h-4 text-gray-400" />
-                      </td>
-                      <td className="p-2">
-                        <div className="flex items-center justify-end gap-2">
-                          {/* Export */}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="export-button flex items-center gap-1 text-xs"
-                            onClick={e => handleExportClick(product, e)}
-                          >
-                            <FileDown className="w-3 h-3" />
-                            <span>Export</span>
-                          </Button>
-
-                          {/* Ask AI */}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="ai-button group flex items-center gap-1 text-xs hover:bg-gradient-to-r from-purple-500 to-blue-500 hover:text-white"
-                            onClick={e => {
-                              e.stopPropagation();
-                              handleAIButtonClick(product.id);
-                            }}
-                          >
-                            <Sparkles className="w-3 h-3 text-purple-500 group-hover:text-white" />
-                            Ask AI
-                          </Button>
-
-                          {/* Edit */}
-                          <Button
-                            size="sm"
-                            className="flex items-center gap-1 text-xs !bg-blue-500 !border-blue-500 !text-white"
-                            onClick={e => {
-                              e.stopPropagation();
-                              handleEdit(product.id);
-                            }}
-                          >
-                            <Edit className="w-4 h-4 text-white" />
-                          </Button>
-
-                          {/* Delete */}
-                          <Button
-                            size="sm"
-                            className="flex items-center gap-1 text-xs !bg-red-500 !border-red-500 !text-white"
-                            onClick={e => {
-                              e.stopPropagation();
-                              handleDelete(product.id);
-                            }}
-                            disabled={isDeleting}
-                          >
-                            <Trash className="w-4 h-4 text-white" />
-                          </Button>
-                        </div>
-                      </td>
-                    </TableRow>
-                  ))}
-
-                  {/* Empty state */}
-                  {paginatedProducts.length === 0 && !dataLoading && (
-                    <tr>
-                      <td colSpan={5} className="text-center py-8">
-                        {searchQuery.length > 0 && searchQuery.length < 4 ? (
-                          <div className="text-gray-500">
-                            Please enter at least 4 characters to search.
-                          </div>
-                        ) : searchQuery.length >= 4 ? (
-                          <div className="text-gray-500">
-                            No products found matching "{searchQuery}".
-                          </div>
-                        ) : (
-                          <div className="space-y-4">
-                            <Boxes className="mx-auto h-12 w-12 text-gray-400" />
-                            <div className="text-gray-500">
-                              <p className="text-lg font-medium">No products yet</p>
-                              <p className="text-sm mt-1">
-                                Start by adding your first product to calculate its carbon
-                                footprint.
-                              </p>
-                            </div>
-                            <Link href="/product-list/product">
-                              <Button className="mt-4">Add Your First Product</Button>
-                            </Link>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-=======
                 <p className="text-gray-500 dark:text-gray-400">
                     Manage your products and calculate their carbon footprint
                 </p>
->>>>>>> main
             </div>
 
             {/* Search + Add Product */}
@@ -843,43 +682,6 @@ export default function ProductListPage() {
                     <span className="font-medium text-gray-900 dark:text-gray-100">
                       {product.name}
                     </span>
-<<<<<<< HEAD
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
-                    <p>Manufacturer: {product.manufacturer_name}</p>
-                    <p>SKU: {product.sku}</p>
-                    <p>Method: {product.pcf_calculation_method}</p>
-                    <p className="flex items-center gap-1">
-                      PCF: {product.emission_total}
-                      <Info className="w-3 h-3 text-gray-400" />
-                    </p>
-                  </div>
-                  <div className="flex justify-end gap-2 mt-3">
-                    {/* Export */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="export-button group flex items-center gap-1 text-xs transition-colors motion-safe:hover:animate-hue motion-safe:active:animate-hue-fast"
-                      onClick={e => handleExportClick(product, e)}
-                    >
-                      <FileDown className="w-3 h-3" />
-                      <span>Export</span>
-                    </Button>
-
-                    {/* Ask AI */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="ai-button group flex items-center gap-1 text-xs transition-colors motion-safe:hover:animate-hue motion-safe:active:animate-hue-fast"
-                      onClick={e => {
-                        e.stopPropagation();
-                        handleAIButtonClick(product.id);
-                      }}
-                    >
-                      <Sparkles className="w-3 h-3 text-purple-500" />
-                      <span>Ask&nbsp;AI</span>
-                    </Button>
-=======
                                     </div>
                                     <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                                         <p>Manufacturer: {product.manufacturer_name}</p>
@@ -922,7 +724,6 @@ export default function ProductListPage() {
                                                 <Sparkles className="w-3 h-3 text-purple-500" aria-hidden="true"/>
                                                 <span>Ask&nbsp;AI</span>
                                             </Button>
->>>>>>> main
 
                                             {/* Edit */}
                                             <Button
@@ -1041,62 +842,6 @@ export default function ProductListPage() {
                 />
             )}
 
-<<<<<<< HEAD
-      {/* Export modal */}
-      {showExportModal && selectedProductForExport && companyId && (
-        <ExportModal
-          isOpen={showExportModal}
-          onClose={handleExportModalClose}
-          product={selectedProductForExport}
-          companyId={companyId}
-        />
-      )}
-
-      {/* AI modal (confirm → loading → result) */}
-      {aiModalStep && (
-        <Modal
-          title={
-            aiModalStep === "confirm"
-              ? "Send product data to AI?"
-              : aiModalStep === "loading"
-                ? "Generating AI Advice..."
-                : `AI Advice for ${pendingProductName}`
-          }
-          onClose={() => {
-            setAiModalStep(null);
-            setAiAdvice(null);
-            setPendingProductId(null);
-            setUserPromptInput("");
-          }}
-        >
-          {aiModalStep === "confirm" && (
-            <>
-              <p className="text-sm text-gray-800 dark:text-gray-300 whitespace-pre-line mb-2">
-                You're about to share product data for <strong>{pendingProductName}</strong> with
-                our AI system to receive tailored carbon reduction recommendations.{"\n\n"}
-                By clicking <strong>Ask AI</strong>, you consent to this use.{"\n\n"}
-                You may also enter a specific question below to guide the response.{"\n\n"}
-                <strong>No personal or sensitive data will be stored.</strong>
-              </p>
-
-              <textarea
-                value={userPromptInput}
-                onChange={e => setUserPromptInput(e.target.value)}
-                placeholder="Ask a specific question about this product..."
-                className="w-full border rounded px-3 py-2 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows={4}
-              />
-
-              <div className="flex justify-end gap-2">
-                <Button
-                  onClick={async () => {
-                    if (pendingProductId !== null) {
-                      await handleRequestProductAdvice(
-                        pendingProductId,
-                        userPromptInput ||
-                          "Please analyze this product and suggest solutions to reduce carbon footprint. (in 150 words)"
-                      );
-=======
             {/* AI modal (confirm → loading → result) */}
             {aiModalStep && (
                 <Modal
@@ -1106,7 +851,6 @@ export default function ProductListPage() {
                             : aiModalStep === "loading"
                                 ? "Generating AI Advice..."
                                 : `AI Advice for ${pendingProductName}`
->>>>>>> main
                     }
                     onClose={() => {
                         setAiModalStep(null);
@@ -1207,27 +951,6 @@ export default function ProductListPage() {
                     </div>
                 </Modal>
             )}
-            <input
-                type="file"
-                accept=".aasx,.json,.xml"
-                onChange={(e) => {
-                    if (e.target.files?.[0]) {
-                        handleFileUpload(e.target.files[0], "aasx");
-                    }
-                }}
-                className="hidden"
-            />
-
-            <input
-                type="file"
-                accept=".csv,.xlsx"
-                onChange={(e) => {
-                    if (e.target.files?.[0]) {
-                        handleFileUpload(e.target.files[0], "csv");
-                    }
-                }}
-                className="hidden"
-            />
         </div>
     );
 }

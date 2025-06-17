@@ -294,13 +294,10 @@ export default function ProductClientPage() {
           "
           aria-labelledby="product-form-heading"
         >
-<<<<<<< HEAD
-=======
           <h2 id="product-form-heading" className="sr-only">
             Product form with multiple steps
           </h2>
 
->>>>>>> main
           {/* Stepper Tabs */}
           <TabGroup selectedIndex={activeTab} onChange={setActiveTab}>
             <TabList

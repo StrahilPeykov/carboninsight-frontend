@@ -113,9 +113,9 @@ const TOURS: Record<string, TourStep[]> = {
   'product-list-tour': [
     {
       page: '*',
-      target: 'a[href="/product-list"], nav a:has-text("Products")',
+      target: '[data-tour-target="products-nav"]',
       title: 'Product Management Tour',
-      content: 'Let\'s explore how to manage your products and calculate their carbon footprints. Click on "Products" in the navigation to get started.',
+      content: 'Let\'s explore how to manage your products and calculate their carbon footprints. Click on the "Products" navigation button to get started.',
       placement: 'bottom',
       waitForAction: true,
       expectedAction: 'navigate-to-products',
@@ -139,17 +139,17 @@ const TOURS: Record<string, TourStep[]> = {
     },
     {
       page: '/product-list',
-      target: 'tbody tr:first-child .export-button, .max-w-7xl',
-      title: 'Export Digital Product Passports',
-      content: 'Once you have products, you can export your product data in various formats including PDF reports, AAS packages, and SCSN XML for supply chain sharing.',
+      target: '.export-button, .ai-button, .max-w-7xl',
+      title: 'Product Actions',
+      content: 'Once you have products, you\'ll see action buttons here. The Export button lets you download Digital Product Passports, and the AI button provides carbon reduction recommendations.',
       placement: 'center',
       allowClickOutside: true,
     },
     {
       page: '/product-list',
-      target: 'tbody tr:first-child .ai-button, .max-w-7xl',
-      title: 'AI-Powered Carbon Insights',
-      content: 'Get personalized recommendations for reducing your product\'s carbon footprint. Our AI analyzes your data to suggest practical improvements.',
+      target: '.max-w-7xl',
+      title: 'Product Management Complete',
+      content: 'You\'ve completed the product management tour! You can now add products, search through them, and export Digital Product Passports. Use the Help menu to restart tours anytime.',
       placement: 'center',
       allowClickOutside: true,
     },
@@ -157,7 +157,7 @@ const TOURS: Record<string, TourStep[]> = {
   'company-tour': [
     {
       page: '*',
-      target: 'a[href="/dashboard"], nav a:has-text("Dashboard")',
+      target: '[data-tour-target="dashboard-nav"]',
       title: 'Company Management Tour',
       content: 'Let\'s explore how to manage multiple companies. First, go to your dashboard where you can access company management features.',
       placement: 'bottom',
@@ -167,7 +167,7 @@ const TOURS: Record<string, TourStep[]> = {
     },
     {
       page: '/dashboard',
-      target: 'a[href="/list-companies"]',
+      target: '[data-tour-target="companies-link"]',
       title: 'View All Companies',
       content: 'From the dashboard, click on "Your Companies" to access the company management hub where you can view all your companies.',
       placement: 'right',
@@ -315,12 +315,18 @@ export default function TourProvider({ children }: TourProviderProps) {
 
   // Get current tour steps based on active tour and current page
   const getCurrentTourSteps = () => {
-    if (!activeTour || !TOURS[activeTour]) return [];
+    if (!activeTour || !TOURS[activeTour]) {
+      console.log('No active tour or tour not found:', activeTour);
+      return [];
+    }
     
     const allSteps = TOURS[activeTour];
     const currentStepData = allSteps[currentStep];
     
-    if (!currentStepData) return [];
+    if (!currentStepData) {
+      console.log('No current step data for step:', currentStep);
+      return [];
+    }
     
     // Normalize pathname
     const normalizedPathname = pathname.endsWith('/') && pathname !== '/' 
@@ -334,7 +340,19 @@ export default function TourProvider({ children }: TourProviderProps) {
     
     const isStepOnThisPage = stepPage === '*' || stepPage === normalizedPathname;
     
-    if (!isStepOnThisPage) return [];
+    console.log('Tour step check:', {
+      activeTour,
+      currentStep,
+      stepPage,
+      normalizedPathname,
+      isStepOnThisPage,
+      target: currentStepData.target
+    });
+    
+    if (!isStepOnThisPage) {
+      console.log('Step not for this page, returning empty array');
+      return [];
+    }
     
     return [currentStepData];
   };

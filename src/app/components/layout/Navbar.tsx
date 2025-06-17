@@ -377,6 +377,7 @@ export default function Navbar() {
                               : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
                           }`}
                         aria-current={isActive("/dashboard") ? "page" : undefined}
+                        data-tour-target="dashboard-nav"
                       >
                         <LayoutDashboardIcon size={16} className="mr-1" aria-hidden="true" />
                         <span className="hidden lg:inline">Dashboard</span>
@@ -391,6 +392,7 @@ export default function Navbar() {
                               : "text-gray-700 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"
                           }`}
                         aria-current={isActive("/product-list") ? "page" : undefined}
+                        data-tour-target="products-nav"
                       >
                         <Boxes size={16} className="mr-1" aria-hidden="true" />
                         <span className="hidden lg:inline">Products</span>

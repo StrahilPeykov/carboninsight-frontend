@@ -209,6 +209,7 @@ export default function DashboardPage() {
         <button 
           onClick={() => handleTourNavigation("/list-companies", "navigate-to-companies")}
           className="block transition-transform hover:scale-105 w-full text-left"
+          data-tour-target="companies-link"
         >
           <Card className="bg-gradient-to-r from-red-50 to-white dark:from-red-900/20 dark:to-gray-800 cursor-pointer hover:shadow-lg">
             <div className="flex items-center">

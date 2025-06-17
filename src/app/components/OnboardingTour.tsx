@@ -130,7 +130,20 @@ export default function OnboardingTour({
     }
 
     const attemptFind = () => {
-      const element = document.querySelector(target) as HTMLElement;
+      // Try multiple selectors if comma-separated
+      const selectors = target.split(',').map(s => s.trim());
+      let element: HTMLElement | null = null;
+      
+      for (const selector of selectors) {
+        try {
+          element = document.querySelector(selector) as HTMLElement;
+          if (element) break;
+        } catch (error) {
+          console.warn(`Invalid selector: ${selector}`, error);
+          continue;
+        }
+      }
+      
       if (element) {
         const rect = element.getBoundingClientRect();
         setTargetRect(rect);
@@ -165,9 +178,13 @@ export default function OnboardingTour({
     // Try to find immediately
     if (!attemptFind()) {
       // If not found, set up observer to watch for the element
+      // But don't clear the target immediately - keep overlay visible
+      console.log(`Tour target not found immediately: ${target}, setting up observer...`);
+      
       observerRef.current = new MutationObserver(() => {
         if (attemptFind() && observerRef.current) {
           observerRef.current.disconnect();
+          console.log(`Tour target found via observer: ${target}`);
         }
       });
 
@@ -178,11 +195,13 @@ export default function OnboardingTour({
         attributeFilter: ['class', 'style']
       });
 
-      // Timeout fallback - stop trying after 5 seconds
+      // Timeout fallback - after 5 seconds, if still not found, show as center placement
       setTimeout(() => {
         if (observerRef.current) {
           observerRef.current.disconnect();
-          console.warn(`Tour target not found after timeout: ${target}`);
+          console.warn(`Tour target not found after timeout: ${target}, showing center placement`);
+          
+          // Don't clear target - just set to null rect to show center placement
           setTargetRect(null);
           setTargetElement(null);
         }
@@ -193,13 +212,19 @@ export default function OnboardingTour({
   useEffect(() => {
     if (!isVisible || !currentStepData) return;
 
+    console.log('OnboardingTour: Finding target element:', currentStepData.target);
+
     if (currentStepData.placement === 'center') {
+      console.log('OnboardingTour: Center placement, no target needed');
       setTargetRect(null);
       setTargetElement(null);
       return;
     }
 
-    findTargetElement(currentStepData.target);
+    // Add a small delay to ensure DOM is ready
+    setTimeout(() => {
+      findTargetElement(currentStepData.target);
+    }, 100);
 
     return () => {
       if (observerRef.current) {
@@ -290,7 +315,14 @@ export default function OnboardingTour({
   };
 
   const getTooltipPosition = () => {
+    console.log('OnboardingTour: Getting tooltip position', {
+      hasTargetRect: !!targetRect,
+      placement: currentStepData.placement,
+      hasTooltip: !!tooltipRef.current
+    });
+
     if (!targetRect || !tooltipRef.current || currentStepData.placement === 'center') {
+      console.log('OnboardingTour: Using center positioning');
       return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
     }
 
@@ -330,6 +362,7 @@ export default function OnboardingTour({
     position.top = Math.max(padding, Math.min(position.top, window.innerHeight - tooltipRect.height - padding));
     position.left = Math.max(padding, Math.min(position.left, window.innerWidth - tooltipRect.width - padding));
 
+    console.log('OnboardingTour: Calculated position:', position);
     return position;
   };
 
@@ -348,7 +381,18 @@ export default function OnboardingTour({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isVisible, canSkip]);
 
-  if (!isVisible || !currentStepData) return null;
+  if (!isVisible || !currentStepData) {
+    console.log('OnboardingTour: Not visible or no step data');
+    return null;
+  }
+
+  console.log('OnboardingTour: Rendering tour step:', {
+    title: currentStepData.title,
+    target: currentStepData.target,
+    placement: currentStepData.placement,
+    hasTargetRect: !!targetRect,
+    hasTargetElement: !!targetElement
+  });
 
   const spotlightPadding = currentStepData.spotlightPadding || 8;
   const isWaitingForAction = currentStepData.waitForAction;
@@ -357,6 +401,7 @@ export default function OnboardingTour({
   const getBlockingAreas = () => {
     // Always show blocking areas to prevent clicks outside
     if (!targetRect || currentStepData.placement === 'center') {
+      console.log('OnboardingTour: Rendering full-screen blocker (center or no target)');
       // For center placement or when target not found, block the entire screen
       return (
         <div
@@ -367,6 +412,7 @@ export default function OnboardingTour({
           }}
           onClick={(e) => {
             e.stopPropagation();
+            console.log('OnboardingTour: Full-screen blocker clicked');
             // Only skip if click outside is allowed AND skip is allowed
             if (allowClickOutside && canSkip) {
               handleSkip();
@@ -376,6 +422,7 @@ export default function OnboardingTour({
       );
     }
 
+    console.log('OnboardingTour: Rendering spotlight blockers around target');
     const spotlight = {
       top: targetRect.top - spotlightPadding,
       left: targetRect.left - spotlightPadding,
@@ -385,6 +432,7 @@ export default function OnboardingTour({
 
     const handleBlockerClick = (e: React.MouseEvent) => {
       e.stopPropagation();
+      console.log('OnboardingTour: Spotlight blocker clicked');
       // Only skip if click outside is allowed AND skip is allowed
       if (allowClickOutside && canSkip) {
         handleSkip();

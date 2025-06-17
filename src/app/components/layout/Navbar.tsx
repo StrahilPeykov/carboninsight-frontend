@@ -59,19 +59,23 @@ export default function Navbar() {
     setIsCompanyMenuOpen(newState);
     if (newState) {
       setIsProfileMenuOpen(false); // Close profile menu when opening company
-      
+
       // Check if tour is active and expecting this action
-      const activeTour = sessionStorage.getItem('activeTour');
-      if (activeTour === 'main-onboarding') {
+      const activeTour = sessionStorage.getItem("activeTour");
+      if (activeTour === "main-onboarding") {
         // Dispatch tour action when dropdown opens
-        window.dispatchEvent(new CustomEvent('tourAction', { 
-          detail: { action: 'click-company-selector' } 
-        }));
-      } else if (activeTour === 'company-tour') {
+        window.dispatchEvent(
+          new CustomEvent("tourAction", {
+            detail: { action: "click-company-selector" },
+          })
+        );
+      } else if (activeTour === "company-tour") {
         // Dispatch different action for company tour
-        window.dispatchEvent(new CustomEvent('tourAction', { 
-          detail: { action: 'click-company-selector-for-tour' } 
-        }));
+        window.dispatchEvent(
+          new CustomEvent("tourAction", {
+            detail: { action: "click-company-selector-for-tour" },
+          })
+        );
       }
     }
   };
@@ -208,23 +212,27 @@ export default function Navbar() {
 
   const handleCreateCompany = () => {
     // Check if tour is active
-    const activeTour = sessionStorage.getItem('activeTour');
-    if (activeTour === 'main-onboarding') {
+    const activeTour = sessionStorage.getItem("activeTour");
+    if (activeTour === "main-onboarding") {
       // During tour, dispatch the action before navigating
-      window.dispatchEvent(new CustomEvent('tourAction', { 
-        detail: { action: 'navigate-to-create-company' } 
-      }));
+      window.dispatchEvent(
+        new CustomEvent("tourAction", {
+          detail: { action: "navigate-to-create-company" },
+        })
+      );
     }
     router.push("/create-company");
   };
 
   // Handle navigation clicks during tours
   const handleNavigation = (path: string, tourAction?: string) => {
-    const activeTour = sessionStorage.getItem('activeTour');
+    const activeTour = sessionStorage.getItem("activeTour");
     if (activeTour && tourAction) {
-      window.dispatchEvent(new CustomEvent('tourAction', { 
-        detail: { action: tourAction } 
-      }));
+      window.dispatchEvent(
+        new CustomEvent("tourAction", {
+          detail: { action: tourAction },
+        })
+      );
     }
     router.push(path);
   };
@@ -416,8 +424,10 @@ export default function Navbar() {
                     />
                   </div>
 
-                  {/* Help Menu */}
-                  <HelpMenu />
+                  {/* Help Menu - Desktop Only */}
+                  <div className="hidden sm:block">
+                    <HelpMenu />
+                  </div>
 
                   {/* Profile Menu */}
                   <div className="relative flex-shrink-0" ref={profileMenuRef}>
@@ -646,17 +656,7 @@ export default function Navbar() {
                   <ThemeSelector />
                 </div>
 
-                {/* Mobile help menu */}
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-2 px-3">
-                  <HelpMenu />
-                </div>
-
-                {/* Keyboard shortcuts info for mobile */}
-                <div className="border-t border-gray-200 dark:border-gray-700 pt-2 px-3 py-2">
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                    Press ? to see keyboard shortcuts
-                  </p>
-                </div>
+                {/* Tours and keyboard shortcuts removed from mobile */}
               </>
             ) : (
               <>

@@ -332,6 +332,7 @@ export default function ProductListPage() {
         <Button
           onClick={() => router.push(`/product-list/product`)}
           className="bg-black text-white rounded-md px-4 py-2 text-md add-product-button"
+          data-tour-target="add-product"
         >
           Add Product
         </Button>
@@ -428,7 +429,6 @@ export default function ProductListPage() {
                           >
                             <Trash className="w-4 h-4 text-white" />
                           </Button>
-
                         </div>
                       </td>
                     </TableRow>
@@ -662,7 +662,7 @@ export default function ProductListPage() {
                       await handleRequestProductAdvice(
                         pendingProductId,
                         userPromptInput ||
-                        "Please analyze this product and suggest solutions to reduce carbon footprint. (in 150 words)"
+                          "Please analyze this product and suggest solutions to reduce carbon footprint. (in 150 words)"
                       );
                     }
                   }}

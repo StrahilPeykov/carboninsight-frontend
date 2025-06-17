@@ -57,11 +57,13 @@ export default function DashboardPage() {
 
   // Handle navigation with tour support
   const handleTourNavigation = (path: string, tourAction?: string) => {
-    const activeTour = sessionStorage.getItem('activeTour');
+    const activeTour = sessionStorage.getItem("activeTour");
     if (activeTour && tourAction) {
-      window.dispatchEvent(new CustomEvent('tourAction', { 
-        detail: { action: tourAction } 
-      }));
+      window.dispatchEvent(
+        new CustomEvent("tourAction", {
+          detail: { action: tourAction },
+        })
+      );
     }
     router.push(path);
   };
@@ -206,7 +208,7 @@ export default function DashboardPage() {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <button 
+        <button
           onClick={() => handleTourNavigation("/list-companies", "navigate-to-companies")}
           className="block transition-transform hover:scale-105 w-full text-left"
           data-tour-target="companies-link"
@@ -226,7 +228,7 @@ export default function DashboardPage() {
           </Card>
         </button>
 
-        <button 
+        <button
           onClick={() => handleTourNavigation("/product-list", "navigate-to-products")}
           className="block transition-transform hover:scale-105 w-full text-left"
         >
@@ -273,7 +275,7 @@ export default function DashboardPage() {
             Create and manage companies, add authorized users, and handle data sharing requests.
           </p>
           <div className="space-y-3">
-            <button 
+            <button
               onClick={() => handleTourNavigation("/list-companies", "navigate-to-companies")}
               className="block w-full"
             >
@@ -282,7 +284,7 @@ export default function DashboardPage() {
                 <Building2 className="ml-2 h-4 w-4" />
               </Button>
             </button>
-            <button 
+            <button
               onClick={() => handleTourNavigation("/create-company", undefined)}
               className="block w-full"
             >
@@ -300,7 +302,7 @@ export default function DashboardPage() {
             generate Digital Product Passports.
           </p>
           <div className="space-y-3">
-            <button 
+            <button
               onClick={() => handleTourNavigation("/product-list", "navigate-to-products")}
               className="block w-full"
             >
@@ -309,7 +311,7 @@ export default function DashboardPage() {
                 <BoxesIcon className="ml-2 h-4 w-4" />
               </Button>
             </button>
-            <button 
+            <button
               onClick={() => handleTourNavigation("/product-list/product", undefined)}
               className="block w-full"
             >

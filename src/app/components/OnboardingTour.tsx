@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ChevronRight, ChevronLeft, X, Sparkles } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { ChevronRight, ChevronLeft, X, Sparkles } from "lucide-react";
 
 interface TourStep {
   target: string;
   title: string;
   content: string;
-  placement?: 'top' | 'bottom' | 'left' | 'right' | 'center';
+  placement?: "top" | "bottom" | "left" | "right" | "center";
   spotlightPadding?: number;
   waitForAction?: boolean;
   expectedAction?: string;
@@ -22,13 +22,13 @@ interface OnboardingTourProps {
   globalCurrentStep?: number;
 }
 
-export default function OnboardingTour({ 
-  steps, 
-  onComplete, 
+export default function OnboardingTour({
+  steps,
+  onComplete,
   onSkip,
   currentStepIndex = 0,
   totalSteps,
-  globalCurrentStep = 0
+  globalCurrentStep = 0,
 }: OnboardingTourProps) {
   const [localStep, setLocalStep] = useState(currentStepIndex);
   const [isVisible, setIsVisible] = useState(true);
@@ -37,10 +37,11 @@ export default function OnboardingTour({
   const [targetElement, setTargetElement] = useState<HTMLElement | null>(null);
   const observerRef = useRef<MutationObserver | null>(null);
   const scrollPositionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Use totalSteps if provided, otherwise use steps.length
   const totalStepCount = totalSteps || steps.length;
-  
+
   // Calculate the actual step number for display
   const displayStepNumber = globalCurrentStep + 1;
 
@@ -61,28 +62,28 @@ export default function OnboardingTour({
     // Store current scroll position
     scrollPositionRef.current = {
       x: window.scrollX,
-      y: window.scrollY
+      y: window.scrollY,
     };
 
     const preventScroll = (e: Event) => {
       // Allow scrolling only if we're programmatically scrolling to an element
       if (!targetElement) return;
-      
+
       e.preventDefault();
       window.scrollTo(scrollPositionRef.current.x, scrollPositionRef.current.y);
     };
 
     // Disable scrolling
-    document.body.style.overflow = 'hidden';
-    window.addEventListener('scroll', preventScroll, { passive: false });
-    window.addEventListener('wheel', preventScroll, { passive: false });
-    window.addEventListener('touchmove', preventScroll, { passive: false });
+    document.body.style.overflow = "hidden";
+    window.addEventListener("scroll", preventScroll, { passive: false });
+    window.addEventListener("wheel", preventScroll, { passive: false });
+    window.addEventListener("touchmove", preventScroll, { passive: false });
 
     return () => {
-      document.body.style.overflow = '';
-      window.removeEventListener('scroll', preventScroll);
-      window.removeEventListener('wheel', preventScroll);
-      window.removeEventListener('touchmove', preventScroll);
+      document.body.style.overflow = "";
+      window.removeEventListener("scroll", preventScroll);
+      window.removeEventListener("wheel", preventScroll);
+      window.removeEventListener("touchmove", preventScroll);
     };
   }, [isVisible, targetElement]);
 
@@ -98,7 +99,7 @@ export default function OnboardingTour({
     const lastFocusable = focusableElements[focusableElements.length - 1] as HTMLElement;
 
     const trapFocus = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return;
+      if (e.key !== "Tab") return;
 
       if (e.shiftKey) {
         if (document.activeElement === firstFocusable) {
@@ -115,107 +116,175 @@ export default function OnboardingTour({
 
     // Focus the tooltip initially
     tooltip.focus();
-    document.addEventListener('keydown', trapFocus);
+    document.addEventListener("keydown", trapFocus);
 
     return () => {
-      document.removeEventListener('keydown', trapFocus);
+      document.removeEventListener("keydown", trapFocus);
     };
   }, [isVisible, localStep]);
 
-  // Better element finding with MutationObserver
-  const findTargetElement = useCallback((target: string) => {
-    // Clean up previous observer
-    if (observerRef.current) {
-      observerRef.current.disconnect();
-    }
+  // Enhanced element finding with better retry logic
+  const findTargetElement = useCallback(
+    (target: string) => {
+      console.log("OnboardingTour: Attempting to find target:", target);
 
-    const attemptFind = () => {
-      // Try multiple selectors if comma-separated
-      const selectors = target.split(',').map(s => s.trim());
-      let element: HTMLElement | null = null;
-      
-      for (const selector of selectors) {
-        try {
-          element = document.querySelector(selector) as HTMLElement;
-          if (element) break;
-        } catch (error) {
-          console.warn(`Invalid selector: ${selector}`, error);
-          continue;
-        }
+      // Clean up previous observer and timeout
+      if (observerRef.current) {
+        observerRef.current.disconnect();
       }
-      
-      if (element) {
-        const rect = element.getBoundingClientRect();
-        setTargetRect(rect);
-        setTargetElement(element);
-        
-        // Scroll into view if needed
-        const isInViewport = rect.top >= 0 && rect.bottom <= window.innerHeight;
-        if (!isInViewport) {
-          scrollPositionRef.current = {
-            x: window.scrollX,
-            y: window.scrollY
-          };
-          element.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-            inline: 'center'
-          });
-          
-          // Update scroll position after scrolling
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+      }
+
+      const attemptFind = (attempt: number = 1): boolean => {
+        console.log(`OnboardingTour: Find attempt ${attempt} for target:`, target);
+
+        // Try multiple selectors if comma-separated
+        const selectors = target.split(",").map(s => s.trim());
+        let element: HTMLElement | null = null;
+
+        for (const selector of selectors) {
+          try {
+            // Special handling for button text matching
+            if (selector.includes(":has-text(")) {
+              const textMatch = selector.match(/:has-text\("([^"]+)"\)/);
+              if (textMatch) {
+                const baseSelector = selector.split(":has-text(")[0];
+                const searchText = textMatch[1];
+                const candidates = document.querySelectorAll(baseSelector || "button");
+                for (const candidate of candidates) {
+                  if (candidate.textContent?.includes(searchText)) {
+                    element = candidate as HTMLElement;
+                    break;
+                  }
+                }
+              }
+            } else {
+              element = document.querySelector(selector) as HTMLElement;
+            }
+
+            if (element) {
+              console.log("OnboardingTour: Found element with selector:", selector);
+              break;
+            }
+          } catch (error) {
+            console.warn(`OnboardingTour: Invalid selector: ${selector}`, error);
+            continue;
+          }
+        }
+
+        if (element) {
+          // Check if element is visible and has dimensions
+          const rect = element.getBoundingClientRect();
+          const isVisible =
+            rect.width > 0 &&
+            rect.height > 0 &&
+            getComputedStyle(element).display !== "none" &&
+            getComputedStyle(element).visibility !== "hidden";
+
+          if (isVisible) {
+            setTargetRect(rect);
+            setTargetElement(element);
+
+            // Scroll into view if needed
+            const isInViewport =
+              rect.top >= 0 &&
+              rect.bottom <= window.innerHeight &&
+              rect.left >= 0 &&
+              rect.right <= window.innerWidth;
+            if (!isInViewport) {
+              scrollPositionRef.current = {
+                x: window.scrollX,
+                y: window.scrollY,
+              };
+              element.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+                inline: "center",
+              });
+
+              // Update scroll position after scrolling
+              setTimeout(() => {
+                scrollPositionRef.current = {
+                  x: window.scrollX,
+                  y: window.scrollY,
+                };
+              }, 500);
+            }
+            return true;
+          } else {
+            console.log("OnboardingTour: Element found but not visible, will retry");
+          }
+        }
+        return false;
+      };
+
+      // Try to find immediately
+      if (!attemptFind()) {
+        console.log(
+          `OnboardingTour: Target not found immediately: ${target}, setting up observer and retries...`
+        );
+
+        // Set up mutation observer to watch for the element
+        observerRef.current = new MutationObserver(mutations => {
+          // Debounce the observer calls
+          if (retryTimeoutRef.current) {
+            clearTimeout(retryTimeoutRef.current);
+          }
+
+          retryTimeoutRef.current = setTimeout(() => {
+            if (attemptFind() && observerRef.current) {
+              observerRef.current.disconnect();
+              console.log(`OnboardingTour: Target found via observer: ${target}`);
+            }
+          }, 100);
+        });
+
+        observerRef.current.observe(document.body, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ["class", "style", "hidden"],
+        });
+
+        // Additional retry attempts with exponential backoff
+        const retryDelays = [100, 300, 800, 2000];
+        retryDelays.forEach((delay, index) => {
           setTimeout(() => {
-            scrollPositionRef.current = {
-              x: window.scrollX,
-              y: window.scrollY
-            };
-          }, 500);
-        }
-        return true;
+            if (!targetElement && attemptFind(index + 2)) {
+              if (observerRef.current) {
+                observerRef.current.disconnect();
+                console.log(`OnboardingTour: Target found on retry ${index + 2}: ${target}`);
+              }
+            }
+          }, delay);
+        });
+
+        // Final timeout fallback - after 5 seconds, if still not found, show as center placement
+        setTimeout(() => {
+          if (observerRef.current && !targetElement) {
+            observerRef.current.disconnect();
+            console.warn(
+              `OnboardingTour: Target not found after timeout: ${target}, showing center placement`
+            );
+
+            // Don't clear target - just set to null rect to show center placement
+            setTargetRect(null);
+            setTargetElement(null);
+          }
+        }, 5000);
       }
-      return false;
-    };
-
-    // Try to find immediately
-    if (!attemptFind()) {
-      // If not found, set up observer to watch for the element
-      // But don't clear the target immediately - keep overlay visible
-      console.log(`Tour target not found immediately: ${target}, setting up observer...`);
-      
-      observerRef.current = new MutationObserver(() => {
-        if (attemptFind() && observerRef.current) {
-          observerRef.current.disconnect();
-          console.log(`Tour target found via observer: ${target}`);
-        }
-      });
-
-      observerRef.current.observe(document.body, {
-        childList: true,
-        subtree: true,
-        attributes: true,
-        attributeFilter: ['class', 'style']
-      });
-
-      // Timeout fallback - after 5 seconds, if still not found, show as center placement
-      setTimeout(() => {
-        if (observerRef.current) {
-          observerRef.current.disconnect();
-          console.warn(`Tour target not found after timeout: ${target}, showing center placement`);
-          
-          // Don't clear target - just set to null rect to show center placement
-          setTargetRect(null);
-          setTargetElement(null);
-        }
-      }, 5000);
-    }
-  }, []);
+    },
+    [targetElement]
+  );
 
   useEffect(() => {
     if (!isVisible || !currentStepData) return;
 
-    console.log('OnboardingTour: Finding target element:', currentStepData.target);
+    console.log("OnboardingTour: Finding target element:", currentStepData.target);
 
-    if (currentStepData.placement === 'center') {
-      console.log('OnboardingTour: Center placement, no target needed');
+    if (currentStepData.placement === "center") {
+      console.log("OnboardingTour: Center placement, no target needed");
       setTargetRect(null);
       setTargetElement(null);
       return;
@@ -224,11 +293,14 @@ export default function OnboardingTour({
     // Add a small delay to ensure DOM is ready
     setTimeout(() => {
       findTargetElement(currentStepData.target);
-    }, 100);
+    }, 150);
 
     return () => {
       if (observerRef.current) {
         observerRef.current.disconnect();
+      }
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
       }
     };
   }, [localStep, currentStepData, isVisible, findTargetElement]);
@@ -244,10 +316,10 @@ export default function OnboardingTour({
       }
     };
 
-    window.addEventListener('resize', updatePosition);
-    
+    window.addEventListener("resize", updatePosition);
+
     return () => {
-      window.removeEventListener('resize', updatePosition);
+      window.removeEventListener("resize", updatePosition);
     };
   }, [targetElement]);
 
@@ -256,21 +328,23 @@ export default function OnboardingTour({
     if (!targetElement || !currentStepData?.waitForAction) return;
 
     const handleTargetClick = () => {
-      console.log('Target element clicked, proceeding to next step');
-      
+      console.log("Target element clicked, proceeding to next step");
+
       // Check if this matches the expected action
       if (currentStepData.expectedAction) {
         // Dispatch the expected action event
-        window.dispatchEvent(new CustomEvent('tourAction', { 
-          detail: { action: currentStepData.expectedAction } 
-        }));
+        window.dispatchEvent(
+          new CustomEvent("tourAction", {
+            detail: { action: currentStepData.expectedAction },
+          })
+        );
       }
     };
 
-    targetElement.addEventListener('click', handleTargetClick);
+    targetElement.addEventListener("click", handleTargetClick);
 
     return () => {
-      targetElement.removeEventListener('click', handleTargetClick);
+      targetElement.removeEventListener("click", handleTargetClick);
     };
   }, [targetElement, currentStepData]);
 
@@ -281,7 +355,7 @@ export default function OnboardingTour({
         // This is part of a multi-page tour
         if (globalCurrentStep < totalSteps - 1) {
           // Dispatch event to advance the global tour
-          window.dispatchEvent(new CustomEvent('tourNextStep'));
+          window.dispatchEvent(new CustomEvent("tourNextStep"));
         } else {
           handleComplete();
         }
@@ -315,15 +389,15 @@ export default function OnboardingTour({
   };
 
   const getTooltipPosition = () => {
-    console.log('OnboardingTour: Getting tooltip position', {
+    console.log("OnboardingTour: Getting tooltip position", {
       hasTargetRect: !!targetRect,
       placement: currentStepData.placement,
-      hasTooltip: !!tooltipRef.current
+      hasTooltip: !!tooltipRef.current,
     });
 
-    if (!targetRect || !tooltipRef.current || currentStepData.placement === 'center') {
-      console.log('OnboardingTour: Using center positioning');
-      return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
+    if (!targetRect || !tooltipRef.current || currentStepData.placement === "center") {
+      console.log("OnboardingTour: Using center positioning");
+      return { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
     }
 
     const tooltip = tooltipRef.current;
@@ -331,26 +405,26 @@ export default function OnboardingTour({
     const padding = 20;
     let position: any = {};
 
-    switch (currentStepData.placement || 'bottom') {
-      case 'top':
+    switch (currentStepData.placement || "bottom") {
+      case "top":
         position = {
           top: targetRect.top - tooltipRect.height - padding,
           left: targetRect.left + (targetRect.width - tooltipRect.width) / 2,
         };
         break;
-      case 'bottom':
+      case "bottom":
         position = {
           top: targetRect.bottom + padding,
           left: targetRect.left + (targetRect.width - tooltipRect.width) / 2,
         };
         break;
-      case 'left':
+      case "left":
         position = {
           top: targetRect.top + (targetRect.height - tooltipRect.height) / 2,
           left: targetRect.left - tooltipRect.width - padding,
         };
         break;
-      case 'right':
+      case "right":
         position = {
           top: targetRect.top + (targetRect.height - tooltipRect.height) / 2,
           left: targetRect.right + padding,
@@ -359,10 +433,16 @@ export default function OnboardingTour({
     }
 
     // Keep tooltip within viewport
-    position.top = Math.max(padding, Math.min(position.top, window.innerHeight - tooltipRect.height - padding));
-    position.left = Math.max(padding, Math.min(position.left, window.innerWidth - tooltipRect.width - padding));
+    position.top = Math.max(
+      padding,
+      Math.min(position.top, window.innerHeight - tooltipRect.height - padding)
+    );
+    position.left = Math.max(
+      padding,
+      Math.min(position.left, window.innerWidth - tooltipRect.width - padding)
+    );
 
-    console.log('OnboardingTour: Calculated position:', position);
+    console.log("OnboardingTour: Calculated position:", position);
     return position;
   };
 
@@ -382,16 +462,16 @@ export default function OnboardingTour({
   }, [isVisible, canSkip]);
 
   if (!isVisible || !currentStepData) {
-    console.log('OnboardingTour: Not visible or no step data');
+    console.log("OnboardingTour: Not visible or no step data");
     return null;
   }
 
-  console.log('OnboardingTour: Rendering tour step:', {
+  console.log("OnboardingTour: Rendering tour step:", {
     title: currentStepData.title,
     target: currentStepData.target,
     placement: currentStepData.placement,
     hasTargetRect: !!targetRect,
-    hasTargetElement: !!targetElement
+    hasTargetElement: !!targetElement,
   });
 
   const spotlightPadding = currentStepData.spotlightPadding || 8;
@@ -400,19 +480,19 @@ export default function OnboardingTour({
   // Calculate blocking areas around the spotlight
   const getBlockingAreas = () => {
     // Always show blocking areas to prevent clicks outside
-    if (!targetRect || currentStepData.placement === 'center') {
-      console.log('OnboardingTour: Rendering full-screen blocker (center or no target)');
+    if (!targetRect || currentStepData.placement === "center") {
+      console.log("OnboardingTour: Rendering full-screen blocker (center or no target)");
       // For center placement or when target not found, block the entire screen
       return (
         <div
           className="fixed inset-0 bg-transparent"
           style={{
-            pointerEvents: 'auto',
+            pointerEvents: "auto",
             zIndex: 9997,
           }}
-          onClick={(e) => {
+          onClick={e => {
             e.stopPropagation();
-            console.log('OnboardingTour: Full-screen blocker clicked');
+            console.log("OnboardingTour: Full-screen blocker clicked");
             // Only skip if click outside is allowed AND skip is allowed
             if (allowClickOutside && canSkip) {
               handleSkip();
@@ -422,7 +502,7 @@ export default function OnboardingTour({
       );
     }
 
-    console.log('OnboardingTour: Rendering spotlight blockers around target');
+    console.log("OnboardingTour: Rendering spotlight blockers around target");
     const spotlight = {
       top: targetRect.top - spotlightPadding,
       left: targetRect.left - spotlightPadding,
@@ -432,7 +512,7 @@ export default function OnboardingTour({
 
     const handleBlockerClick = (e: React.MouseEvent) => {
       e.stopPropagation();
-      console.log('OnboardingTour: Spotlight blocker clicked');
+      console.log("OnboardingTour: Spotlight blocker clicked");
       // Only skip if click outside is allowed AND skip is allowed
       if (allowClickOutside && canSkip) {
         handleSkip();
@@ -449,7 +529,7 @@ export default function OnboardingTour({
             left: 0,
             right: 0,
             height: spotlight.top,
-            pointerEvents: 'auto',
+            pointerEvents: "auto",
             zIndex: 9997,
           }}
           onClick={handleBlockerClick}
@@ -462,7 +542,7 @@ export default function OnboardingTour({
             left: 0,
             right: 0,
             bottom: 0,
-            pointerEvents: 'auto',
+            pointerEvents: "auto",
             zIndex: 9997,
           }}
           onClick={handleBlockerClick}
@@ -475,7 +555,7 @@ export default function OnboardingTour({
             left: 0,
             width: spotlight.left,
             height: spotlight.bottom - spotlight.top,
-            pointerEvents: 'auto',
+            pointerEvents: "auto",
             zIndex: 9997,
           }}
           onClick={handleBlockerClick}
@@ -488,7 +568,7 @@ export default function OnboardingTour({
             left: spotlight.right,
             right: 0,
             height: spotlight.bottom - spotlight.top,
-            pointerEvents: 'auto',
+            pointerEvents: "auto",
             zIndex: 9997,
           }}
           onClick={handleBlockerClick}
@@ -500,14 +580,12 @@ export default function OnboardingTour({
   return (
     <>
       {/* Visual backdrop with spotlight */}
-      <div 
-        className="fixed inset-0 z-[9996] pointer-events-none"
-      >
+      <div className="fixed inset-0 z-[9996] pointer-events-none">
         <svg className="absolute inset-0 w-full h-full">
           <defs>
             <mask id="spotlight-mask">
               <rect x="0" y="0" width="100%" height="100%" fill="white" />
-              {targetRect && currentStepData.placement !== 'center' && (
+              {targetRect && currentStepData.placement !== "center" && (
                 <rect
                   x={targetRect.left - spotlightPadding}
                   y={targetRect.top - spotlightPadding}
@@ -534,7 +612,7 @@ export default function OnboardingTour({
       {getBlockingAreas()}
 
       {/* Simple border around target element */}
-      {targetRect && currentStepData.placement !== 'center' && (
+      {targetRect && currentStepData.placement !== "center" && (
         <div
           className="fixed z-[9999] pointer-events-none"
           style={{
@@ -542,8 +620,8 @@ export default function OnboardingTour({
             left: targetRect.left - spotlightPadding - 2,
             width: targetRect.width + spotlightPadding * 2 + 4,
             height: targetRect.height + spotlightPadding * 2 + 4,
-            border: '2px solid #c20016',
-            borderRadius: '8px',
+            border: "2px solid #c20016",
+            borderRadius: "8px",
           }}
         />
       )}
@@ -553,7 +631,7 @@ export default function OnboardingTour({
         ref={tooltipRef}
         className="fixed z-[10000] bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-md pointer-events-auto"
         style={getTooltipPosition()}
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
         tabIndex={-1}
         role="dialog"
         aria-labelledby="tour-title"
@@ -602,10 +680,10 @@ export default function OnboardingTour({
               key={index}
               className={`h-2 rounded-full transition-all duration-300 ${
                 index === globalCurrentStep
-                  ? 'bg-red-600 w-6'
+                  ? "bg-red-600 w-6"
                   : index < globalCurrentStep
-                  ? 'bg-gray-400 w-2'
-                  : 'bg-gray-300 dark:bg-gray-600 w-2'
+                    ? "bg-gray-400 w-2"
+                    : "bg-gray-300 dark:bg-gray-600 w-2"
               }`}
             />
           ))}
@@ -623,7 +701,7 @@ export default function OnboardingTour({
           ) : (
             <div />
           )}
-          
+
           <div className="flex gap-2">
             {localStep > 0 && !isWaitingForAction && (
               <button
@@ -634,13 +712,15 @@ export default function OnboardingTour({
                 Previous
               </button>
             )}
-            
+
             {!isWaitingForAction && (
               <button
                 onClick={handleNext}
                 className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 transition-colors"
               >
-                {localStep === steps.length - 1 && globalCurrentStep === totalStepCount - 1 ? 'Finish' : 'Next'}
+                {localStep === steps.length - 1 && globalCurrentStep === totalStepCount - 1
+                  ? "Finish"
+                  : "Next"}
                 <ChevronRight className="w-4 h-4" />
               </button>
             )}

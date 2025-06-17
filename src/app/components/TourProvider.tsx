@@ -1,8 +1,8 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import OnboardingTour from './OnboardingTour';
-import { usePathname, useRouter } from 'next/navigation';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import OnboardingTour from "./OnboardingTour";
+import { usePathname, useRouter } from "next/navigation";
 
 // Define proper interfaces for tour steps
 interface BaseTourStep {
@@ -10,7 +10,7 @@ interface BaseTourStep {
   target: string;
   title: string;
   content: string;
-  placement: 'top' | 'bottom' | 'left' | 'right' | 'center';
+  placement: "top" | "bottom" | "left" | "right" | "center";
   spotlightPadding?: number;
   allowSkip?: boolean;
   allowClickOutside?: boolean;
@@ -46,158 +46,185 @@ interface TourProviderProps {
 
 // Define tour steps that can span multiple pages
 const TOURS: Record<string, TourStep[]> = {
-  'main-onboarding': [
+  "main-onboarding": [
     {
-      page: '*', // Available from any page
-      target: '.company-selector-button',
-      title: 'Welcome to CarbonInsight!',
-      content: 'Let\'s get you started by creating your first company. This will allow you to add products and calculate their carbon footprints. Click on the company selector to begin.',
-      placement: 'bottom',
+      page: "*", // Available from any page
+      target: ".company-selector-button",
+      title: "Welcome to CarbonInsight!",
+      content:
+        "Let's get you started by creating your first company. This will allow you to add products and calculate their carbon footprints. Click on the company selector to begin.",
+      placement: "bottom",
       waitForAction: true,
-      expectedAction: 'click-company-selector',
+      expectedAction: "click-company-selector",
       allowSkip: true,
       allowClickOutside: false,
     },
     {
-      page: '*', // Still on the same page with dropdown open
+      page: "*", // Still on the same page with dropdown open
       target: '[data-tour-target="create-company"]',
-      title: 'Create Your First Company',
-      content: 'Perfect! Now click on "Create" to set up your company profile. This is the foundation for all your carbon footprint calculations.',
-      placement: 'left',
+      title: "Create Your First Company",
+      content:
+        'Perfect! Now click on "Create" to set up your company profile. This is the foundation for all your carbon footprint calculations.',
+      placement: "left",
       waitForAction: true,
-      expectedAction: 'navigate-to-create-company',
+      expectedAction: "navigate-to-create-company",
       allowSkip: true,
       allowClickOutside: false,
     },
     {
-      page: '/create-company',
+      page: "/create-company",
       target: 'input[name="name"]',
-      title: 'Business Name',
-      content: 'Enter your company\'s legal business name. This will be used throughout the platform and in all generated reports and Digital Product Passports.',
-      placement: 'right',
+      title: "Business Name",
+      content:
+        "Enter your company's legal business name. This will be used throughout the platform and in all generated reports and Digital Product Passports.",
+      placement: "right",
       spotlightPadding: 20,
       allowSkip: true,
       allowClickOutside: false,
     },
     {
-      page: '/create-company',
+      page: "/create-company",
       target: 'input[name="vat_number"]',
-      title: 'VAT Number',
-      content: 'Enter your company\'s VAT (Value Added Tax) number. This helps us verify your business identity and is required for compliance reporting.',
-      placement: 'right',
+      title: "VAT Number",
+      content:
+        "Enter your company's VAT (Value Added Tax) number. This helps us verify your business identity and is required for compliance reporting.",
+      placement: "right",
       spotlightPadding: 20,
       allowSkip: true,
       allowClickOutside: false,
     },
     {
-      page: '/create-company',
+      page: "/create-company",
       target: 'input[name="business_registration_number"]',
-      title: 'Business Registration Number',
-      content: 'Enter your official business registration number (Chamber of Commerce number, Company House number, etc.). This is used for legal identification and compliance.',
-      placement: 'right',
+      title: "Business Registration Number",
+      content:
+        "Enter your official business registration number (Chamber of Commerce number, Company House number, etc.). This is used for legal identification and compliance.",
+      placement: "right",
       spotlightPadding: 20,
       allowSkip: true,
       allowClickOutside: false,
     },
     {
-      page: '/create-company',
+      page: "/create-company",
       target: 'button[type="submit"]',
-      title: 'Complete Setup!',
-      content: 'Once you\'ve filled in all the details, click Submit to create your company. You\'ll then be taken to the dashboard where you can start adding products and calculating their carbon footprint.',
-      placement: 'top',
+      title: "Complete Setup!",
+      content:
+        "Once you've filled in all the details, click Submit to create your company. You'll then be taken to the dashboard where you can start adding products and calculating their carbon footprint.",
+      placement: "top",
       spotlightPadding: 20,
       allowSkip: true,
       allowClickOutside: false,
     },
   ],
-  'product-list-tour': [
+  "product-list-tour": [
     {
-      page: '*',
+      page: "*",
       target: '[data-tour-target="products-nav"]',
-      title: 'Product Management Tour',
-      content: 'Let\'s explore how to manage your products and calculate their carbon footprints. Click on the "Products" navigation button to get started.',
-      placement: 'bottom',
+      title: "Product Management Tour",
+      content:
+        'Let\'s explore how to manage your products and calculate their carbon footprints. Click on the "Products" navigation button to get started.',
+      placement: "bottom",
       waitForAction: true,
-      expectedAction: 'navigate-to-products',
-      allowClickOutside: true,
+      expectedAction: "navigate-to-products",
+      allowClickOutside: false,
+      allowSkip: true,
     },
     {
-      page: '/product-list',
-      target: '.add-product-button',
-      title: 'Add Your First Product',
-      content: 'This is where you can add new products to calculate their carbon footprint. Click here to start the product creation process.',
-      placement: 'left',
-      allowClickOutside: true,
+      page: "/product-list",
+      target: ".mb-6, .max-w-7xl",
+      title: "Add Your First Product",
+      content:
+        "When you're ready to add products, you'll use the \"Add Product\" button here. For now, let's continue exploring the product management features.",
+      placement: "center",
+      allowClickOutside: false,
+      allowSkip: true,
     },
     {
-      page: '/product-list',
-      target: 'input[placeholder*="Search"]',
-      title: 'Search Products',
-      content: 'Quickly find products by searching for their name, SKU, or manufacturer. The search works across all your product data.',
-      placement: 'bottom',
-      allowClickOutside: true,
+      page: "/product-list",
+      target: 'input[placeholder*="Search"], input[placeholder*="search"]',
+      title: "Search Products",
+      content:
+        "Quickly find products by searching for their name, SKU, or manufacturer. The search works across all your product data.",
+      placement: "bottom",
+      spotlightPadding: 8,
+      allowClickOutside: false,
+      allowSkip: true,
     },
     {
-      page: '/product-list',
-      target: '.export-button, .ai-button, .max-w-7xl',
-      title: 'Product Actions',
-      content: 'Once you have products, you\'ll see action buttons here. The Export button lets you download Digital Product Passports, and the AI button provides carbon reduction recommendations.',
-      placement: 'center',
-      allowClickOutside: true,
+      page: "/product-list",
+      target: ".max-w-7xl",
+      title: "Product Actions & Features",
+      content:
+        "Once you have products, you'll see action buttons for each product: Export (download Digital Product Passports), AI advice (carbon reduction recommendations), Edit, and Delete. The table shows key information like manufacturer, name, SKU, and carbon footprint.",
+      placement: "center",
+      allowClickOutside: false,
+      allowSkip: true,
     },
     {
-      page: '/product-list',
-      target: '.max-w-7xl',
-      title: 'Product Management Complete',
-      content: 'You\'ve completed the product management tour! You can now add products, search through them, and export Digital Product Passports. Use the Help menu to restart tours anytime.',
-      placement: 'center',
-      allowClickOutside: true,
+      page: "/product-list",
+      target: ".max-w-7xl",
+      title: "Product Management Complete",
+      content:
+        "You've completed the product management tour! You can now add products, search through them, and export Digital Product Passports. Use the Help menu to restart tours anytime.",
+      placement: "center",
+      allowClickOutside: false,
+      allowSkip: true,
     },
   ],
-  'company-tour': [
+  "company-tour": [
     {
-      page: '*',
+      page: "*",
       target: '[data-tour-target="dashboard-nav"]',
-      title: 'Company Management Tour',
-      content: 'Let\'s explore how to manage multiple companies. First, go to your dashboard where you can access company management features.',
-      placement: 'bottom',
+      title: "Company Management Tour",
+      content:
+        "Let's explore how to manage multiple companies. First, go to your dashboard where you can access company management features.",
+      placement: "bottom",
       waitForAction: true,
-      expectedAction: 'navigate-to-dashboard',
-      allowClickOutside: true,
+      expectedAction: "navigate-to-dashboard",
+      allowClickOutside: false,
+      allowSkip: true,
     },
     {
-      page: '/dashboard',
+      page: "/dashboard",
       target: '[data-tour-target="companies-link"]',
-      title: 'View All Companies',
-      content: 'From the dashboard, click on "Your Companies" to access the company management hub where you can view all your companies.',
-      placement: 'right',
+      title: "View All Companies",
+      content:
+        'From the dashboard, click on "Your Companies" to access the company management hub where you can view all your companies.',
+      placement: "right",
       waitForAction: true,
-      expectedAction: 'navigate-to-companies',
-      allowClickOutside: true,
+      expectedAction: "navigate-to-companies",
+      allowClickOutside: false,
+      allowSkip: true,
     },
     {
-      page: '/list-companies',
-      target: 'h1',
-      title: 'Company Management Hub',
-      content: 'This is your company management hub. Here you can create new companies, switch between them, and manage company settings and users.',
-      placement: 'bottom',
-      allowClickOutside: true,
+      page: "/list-companies",
+      target: "h1",
+      title: "Company Management Hub",
+      content:
+        "This is your company management hub. Here you can create new companies, switch between them, and manage company settings and users.",
+      placement: "bottom",
+      allowClickOutside: false,
+      allowSkip: true,
     },
     {
-      page: '/list-companies',
+      page: "/list-companies",
       target: '[href="/create-company"]',
-      title: 'Create Additional Companies',
-      content: 'You can create multiple companies if you manage different businesses, subsidiaries, or want to separate different product lines.',
-      placement: 'bottom',
-      allowClickOutside: true,
+      title: "Create Additional Companies",
+      content:
+        "You can create multiple companies if you manage different businesses, subsidiaries, or want to separate different product lines.",
+      placement: "bottom",
+      allowClickOutside: false,
+      allowSkip: true,
     },
     {
-      page: '/list-companies',
-      target: '.grid > div:first-child',
-      title: 'Company Cards & Quick Actions',
-      content: 'Each company is displayed as a card. Click "Select Company" to work with that company, or use the quick action buttons to manage users, view products, or handle data sharing requests.',
-      placement: 'right',
-      allowClickOutside: true,
+      page: "/list-companies",
+      target: ".grid > div:first-child",
+      title: "Company Cards & Quick Actions",
+      content:
+        'Each company is displayed as a card. Click "Select Company" to work with that company, or use the quick action buttons to manage users, view products, or handle data sharing requests.',
+      placement: "right",
+      allowClickOutside: false,
+      allowSkip: true,
     },
   ],
 };
@@ -213,56 +240,56 @@ export default function TourProvider({ children }: TourProviderProps) {
   // Ensure component is mounted
   useEffect(() => {
     setMounted(true);
-    
+
     // Cleanup on unmount
     return () => {
-      document.body.classList.remove('tour-active');
+      document.body.classList.remove("tour-active");
     };
   }, []);
 
   // Load tour state from storage on mount
   useEffect(() => {
     if (!mounted) return;
-    
+
     // Load completed tours
-    const stored = localStorage.getItem('completedTours');
+    const stored = localStorage.getItem("completedTours");
     if (stored) {
       try {
         setCompletedTours(new Set(JSON.parse(stored)));
       } catch (e) {
-        console.error('Failed to parse completed tours:', e);
+        console.error("Failed to parse completed tours:", e);
       }
     }
 
     // Load active tour state from sessionStorage
-    const activeTourStored = sessionStorage.getItem('activeTour');
-    const currentStepStored = sessionStorage.getItem('currentTourStep');
-    
+    const activeTourStored = sessionStorage.getItem("activeTour");
+    const currentStepStored = sessionStorage.getItem("currentTourStep");
+
     if (activeTourStored) {
       setActiveTour(activeTourStored);
       setCurrentStep(currentStepStored ? parseInt(currentStepStored, 10) : 0);
-      document.body.classList.add('tour-active');
+      document.body.classList.add("tour-active");
     }
   }, [mounted]);
 
   // Save completed tours to localStorage
   const saveCompletedTours = (tours: Set<string>) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('completedTours', JSON.stringify(Array.from(tours)));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("completedTours", JSON.stringify(Array.from(tours)));
     }
   };
 
   // Save active tour state to sessionStorage
   const saveActiveTourState = (tourId: string | null, step: number) => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       if (tourId) {
-        sessionStorage.setItem('activeTour', tourId);
-        sessionStorage.setItem('currentTourStep', step.toString());
-        document.body.classList.add('tour-active');
+        sessionStorage.setItem("activeTour", tourId);
+        sessionStorage.setItem("currentTourStep", step.toString());
+        document.body.classList.add("tour-active");
       } else {
-        sessionStorage.removeItem('activeTour');
-        sessionStorage.removeItem('currentTourStep');
-        document.body.classList.remove('tour-active');
+        sessionStorage.removeItem("activeTour");
+        sessionStorage.removeItem("currentTourStep");
+        document.body.classList.remove("tour-active");
       }
     }
   };
@@ -273,18 +300,18 @@ export default function TourProvider({ children }: TourProviderProps) {
       return;
     }
 
-    console.log('Starting tour:', tourId);
-    
+    console.log("Starting tour:", tourId);
+
     // Always start from step 0, regardless of current page
     setActiveTour(tourId);
     setCurrentStep(0);
     saveActiveTourState(tourId, 0);
-    
+
     // Don't auto-navigate - let the tour guide the user
   };
 
   const completeTour = (tourId: string) => {
-    console.log('Completing tour:', tourId);
+    console.log("Completing tour:", tourId);
     const newCompleted = new Set(completedTours);
     newCompleted.add(tourId);
     setCompletedTours(newCompleted);
@@ -306,7 +333,7 @@ export default function TourProvider({ children }: TourProviderProps) {
   };
 
   const setCurrentTourStep = (step: number) => {
-    console.log('Setting tour step to:', step);
+    console.log("Setting tour step to:", step);
     setCurrentStep(step);
     if (activeTour) {
       saveActiveTourState(activeTour, step);
@@ -316,66 +343,65 @@ export default function TourProvider({ children }: TourProviderProps) {
   // Get current tour steps based on active tour and current page
   const getCurrentTourSteps = () => {
     if (!activeTour || !TOURS[activeTour]) {
-      console.log('No active tour or tour not found:', activeTour);
+      console.log("No active tour or tour not found:", activeTour);
       return [];
     }
-    
+
     const allSteps = TOURS[activeTour];
     const currentStepData = allSteps[currentStep];
-    
+
     if (!currentStepData) {
-      console.log('No current step data for step:', currentStep);
+      console.log("No current step data for step:", currentStep);
       return [];
     }
-    
+
     // Normalize pathname
-    const normalizedPathname = pathname.endsWith('/') && pathname !== '/' 
-      ? pathname.slice(0, -1) 
-      : pathname;
-    
+    const normalizedPathname =
+      pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname;
+
     // Check if current step should be shown on this page
-    const stepPage = currentStepData.page.endsWith('/') && currentStepData.page !== '/'
-      ? currentStepData.page.slice(0, -1)
-      : currentStepData.page;
-    
-    const isStepOnThisPage = stepPage === '*' || stepPage === normalizedPathname;
-    
-    console.log('Tour step check:', {
+    const stepPage =
+      currentStepData.page.endsWith("/") && currentStepData.page !== "/"
+        ? currentStepData.page.slice(0, -1)
+        : currentStepData.page;
+
+    const isStepOnThisPage = stepPage === "*" || stepPage === normalizedPathname;
+
+    console.log("Tour step check:", {
       activeTour,
       currentStep,
       stepPage,
       normalizedPathname,
       isStepOnThisPage,
-      target: currentStepData.target
+      target: currentStepData.target,
     });
-    
+
     if (!isStepOnThisPage) {
-      console.log('Step not for this page, returning empty array');
+      console.log("Step not for this page, returning empty array");
       return [];
     }
-    
+
     return [currentStepData];
   };
 
   // Handle step progression - defined inside component to access state
   const handleStepProgressionRef = React.useRef<() => void>(() => {});
-  
+
   handleStepProgressionRef.current = () => {
     if (!activeTour) return;
-    
+
     const allSteps = TOURS[activeTour];
     const nextStep = currentStep + 1;
-    
-    console.log('Progressing from step', currentStep, 'to', nextStep);
-    
+
+    console.log("Progressing from step", currentStep, "to", nextStep);
+
     if (nextStep < allSteps.length) {
       const nextStepData = allSteps[nextStep];
-      const currentPage = pathname.endsWith('/') && pathname !== '/' 
-        ? pathname.slice(0, -1) 
-        : pathname;
-      
+      const currentPage =
+        pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname;
+
       // Check if next step is on a different page
-      if (nextStepData.page !== '*' && nextStepData.page !== currentPage) {
+      if (nextStepData.page !== "*" && nextStepData.page !== currentPage) {
         // Save the step progression before navigation
         setCurrentTourStep(nextStep);
         router.push(nextStepData.page);
@@ -395,21 +421,24 @@ export default function TourProvider({ children }: TourProviderProps) {
 
     const allSteps = TOURS[activeTour];
     const currentStepData = allSteps[currentStep];
-    
+
     if (!currentStepData) return;
-    
+
     // Check if we just navigated to the expected page
-    const normalizedPathname = pathname.endsWith('/') && pathname !== '/' 
-      ? pathname.slice(0, -1) 
-      : pathname;
-    
+    const normalizedPathname =
+      pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname;
+
     // If current step expects us to be on a specific page and we just arrived there
-    if (currentStepData.page !== '*' && currentStepData.page === normalizedPathname) {
+    if (currentStepData.page !== "*" && currentStepData.page === normalizedPathname) {
       // Check if the previous step was a navigation action
       const prevStep = currentStep > 0 ? allSteps[currentStep - 1] : null;
-      if (prevStep && 'expectedAction' in prevStep && prevStep.expectedAction === 'navigate-to-create-company') {
+      if (
+        prevStep &&
+        "expectedAction" in prevStep &&
+        prevStep.expectedAction === "navigate-to-create-company"
+      ) {
         // We've completed the navigation, the step has already been advanced
-        console.log('Navigation complete, now on step:', currentStep);
+        console.log("Navigation complete, now on step:", currentStep);
       }
     }
   }, [pathname, activeTour, mounted, currentStep]);
@@ -435,24 +464,28 @@ export default function TourProvider({ children }: TourProviderProps) {
       const allSteps = TOURS[activeTour];
       const currentStepData = allSteps[currentStep];
 
-      console.log('Tour action received:', action, 'Current step:', currentStep);
+      console.log("Tour action received:", action, "Current step:", currentStep);
 
-      if (currentStepData && 'expectedAction' in currentStepData && 
-          currentStepData.expectedAction === action) {
-        
+      if (
+        currentStepData &&
+        "expectedAction" in currentStepData &&
+        currentStepData.expectedAction === action
+      ) {
         // For navigation actions, advance the step immediately
-        if (action === 'navigate-to-create-company' || 
-            action === 'navigate-to-products' || 
-            action === 'navigate-to-companies' ||
-            action === 'navigate-to-dashboard') {
+        if (
+          action === "navigate-to-create-company" ||
+          action === "navigate-to-products" ||
+          action === "navigate-to-companies" ||
+          action === "navigate-to-dashboard"
+        ) {
           const nextStep = currentStep + 1;
-          console.log('Navigation action - advancing to step:', nextStep);
+          console.log("Navigation action - advancing to step:", nextStep);
           setCurrentTourStep(nextStep);
           return;
         }
-        
+
         // For click-company-selector actions, add a delay to ensure dropdown opens
-        if (action === 'click-company-selector' || action === 'click-company-selector-for-tour') {
+        if (action === "click-company-selector" || action === "click-company-selector-for-tour") {
           // Wait for dropdown to open before advancing
           setTimeout(() => {
             handleStepProgressionRef.current?.();
@@ -463,7 +496,7 @@ export default function TourProvider({ children }: TourProviderProps) {
     };
 
     const handleNextStep = () => {
-      console.log('Next step requested from tour UI');
+      console.log("Next step requested from tour UI");
       handleStepProgressionRef.current?.();
     };
 
@@ -471,36 +504,41 @@ export default function TourProvider({ children }: TourProviderProps) {
       const target = e.target as HTMLElement;
       const allSteps = TOURS[activeTour];
       const currentStepData = allSteps[currentStep];
-      
-      if (!currentStepData || !('waitForAction' in currentStepData) || !currentStepData.waitForAction) {
+
+      if (
+        !currentStepData ||
+        !("waitForAction" in currentStepData) ||
+        !currentStepData.waitForAction
+      ) {
         return;
       }
-      
+
       const expectedTarget = currentStepData.target;
       const clickedElement = target.closest(expectedTarget);
-      
+
       if (clickedElement) {
-        console.log('Clicked expected element for action:', currentStepData.expectedAction);
-        
+        console.log("Clicked expected element for action:", currentStepData.expectedAction);
+
         // Dispatch the action event
-        window.dispatchEvent(new CustomEvent('tourAction', { 
-          detail: { action: currentStepData.expectedAction } 
-        }));
+        window.dispatchEvent(
+          new CustomEvent("tourAction", {
+            detail: { action: currentStepData.expectedAction },
+          })
+        );
       }
     };
 
     const handlePrevStep = () => {
-      console.log('Previous step requested from tour UI');
+      console.log("Previous step requested from tour UI");
       if (currentStep > 0) {
         const prevStep = currentStep - 1;
         const allSteps = TOURS[activeTour];
         const prevStepData = allSteps[prevStep];
-        const currentPage = pathname.endsWith('/') && pathname !== '/' 
-          ? pathname.slice(0, -1) 
-          : pathname;
-        
+        const currentPage =
+          pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname;
+
         // Check if prev step is on a different page
-        if (prevStepData.page !== '*' && prevStepData.page !== currentPage) {
+        if (prevStepData.page !== "*" && prevStepData.page !== currentPage) {
           // Save the step before navigation
           setCurrentTourStep(prevStep);
           router.push(prevStepData.page);
@@ -511,16 +549,16 @@ export default function TourProvider({ children }: TourProviderProps) {
       }
     };
 
-    window.addEventListener('tourAction' as any, handleTourAction);
-    window.addEventListener('tourNextStep' as any, handleNextStep);
-    window.addEventListener('tourPrevStep' as any, handlePrevStep);
-    document.addEventListener('click', handleClick, true);
+    window.addEventListener("tourAction" as any, handleTourAction);
+    window.addEventListener("tourNextStep" as any, handleNextStep);
+    window.addEventListener("tourPrevStep" as any, handlePrevStep);
+    document.addEventListener("click", handleClick, true);
 
     return () => {
-      window.removeEventListener('tourAction' as any, handleTourAction);
-      window.removeEventListener('tourNextStep' as any, handleNextStep);
-      window.removeEventListener('tourPrevStep' as any, handlePrevStep);
-      document.removeEventListener('click', handleClick, true);
+      window.removeEventListener("tourAction" as any, handleTourAction);
+      window.removeEventListener("tourNextStep" as any, handleNextStep);
+      window.removeEventListener("tourPrevStep" as any, handlePrevStep);
+      document.removeEventListener("click", handleClick, true);
     };
   }, [mounted, activeTour, currentStep, pathname, router]);
 
@@ -542,7 +580,7 @@ export default function TourProvider({ children }: TourProviderProps) {
       }}
     >
       {children}
-      
+
       {shouldShowTour && (
         <OnboardingTour
           steps={stepsToDisplay}
@@ -560,7 +598,7 @@ export default function TourProvider({ children }: TourProviderProps) {
 export function useTour() {
   const context = useContext(TourContext);
   if (context === undefined) {
-    throw new Error('useTour must be used within a TourProvider');
+    throw new Error("useTour must be used within a TourProvider");
   }
   return context;
 }

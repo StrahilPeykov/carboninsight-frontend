@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 
@@ -8,6 +8,20 @@ export function useKeyboardShortcuts() {
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated } = useAuth();
+
+  // Disable keyboard shortcuts on mobile devices
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // Check if we're in an input field, textarea, or contenteditable
   const isInInputField = useCallback((target: EventTarget | null): boolean => {
@@ -86,9 +100,14 @@ export function useKeyboardShortcuts() {
   // Handle keyboard events
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
+      // Early return if on mobile device
+      if (isMobile) {
+        return;
+      }
+
       // Check if tour is active - if so, don't interfere with tour keyboard handling
-      const isTourActive = document.body.classList.contains('tour-active');
-      
+      const isTourActive = document.body.classList.contains("tour-active");
+
       // Always allow Escape to close modals/menus UNLESS tour is active
       if (event.key === "Escape" && !isTourActive) {
         // Find and close any open modals
@@ -148,20 +167,25 @@ export function useKeyboardShortcuts() {
           break;
       }
     },
-    [isInInputField, focusSearch, showHelp, handleCreateNew]
+    [isInInputField, focusSearch, showHelp, handleCreateNew, isMobile]
   );
 
   // Set up event listeners
   useEffect(() => {
+    // Don't set up event listeners on mobile
+    if (isMobile) {
+      return;
+    }
+
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [handleKeyDown]);
+  }, [handleKeyDown, isMobile]);
 
   // Return minimal info about shortcuts
   return {
-    shortcutsEnabled: true,
-    shortcutCount: 4, // /, ?, Escape, N
+    shortcutsEnabled: !isMobile,
+    shortcutCount: isMobile ? 0 : 4, // /, ?, Escape, N
   };
 }

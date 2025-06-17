@@ -63,11 +63,13 @@ export default function CleanCompanySelector({
 
   // Handle navigation with tour support
   const handleNavigation = (path: string, tourAction?: string) => {
-    const activeTour = sessionStorage.getItem('activeTour');
+    const activeTour = sessionStorage.getItem("activeTour");
     if (activeTour && tourAction) {
-      window.dispatchEvent(new CustomEvent('tourAction', { 
-        detail: { action: tourAction } 
-      }));
+      window.dispatchEvent(
+        new CustomEvent("tourAction", {
+          detail: { action: tourAction },
+        })
+      );
     }
     // The navigation will be handled by the parent component's onClose and navigation
     onClose();
@@ -90,14 +92,14 @@ export default function CleanCompanySelector({
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       // Check if tour is active
-      const isTourActive = document.body.classList.contains('tour-active');
-      const activeTour = sessionStorage.getItem('activeTour');
-      
+      const isTourActive = document.body.classList.contains("tour-active");
+      const activeTour = sessionStorage.getItem("activeTour");
+
       // Don't auto-close during tour
-      if (isTourActive && activeTour === 'main-onboarding') {
+      if (isTourActive && activeTour === "main-onboarding") {
         return;
       }
-      
+
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         onClose();
         setSearchQuery("");

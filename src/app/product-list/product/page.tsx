@@ -286,7 +286,6 @@ export default function ProductClientPage() {
             shadow-sm dark:shadow-none
           "
         >
-
           {/* Stepper Tabs */}
           <TabGroup selectedIndex={activeTab} onChange={setActiveTab}>
             <TabList

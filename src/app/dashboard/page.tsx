@@ -378,23 +378,20 @@ export default function DashboardPage() {
             Create and manage companies, add authorized users, and handle data sharing requests.
           </p>
           <div className="space-y-3">
-            <button
+            <Button 
               onClick={() => handleTourNavigation("/list-companies", "navigate-to-companies")}
-              className="block w-full"
+              className="w-full flex justify-between items-center"
             >
-              <Button className="w-full flex justify-between items-center">
-                <span>View Companies</span>
-                <Building2 className="ml-2 h-4 w-4" />
-              </Button>
-            </button>
-            <button
+              <span>View Companies</span>
+              <Building2 className="ml-2 h-4 w-4" />
+            </Button>
+            <Button 
+              variant="outline" 
+              className="w-full"
               onClick={() => handleTourNavigation("/create-company", undefined)}
-              className="block w-full"
             >
-              <Button variant="outline" className="w-full">
-                Create New Company
-              </Button>
-            </button>
+              Create New Company
+            </Button>
           </div>
         </Card>
 
@@ -405,23 +402,20 @@ export default function DashboardPage() {
             generate Carbon Footprint Reports.
           </p>
           <div className="space-y-3">
-            <button
+            <Button 
               onClick={() => handleTourNavigation("/product-list", "navigate-to-products")}
-              className="block w-full"
+              className="w-full flex justify-between items-center"
             >
-              <Button className="w-full flex justify-between items-center">
-                <span>View Products</span>
-                <BoxesIcon className="ml-2 h-4 w-4" />
-              </Button>
-            </button>
-            <button
+              <span>View Products</span>
+              <BoxesIcon className="ml-2 h-4 w-4" />
+            </Button>
+            <Button 
+              variant="outline" 
+              className="w-full"
               onClick={() => handleTourNavigation("/product-list/product", undefined)}
-              className="block w-full"
             >
-              <Button variant="outline" className="w-full">
-                Add New Product
-              </Button>
-            </button>
+              Add New Product
+            </Button>
           </div>
         </Card>
       </div>

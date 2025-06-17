@@ -76,7 +76,7 @@ const TOURS: Record<string, TourStep[]> = {
       target: 'input[name="name"]',
       title: "Business Name",
       content:
-        "Enter your company's legal business name. This will be used throughout the platform and in all generated reports and Digital Product Passports.",
+        "Enter your company's legal business name. This will be used throughout the platform and in all generated reports and Carbon Footprint Reports.",
       placement: "right",
       spotlightPadding: 20,
       allowSkip: true,
@@ -155,7 +155,7 @@ const TOURS: Record<string, TourStep[]> = {
       target: ".max-w-7xl",
       title: "Product Actions & Features",
       content:
-        "Once you have products, you'll see action buttons for each product: Export (download Digital Product Passports), AI advice (carbon reduction recommendations), Edit, and Delete. The table shows key information like manufacturer, name, SKU, and carbon footprint.",
+        "Once you have products, you'll see action buttons for each product: Export (download Carbon Footprint Reports), AI advice (carbon reduction recommendations), Edit, and Delete. The table shows key information like manufacturer, name, SKU, and carbon footprint.",
       placement: "center",
       allowClickOutside: false,
       allowSkip: true,
@@ -165,7 +165,7 @@ const TOURS: Record<string, TourStep[]> = {
       target: ".max-w-7xl",
       title: "Product Management Complete",
       content:
-        "You've completed the product management tour! You can now add products, search through them, and export Digital Product Passports. Use the Help menu to restart tours anytime.",
+        "You've completed the product management tour! You can now add products, search through them, and export Carbon Footprint Reports. Use the Help menu to restart tours anytime.",
       placement: "center",
       allowClickOutside: false,
       allowSkip: true,

@@ -91,7 +91,7 @@ export default function Home() {
           </h1>
           <p className="mt-6 max-w-2xl mx-auto text-lg text-gray-600 dark:text-gray-400 sm:text-xl">
             Calculate your product's carbon footprint across the entire supply chain and generate
-            industry-compliant Carbon Footprint Report. Designed for manufacturers who want to
+            industry-compliant Carbon Footprint Reports. Designed for manufacturers who want to
             lead in sustainability.
           </p>
 

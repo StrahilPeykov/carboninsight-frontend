@@ -450,7 +450,7 @@ export function getExportFormats(): Array<{
     {
       value: "pdf",
       label: "PDF Report",
-      description: "Complete Carbon Footprint Report report (opens print dialog)",
+      description: "Complete Carbon Footprint Report (opens print dialog)",
     },
     {
       value: "aasx",
@@ -470,7 +470,7 @@ export function getExportFormats(): Array<{
     {
       value: "aas_xml",
       label: "AAS XML",
-      description: "Asset Administration Shell XML format with Digital Nameplate",
+      description: "Asset Administration Shell XML format with Carbon Footprint data",
     },
     {
       value: "aas_json",

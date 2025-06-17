@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: "CarbonInsight - Product Carbon Footprint Calculator",
   description:
     "Calculate your product carbon footprint and generate Carbon Footprint Reports compliant with AAS standards",
-  keywords: "carbon footprint, PCF, digital product passport, DPP, sustainability, AAS",
+  keywords: "carbon footprint, PCF, carbon footprint report, sustainability, AAS",
 };
 
 export default function RootLayout({

@@ -94,7 +94,7 @@ export default function CreateCompanyPage() {
           Create company
         </h1>
         <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-500 dark:text-gray-400">
-          Enter company data to register company
+          Enter company data to register company and start calculating carbon footprints
         </p>
       </div>
 

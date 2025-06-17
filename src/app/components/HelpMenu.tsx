@@ -9,13 +9,30 @@ export default function HelpMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const [hasCompany, setHasCompany] = useState(false);
   const pathname = usePathname();
-  const { startTour, resetTour, isTourCompleted, isAnyTourActive } = useTour();
+  const { startTour, resetTour, isTourCompleted, isTourSkipped, isAnyTourActive } = useTour();
 
   // Check if user has a company selected
   useEffect(() => {
     const companyId =
       typeof window !== "undefined" ? localStorage.getItem("selected_company_id") : null;
     setHasCompany(!!companyId);
+  }, []);
+
+  // Listen for company changes
+  useEffect(() => {
+    const handleCompanyChange = () => {
+      const companyId =
+        typeof window !== "undefined" ? localStorage.getItem("selected_company_id") : null;
+      setHasCompany(!!companyId);
+    };
+
+    window.addEventListener("companyChanged", handleCompanyChange);
+    window.addEventListener("companyListChanged", handleCompanyChange);
+
+    return () => {
+      window.removeEventListener("companyChanged", handleCompanyChange);
+      window.removeEventListener("companyListChanged", handleCompanyChange);
+    };
   }, []);
 
   const tours = [
@@ -37,8 +54,8 @@ export default function HelpMenu() {
       id: "company-tour",
       name: "Company Management Tour",
       description: "Manage multiple companies, users, and settings",
-      available: true, // Available from anywhere now
-      canRestart: true,
+      available: hasCompany, // Only available when user has a company
+      canRestart: hasCompany, // Only restartable when user has a company
     },
   ];
 
@@ -86,8 +103,9 @@ export default function HelpMenu() {
             <div className="space-y-2">
               {tours.map(tour => {
                 const isCompleted = isTourCompleted(tour.id);
+                const isSkipped = isTourSkipped(tour.id);
                 const isAvailable = tour.available;
-                const canStart = tour.canRestart || !isCompleted;
+                const canStart = tour.canRestart || (!isCompleted && !isSkipped);
 
                 return (
                   <button
@@ -113,8 +131,14 @@ export default function HelpMenu() {
                         <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                           {tour.description}
                         </div>
-                        {!isAvailable && tour.id === "product-list-tour" && !hasCompany && (
-                          <div className="text-xs text-orange-500 mt-1">Create a company first</div>
+                        {!isAvailable && (
+                          <div className="text-xs text-orange-500 mt-1">
+                            {tour.id === "product-list-tour" && !hasCompany && "Create a company first"}
+                            {tour.id === "company-tour" && !hasCompany && "Select a company first"}
+                          </div>
+                        )}
+                        {isSkipped && !isCompleted && (
+                          <div className="text-xs text-gray-500 mt-1">Previously skipped</div>
                         )}
                         {isAnyTourActive && (
                           <div className="text-xs text-blue-500 mt-1">
@@ -130,12 +154,17 @@ export default function HelpMenu() {
 
             <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Tours guide you through key features step by step. The Getting Started tour will
-                help you create your first company.
+                Tours guide you through key features step by step. Green checkmarks indicate completed tours. 
+                Skipped tours can be restarted anytime.
               </p>
               {isAnyTourActive && (
                 <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
                   Follow the highlighted elements to complete the current tour.
+                </p>
+              )}
+              {!hasCompany && (
+                <p className="text-xs text-orange-600 dark:text-orange-400 mt-2">
+                  Some tours require a company to be selected. Create or select a company to access all tours.
                 </p>
               )}
             </div>

@@ -38,10 +38,10 @@ export function useTourTrigger() {
     // Check if user has a company
     const hasCompany = localStorage.getItem("selected_company_id");
 
-    // Only trigger context-specific tours if user has completed onboarding or has a company
-    if (isTourCompleted("main-onboarding") || hasCompany) {
+    // Only trigger context-specific tours if user has completed onboarding AND has a company
+    if (isTourCompleted("main-onboarding") && hasCompany) {
       // Product tour - only if user has a company and hasn't completed it
-      if (pathname === "/product-list" && hasCompany && !isTourCompleted("product-list-tour")) {
+      if (pathname === "/product-list" && !isTourCompleted("product-list-tour")) {
         const hasSeenProductList = sessionStorage.getItem("hasSeenProductListTour") === "true";
         if (!hasSeenProductList) {
           setTimeout(() => {
@@ -51,7 +51,7 @@ export function useTourTrigger() {
         }
       }
 
-      // Company tour - available to all authenticated users
+      // Company tour - only available when user has a company selected
       if (pathname === "/list-companies" && !isTourCompleted("company-tour")) {
         const hasSeenCompanyList = sessionStorage.getItem("hasSeenCompanyListTour") === "true";
         if (!hasSeenCompanyList) {

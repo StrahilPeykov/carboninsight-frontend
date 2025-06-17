@@ -99,6 +99,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Clear all user-related application data
     localStorage.removeItem("selected_company_id");
     localStorage.removeItem("currentAssessmentId");
+
+    // DON'T clear tour data on logout - it should persist per user
+    // Only clear generic tour data (old format) and active session data
+    localStorage.removeItem("completedTours"); // Only clear old generic format
+    
+    // Clear session storage tour data (active tours only)
+    const sessionKeys = Object.keys(sessionStorage);
+    sessionKeys.forEach(key => {
+      if (key.startsWith("activeTour") || key.startsWith("currentTourStep") || key.includes("hasSeenTour")) {
+        sessionStorage.removeItem(key);
+      }
+    });
+
+    // Clear the new user flag
+    localStorage.removeItem("isNewUser");
   };
 
   // Helper function to detect blocked account errors based on backend response

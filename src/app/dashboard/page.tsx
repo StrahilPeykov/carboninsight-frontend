@@ -81,6 +81,22 @@ export default function DashboardPage() {
     router.push(path);
   };
 
+  // Handle unauthorized access
+  const handleUnauthorized = (status: number) => {
+    if (status === 401) {
+      // Clear authentication data
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("selected_company_id");
+      }
+      // Redirect to login page
+      router.push("/login");
+      return true;
+    }
+    return false;
+  };
+
   // Load dashboard data
   useEffect(() => {
     if (!mounted) return;
@@ -105,6 +121,8 @@ export default function DashboardPage() {
           },
         });
 
+        if (handleUnauthorized(companiesResponse.status)) return;
+
         if (!companiesResponse.ok) {
           throw new Error(`Error fetching companies: ${companiesResponse.status}`);
         }
@@ -124,6 +142,8 @@ export default function DashboardPage() {
             },
           });
 
+          if (handleUnauthorized(companyResponse.status)) return;
+
           if (!companyResponse.ok) {
             throw new Error(`Error fetching company details: ${companyResponse.status}`);
           }
@@ -141,6 +161,8 @@ export default function DashboardPage() {
             }
           );
 
+          if (handleUnauthorized(productsResponse.status)) return;
+
           if (!productsResponse.ok) {
             throw new Error(`Error fetching products: ${productsResponse.status}`);
           }
@@ -156,6 +178,18 @@ export default function DashboardPage() {
             ).length;
             setPendingRequestsCount(pendingCount);
           } catch (err) {
+            if (
+              typeof err === 'object' &&
+              err !== null &&
+              'response' in err &&
+              typeof err.response === 'object' &&
+              err.response !== null &&
+              'status' in err.response &&
+              err.response.status === 401
+            ) {
+              handleUnauthorized(401);
+              return;
+            }
             console.error("Error fetching sharing requests:", err);
             setPendingRequestsCount(0);
           }

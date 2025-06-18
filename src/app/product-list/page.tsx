@@ -86,6 +86,68 @@ export default function ProductListPage() {
         };
     }, [showImportDropdown]);
 
+  // Add this new function to your component
+  const handleTemplateDownload = async (format: 'csv' | 'xlsx') => {
+    try {
+      const companyId = localStorage.getItem("selected_company_id");
+      const token = localStorage.getItem("access_token");
+
+      if (!companyId || !token) {
+        setError("Company ID or authentication token not found.");
+        return;
+      }
+
+      // Create a live region announcement for screen readers
+      const liveRegion = document.getElementById("status-announcements");
+      if (liveRegion) {
+        liveRegion.textContent = `Downloading ${format.toUpperCase()} template...`;
+      }
+
+      // Construct the API URL
+      const url = `${process.env.NEXT_PUBLIC_API_URL}/companies/${companyId}/products/export/${format}/?template=true`;
+
+      // Make the request
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to download template: ${response.statusText}`);
+      }
+
+      // Get the blob and create an object URL
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+
+      // Create a download link and trigger it
+      const link = document.createElement('a');
+      link.href = objectUrl;
+
+      // Get filename from Content-Disposition header or use default
+      const contentDisposition = response.headers.get('Content-Disposition');
+      const fileName = contentDisposition
+        ? contentDisposition.split('filename=')[1].replace(/"/g, '')
+        : `product_template.${format}`;
+
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+
+      // Clean up
+      document.body.removeChild(link);
+      URL.revokeObjectURL(objectUrl);
+
+      if (liveRegion) {
+        liveRegion.textContent = `${format.toUpperCase()} template downloaded successfully`;
+      }
+    } catch (err) {
+      console.error("Error downloading template:", err);
+      setError(err instanceof Error ? err.message : "Failed to download template");
+    }
+  };
+
     // --- NEW helper: per-row AI button click ---
     const handleAIButtonClick = (productId: string) => {
         const product = products.find(p => p.id === productId);
@@ -495,6 +557,20 @@ export default function ProductListPage() {
                                 Import from CSV/XLSX
                                 <span className="block text-gray-400 text-xs mt-1">Max file size: 25MB</span>
                             </button>
+                          <button
+                            onClick={() => handleTemplateDownload('csv')}
+                            className="text-left w-full hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                          >
+                            Download CSV Template
+                            <span className="block text-gray-400 text-xs mt-1">Get started with a blank template</span>
+                          </button>
+                          <button
+                            onClick={() => handleTemplateDownload('xlsx')}
+                            className="text-left w-full hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+                          >
+                            Download XLSX Template
+                            <span className="block text-gray-400 text-xs mt-1">Get started with a blank template</span>
+                          </button>
                         </div>
                     </Card>
                 )}

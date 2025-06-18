@@ -195,7 +195,10 @@ export function setLocalStorageItem(key: string, value: string): void {
   localStorage.setItem(key, value);
 
   // Only dispatch custom event if value actually changed
-  window.dispatchEvent(new CustomEvent("companyChanged", { detail: { key, value } }));
+  // Use synchronous dispatch to avoid race conditions
+  window.dispatchEvent(new CustomEvent("companyChanged", { 
+    detail: { key, value, previousValue: currentValue } 
+  }));
 }
 
 // Removes an item from localStorage and dispatches a custom event
@@ -204,12 +207,15 @@ export function removeLocalStorageItem(key: string): void {
 
   // Check if there was actually a value to remove
   const hadValue = localStorage.getItem(key) !== null;
+  const previousValue = localStorage.getItem(key);
 
   localStorage.removeItem(key);
 
   // Only dispatch event if there was actually a value removed
   if (hadValue) {
-    window.dispatchEvent(new CustomEvent("companyChanged", { detail: { key, value: null } }));
+    window.dispatchEvent(new CustomEvent("companyChanged", { 
+      detail: { key, value: null, previousValue } 
+    }));
   }
 }
 

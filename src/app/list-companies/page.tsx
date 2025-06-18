@@ -51,15 +51,28 @@ export default function ListCompaniesPage() {
   }, [authLoading, mounted]);
 
   const selectCompany = (companyId: string) => {
+    console.log("List companies: selecting company", companyId);
+    
+    // Check if already selected to prevent unnecessary work
+    const currentCompanyId = localStorage.getItem("selected_company_id");
+    if (currentCompanyId === companyId) {
+      console.log("Company already selected, just navigating to dashboard");
+      router.push("/dashboard");
+      return;
+    }
+
     setLocalStorageItem("selected_company_id", companyId);
 
-    // Notify navbar that company selection changed
+    // Dispatch events to notify other components
     if (typeof window !== "undefined") {
-      console.log("Company selected - dispatching events");
+      console.log("List companies: dispatching events for company selection");
+      window.dispatchEvent(new CustomEvent("companyListChanged"));
       window.dispatchEvent(new CustomEvent("companyChanged"));
     }
 
-    window.location.href = "/dashboard";
+    // Navigate to dashboard
+    console.log("List companies: navigating to dashboard");
+    router.push("/dashboard");
   };
 
   if (authLoading || loading || !mounted) {

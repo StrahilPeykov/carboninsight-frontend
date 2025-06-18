@@ -248,36 +248,31 @@ export default function Navbar() {
     console.log("Company selection started:", selectedCompanyId);
 
     try {
+      // Check if the value is actually changing
+      const currentCompanyId = localStorage.getItem("selected_company_id");
+      if (currentCompanyId === selectedCompanyId) {
+        console.log("Company already selected, no change needed");
+        return;
+      }
+
       setLocalStorageItem("selected_company_id", selectedCompanyId);
 
       // Force a state update first
       setCompanyId(selectedCompanyId);
 
-      // Dispatch events with slight delays to ensure proper order
+      // Dispatch events synchronously - no delays to avoid race conditions
       if (typeof window !== "undefined") {
-        setTimeout(() => {
-          window.dispatchEvent(new CustomEvent("companyListChanged"));
-        }, 10);
-
-        setTimeout(() => {
-          window.dispatchEvent(new CustomEvent("companyChanged"));
-        }, 20);
-
-        console.log("Company selection events dispatched for:", selectedCompanyId);
+        console.log("Company selection events dispatching for:", selectedCompanyId);
+        
+        // First dispatch company list change (in case company list needs updating)
+        window.dispatchEvent(new CustomEvent("companyListChanged"));
+        
+        // Then dispatch company change (this will trigger navigation/reload logic)
+        window.dispatchEvent(new CustomEvent("companyChanged"));
+        
+        console.log("Company selection events dispatched");
       }
 
-      // Smart redirect based on current page
-      const isOnCompanyManagementPage = ["/list-companies", "/create-company"].includes(pathname);
-      const isOnPageRequiringCompany = ["/product-list", "/manage-user", "/product-data-sharing"].includes(pathname);
-      
-      if (isOnCompanyManagementPage) {
-        // Redirect to dashboard from company management pages
-        router.push("/dashboard");
-      } else if (!companyId && pathname === "/") {
-        // Redirect to dashboard if on home page and no company was selected before
-        router.push("/dashboard");
-      }
-      // For other pages, stay on the current page - it will reload with new company data
       
     } catch (error) {
       console.error("Error selecting company:", error);

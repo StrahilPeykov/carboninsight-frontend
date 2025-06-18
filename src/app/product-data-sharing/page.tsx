@@ -4,7 +4,7 @@ import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Trash, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { productApi, ProductSharingRequest } from "@/lib/api/productApi";
 import { companyApi } from "@/lib/api/companyApi";
 import { useAuth } from "../context/AuthContext";
@@ -46,6 +46,9 @@ export default function ProductDataSharing() {
   const [isDenyingRequest, setIsDenyingRequest] = useState(false);
   const [denyMessage, setDenyMessage] = useState<string | null>(null);
   const [denyError, setDenyError] = useState<string | null>(null);
+
+  const [companyRequestingData, setCompanyRequestingData] = useState<string | null>(null);
+  const [requestedProduct, setRequestedProduct] = useState<string | null>(null);
 
   // Get company ID
   useEffect(() => {
@@ -121,13 +124,15 @@ export default function ProductDataSharing() {
         // Using productApi instead of direct fetch
         await productApi.approveProductSharingRequests(companyId, [requestToApprove]);
 
-        setApproveMessage(`Successfully approved request: ${requestToApprove}!`);
+        setApproveMessage(`Successfully approved ${companyRequestingData}'s request for the emission data of ${requestedProduct}!`);
         setRefreshKey(prev => prev + 1); // Trigger a refresh of the requests list
+        setRequestedProduct(null);
+        setCompanyRequestingData(null);
         setRequestToApprove("");
       }
     } catch (err) {
       console.error("Error approving request:", err);
-      setApproveError(err instanceof Error ? err.message : "Failed to approve sharing request");
+      setApproveError(err instanceof Error ? err.message : "Failed to approve data sharing request");
     } finally {
       setIsApprovingRequest(false);
     }
@@ -148,8 +153,10 @@ export default function ProductDataSharing() {
         // Using productApi instead of direct fetch
         await productApi.denyProductSharingRequests(companyId, [requestToDeny]);
 
-        setDenyMessage(`Successfully denied request: ${requestToDeny}!`);
+        setApproveMessage(`Successfully denied ${companyRequestingData}'s request for the emission data of ${requestedProduct}!`);
         setRefreshKey(prev => prev + 1); // Trigger a refresh of the requests list
+        setRequestedProduct(null);
+        setCompanyRequestingData(null);
         setRequestToDeny("");
       }
     } catch (err) {
@@ -203,6 +210,8 @@ export default function ProductDataSharing() {
             onClick={e => {
               e.stopPropagation();
               setRequestToApprove(request.id.toString());
+              setCompanyRequestingData(request.requesting_company_name);
+              setRequestedProduct(request.product_name);
               setApprovingModal(true);
             }}
           >
@@ -214,6 +223,8 @@ export default function ProductDataSharing() {
             onClick={e => {
               e.stopPropagation();
               setRequestToDeny(request.id.toString());
+              setCompanyRequestingData(request.requesting_company_name);
+              setRequestedProduct(request.product_name);
               setDenyModal(true);
             }}
           >
@@ -241,7 +252,7 @@ export default function ProductDataSharing() {
                 </Button>
               </div>
               <div className="w-100 max-w-full text-center">
-                Are you sure you want to approve request: {requestToApprove}?
+                Are you sure you want to give {companyRequestingData} access to the emission data of {requestedProduct}?
               </div>
 
               <Button
@@ -273,7 +284,7 @@ export default function ProductDataSharing() {
                 </Button>
               </div>
               <div className="w-100 max-w-full text-center">
-                Are you sure you want to deny request: {requestToDeny}?
+                Are you sure you want to deny {companyRequestingData} access to the emission data of {requestedProduct}?
               </div>
               <Button
                 className="w-full"

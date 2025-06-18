@@ -19,7 +19,6 @@ import {
   Share2,
 } from "lucide-react";
 import { companyApi } from "@/lib/api/companyApi";
-import { setLocalStorageItem } from "@/lib/api/apiClient";
 import CleanCompanySelector from "./CompanySelector";
 
 export default function Navbar() {
@@ -255,23 +254,27 @@ export default function Navbar() {
         return;
       }
 
-      setLocalStorageItem("selected_company_id", selectedCompanyId);
+      localStorage.setItem("selected_company_id", selectedCompanyId);
 
       // Force a state update first
       setCompanyId(selectedCompanyId);
 
-      // Dispatch events synchronously - no delays to avoid race conditions
-      if (typeof window !== "undefined") {
-        console.log("Company selection events dispatching for:", selectedCompanyId);
-        
-        // First dispatch company list change (in case company list needs updating)
-        window.dispatchEvent(new CustomEvent("companyListChanged"));
-        
-        // Then dispatch company change (this will trigger navigation/reload logic)
-        window.dispatchEvent(new CustomEvent("companyChanged"));
-        
-        console.log("Company selection events dispatched");
-      }
+      setTimeout(() => {
+        if (typeof window !== "undefined") {
+          console.log("Company selection events dispatching for:", selectedCompanyId);
+          
+          // Only dispatch companyChanged event - no need for companyListChanged here
+          window.dispatchEvent(new CustomEvent("companyChanged", {
+            detail: { 
+              companyId: selectedCompanyId, 
+              action: 'selected',
+              source: 'navbar' 
+            }
+          }));
+          
+          console.log("Company selection events dispatched");
+        }
+      }, 0);
 
       
     } catch (error) {
@@ -282,7 +285,7 @@ export default function Navbar() {
   const handleCompanySettings = () => {
     if (companyId) {
       // Ensure the selected company is set before navigating
-      setLocalStorageItem("selected_company_id", companyId);
+      localStorage.setItem("selected_company_id", companyId);
       router.push("/company-details");
     }
   };
@@ -290,14 +293,14 @@ export default function Navbar() {
   const handleManageUsers = () => {
     if (companyId) {
       // Ensure the selected company is set before navigating
-      setLocalStorageItem("selected_company_id", companyId);
+      localStorage.setItem("selected_company_id", companyId);
       router.push("/manage-user");
     }
   };
 
   const handleDataSharing = () => {
     if (companyId) {
-      setLocalStorageItem("selected_company_id", companyId);
+      localStorage.setItem("selected_company_id", companyId);
       router.push("/product-data-sharing");
     }
   };

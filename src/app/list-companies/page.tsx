@@ -7,7 +7,6 @@ import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Link from "next/link";
 import { companyApi, Company } from "@/lib/api/companyApi";
-import { setLocalStorageItem } from "@/lib/api/apiClient";
 import { useAuth } from "../context/AuthContext";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 import { useTour } from "../components/TourProvider";
@@ -61,18 +60,30 @@ export default function ListCompaniesPage() {
       return;
     }
 
-    setLocalStorageItem("selected_company_id", companyId);
+    localStorage.setItem("selected_company_id", companyId);
 
     // Dispatch events to notify other components
-    if (typeof window !== "undefined") {
-      console.log("List companies: dispatching events for company selection");
-      window.dispatchEvent(new CustomEvent("companyListChanged"));
-      window.dispatchEvent(new CustomEvent("companyChanged"));
-    }
+    setTimeout(() => {
+      if (typeof window !== "undefined") {
+        console.log("List companies: dispatching events for company selection");
+        
+        // Dispatch events with source information
+        window.dispatchEvent(new CustomEvent("companyListChanged"));
+        window.dispatchEvent(new CustomEvent("companyChanged", {
+          detail: { 
+            companyId, 
+            action: 'selected',
+            source: 'list-companies' 
+          }
+        }));
+      }
 
-    // Navigate to dashboard
-    console.log("List companies: navigating to dashboard");
-    router.push("/dashboard");
+      // Navigate after events are dispatched
+      setTimeout(() => {
+        console.log("List companies: navigating to dashboard");
+        router.push("/dashboard");
+      }, 100);
+    }, 0);
   };
 
   if (authLoading || loading || !mounted) {
@@ -193,7 +204,7 @@ export default function ListCompaniesPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        setLocalStorageItem("selected_company_id", company.id);
+                        localStorage.setItem("selected_company_id", company.id);
                         // Notify navbar
                         if (typeof window !== "undefined") {
                           window.dispatchEvent(new CustomEvent("companyChanged"));
@@ -211,7 +222,7 @@ export default function ListCompaniesPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        setLocalStorageItem("selected_company_id", company.id);
+                        localStorage.setItem("selected_company_id", company.id);
                         // Notify navbar
                         if (typeof window !== "undefined") {
                           window.dispatchEvent(new CustomEvent("companyChanged"));
@@ -229,7 +240,7 @@ export default function ListCompaniesPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        setLocalStorageItem("selected_company_id", company.id);
+                        localStorage.setItem("selected_company_id", company.id);
                         // Notify navbar
                         if (typeof window !== "undefined") {
                           window.dispatchEvent(new CustomEvent("companyChanged"));

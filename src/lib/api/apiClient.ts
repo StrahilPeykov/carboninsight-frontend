@@ -181,8 +181,8 @@ export function useApi() {
 
 // localStorage helper functions
 
-// Sets an item in localStorage and dispatches a custom event to notify other components
-export function setLocalStorageItem(key: string, value: string): void {
+// Sets an item in localStorage and optionally dispatches a custom event
+export function setLocalStorageItem(key: string, value: string, dispatchEvent: boolean = false): void {
   if (typeof window === "undefined") return;
 
   // Check if the value is actually changing
@@ -195,14 +195,16 @@ export function setLocalStorageItem(key: string, value: string): void {
   localStorage.setItem(key, value);
 
   // Only dispatch custom event if value actually changed
-  // Use synchronous dispatch to avoid race conditions
-  window.dispatchEvent(new CustomEvent("companyChanged", { 
-    detail: { key, value, previousValue: currentValue } 
-  }));
+  if (dispatchEvent) {
+    // Use synchronous dispatch to avoid race conditions
+    window.dispatchEvent(new CustomEvent("companyChanged", { 
+      detail: { key, value, previousValue: currentValue, source: 'helper' } 
+    }));
+  }
 }
 
-// Removes an item from localStorage and dispatches a custom event
-export function removeLocalStorageItem(key: string): void {
+// Removes an item from localStorage and optionally dispatches a custom event
+export function removeLocalStorageItem(key: string, dispatchEvent: boolean = false): void {
   if (typeof window === "undefined") return;
 
   // Check if there was actually a value to remove
@@ -212,9 +214,9 @@ export function removeLocalStorageItem(key: string): void {
   localStorage.removeItem(key);
 
   // Only dispatch event if there was actually a value removed
-  if (hadValue) {
+  if (dispatchEvent && hadValue) {
     window.dispatchEvent(new CustomEvent("companyChanged", { 
-      detail: { key, value: null, previousValue } 
+      detail: { key, value: null, previousValue, source: 'helper' } 
     }));
   }
 }

@@ -136,12 +136,9 @@ export default function HelpMenu() {
                             {tour.id === "product-list-tour" && !hasCompany && "Create a company first"}
                             {tour.id === "company-tour" && !hasCompany && "Select a company first"}
                           </div>
-<<<<<<< HEAD
                         )}
                         {isSkipped && !isCompleted && (
                           <div className="text-xs text-gray-500 mt-1">Previously skipped</div>
-=======
->>>>>>> main
                         )}
                         {isAnyTourActive && (
                           <div className="text-xs text-blue-500 mt-1">

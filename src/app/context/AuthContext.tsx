@@ -3,12 +3,8 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authApi, LoginCredentials, RegisterData } from "@/lib/api/authApi";
-<<<<<<< HEAD
-import { userApi, User } from "@/lib/api/userApi";
-import { companyApi } from "@/lib/api/companyApi";
-=======
 import { User, userApi } from "@/lib/api/userApi";
->>>>>>> main
+import { companyApi } from "@/lib/api/companyApi";
 import { ApiError, isTokenExpired } from "@/lib/api/apiClient";
 
 interface AuthContextType {

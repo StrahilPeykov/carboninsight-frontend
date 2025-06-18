@@ -85,7 +85,7 @@ export default function RegisterPage() {
     try {
       await register(formData);
 
-      // Success handling (existing code)
+      // Success handling - redirect is now handled by AuthContext
       const announcement = document.createElement("div");
       announcement.setAttribute("role", "status");
       announcement.setAttribute("aria-live", "polite");
@@ -93,12 +93,6 @@ export default function RegisterPage() {
       announcement.textContent = "Registration successful. Redirecting...";
       document.body.appendChild(announcement);
 
-<<<<<<< HEAD
-=======
-      setTimeout(() => {
-        router.push("/");
-      }, 100);
->>>>>>> main
     } catch (err) {
       // Handle field-specific validation errors
       if (err instanceof Error && err.cause) {

@@ -48,6 +48,14 @@ export default function CompanyDetailsPage() {
       .finally(() => setIsLoading(false));
   }, [companyId]);
 
+  // 3) Check for success message in session storage
+  useEffect(() => {
+    if (typeof window !== "undefined" && sessionStorage.getItem("company_edit_success")) {
+      setSuccessMessage("Company data successfully edited!");
+      sessionStorage.removeItem("company_edit_success");
+    }
+  }, []);
+
   // Handlers for form fields
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(p => ({ ...p, [e.target.name]: e.target.value }));
@@ -73,14 +81,26 @@ export default function CompanyDetailsPage() {
         vat_number: formData.vat_number.trim(),
         business_registration_number: formData.business_registration_number.trim(),
       });
-      setSuccessMessage("Company data successfully edited!");
 
-      // Notify navbar that company data changed (name might have changed)
-      if (typeof window !== "undefined") {
-        console.log("Company updated - dispatching events");
-        window.dispatchEvent(new CustomEvent("companyListChanged"));
-        window.dispatchEvent(new CustomEvent("companyChanged"));
-      }
+      // Show success message
+      setSuccessMessage("Company data successfully edited!");
+      setIsLoading(false);
+
+      // Store success state in sessionStorage to persist after refresh
+      sessionStorage.setItem("company_edit_success", "true");
+
+      // Delay event dispatch to allow user to see the success message
+      setTimeout(() => {
+        if (typeof window !== "undefined") {
+          console.log("Company updated - dispatching events");
+          // Only dispatch one event to minimize side effects
+          window.dispatchEvent(new CustomEvent("companyChanged", {
+            detail: { companyId }
+          }));
+        }
+      }, 1500); // 1.5 second delay
+
+      return;
     } catch (err) {
       if (err instanceof ApiError && err.data) {
         setFieldErrors(err.data as { [key: string]: string[] });

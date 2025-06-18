@@ -70,12 +70,17 @@ export default function LoginPage() {
       announcement.setAttribute("role", "status");
       announcement.setAttribute("aria-live", "polite");
       announcement.className = "sr-only";
-      announcement.textContent = "Login successful. Redirecting to dashboard...";
+      announcement.textContent = "Login successful. Redirecting...";
       document.body.appendChild(announcement);
 
-      router.push("/dashboard");
     } catch (err) {
       console.error("Login error:", err);
+
+      // Clear password while preserving the username
+      setFormData(prev => ({
+        ...prev,
+        password: ""
+      }));
 
       if (err instanceof Error) {
         // Check if this is our custom AuthError with blocking info

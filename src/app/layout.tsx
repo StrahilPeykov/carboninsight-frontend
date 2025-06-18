@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from 'next/script';
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import { AuthProvider } from "./context/AuthContext";
@@ -22,8 +23,32 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`antialiased flex flex-col min-h-screen`} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <Script
+          id="theme-script"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const savedTheme = localStorage.getItem('theme');
+                let theme = 'light';
+                
+                if (savedTheme === 'dark') {
+                  theme = 'dark';
+                } else if (savedTheme === 'system' || !savedTheme) {
+                  theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                }
+                
+                document.documentElement.classList.add(theme);
+              } catch (e) {
+                console.error('Theme initialization error:', e);
+              }
+            `,
+          }}
+        />
+      </head>
+      <body className="antialiased flex flex-col min-h-screen" suppressHydrationWarning>
         {/* Skip to main content link - First focusable element */}
         <a
           href="#main-content"

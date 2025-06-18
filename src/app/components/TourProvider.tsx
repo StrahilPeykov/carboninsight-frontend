@@ -388,11 +388,14 @@ export default function TourProvider({ children }: TourProviderProps) {
       return;
     }
 
+<<<<<<< HEAD
     if (!user?.id) {
       console.warn("Cannot start tour: user not authenticated");
       return;
     }
 
+=======
+>>>>>>> main
     // Check if tour requires a company and user doesn't have one
     const tourSteps = TOURS[tourId];
     const requiresCompany = tourSteps.some(step => step.requiresCompany);
@@ -506,8 +509,13 @@ export default function TourProvider({ children }: TourProviderProps) {
 
     // Additional safety check: if step requires company but user doesn't have one, skip tour
     if (currentStepData.requiresCompany && !hasCompany()) {
+<<<<<<< HEAD
       console.warn(`Current tour step requires company but none selected. Skipping tour.`);
       skipTour(activeTour);
+=======
+      console.warn(`Current tour step requires company but none selected. Ending tour.`);
+      completeTour(activeTour);
+>>>>>>> main
       return [];
     }
 
@@ -544,10 +552,17 @@ export default function TourProvider({ children }: TourProviderProps) {
       const currentPage =
         pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname;
 
+<<<<<<< HEAD
       // Additional safety check: if next step requires company but user doesn't have one, skip tour
       if (nextStepData.requiresCompany && !hasCompany()) {
         console.warn(`Next tour step requires company but none selected. Skipping tour.`);
         skipTour(activeTour);
+=======
+      // Additional safety check: if next step requires company but user doesn't have one, end tour
+      if (nextStepData.requiresCompany && !hasCompany()) {
+        console.warn(`Next tour step requires company but none selected. Ending tour.`);
+        completeTour(activeTour);
+>>>>>>> main
         return;
       }
 

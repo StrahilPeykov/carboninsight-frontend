@@ -177,20 +177,58 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
                   </div>
 
                   {/* Stepper UI */}
-                  <div className="flex items-center justify-center mb-6">
-                    <div className="flex items-center">
+                  <div
+                    className="flex relative justify-between mb-6 px-6"
+                    aria-label="Material selection steps"
+                  >
+                    {[
+                      { step: 1, label: "Select Supplier" },
+                      { step: 2, label: "Select Product" },
+                    ].map((item, index) => (
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 1 ? "bg-gray-100 dark:bg-gray-600" : "bg-red text-white"}`}
+                        key={item.step}
+                        className="relative flex-1 flex justify-center min-w-[120px]"
                       >
-                        1
+                        <div className="flex flex-col items-center">
+                          {/* step circle */}
+                          <div
+                            className={`
+                              z-10 w-8 h-8 rounded-full flex items-center justify-center mb-1
+                              text-white text-sm font-medium
+                              ${
+                                currentStep === item.step
+                                  ? "bg-red-600 dark:bg-red-500"
+                                  : currentStep > item.step
+                                    ? "bg-gray-600 dark:bg-gray-500 ring-2 ring-green-500"
+                                    : "bg-gray-400 dark:bg-gray-600"
+                              }
+                            `}
+                            aria-hidden="true"
+                          >
+                            {currentStep > item.step ? "✓" : item.step}
+                          </div>
+                          {/* step label */}
+                          <div
+                            className={`
+                              text-sm text-center
+                              ${
+                                currentStep === item.step
+                                  ? "text-red dark:text-red font-semibold"
+                                  : "text-gray-500 dark:text-gray-400"
+                              }
+                            `}
+                          >
+                            {item.label}
+                          </div>
+                        </div>
+
+                        {index < 1 && (
+                          <div className="absolute top-4 left-1/2 w-full" aria-hidden="true">
+                            <div className="h-0.5 bg-gray-400 dark:bg-gray-600 w-full transform translate-x-4" />
+                          </div>
+                        )}
                       </div>
-                      <div className="mx-2 w-16 h-0.5 bg-gray-300"></div>
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 dark:bg-gray-600`}
-                      >
-                        2
-                      </div>
-                    </div>
+                    ))}
                   </div>
 
                   {/* Step content */}
@@ -259,13 +297,15 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
                           )}
                         </div>
                       </div>
-                      <Button 
-                        onClick={() => 
+                      <Button
+                        onClick={() =>
                           apiCalls.handleEstimationButton(
-                            setIsEstimationMode, 
-                            setSelectedCompany, 
-                            setCurrentStep, 
-                            setSearchProduct)} 
+                            setIsEstimationMode,
+                            setSelectedCompany,
+                            setCurrentStep,
+                            setSearchProduct
+                          )
+                        }
                         className="mt-4"
                       >
                         Add by estimation
@@ -376,7 +416,9 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
                             );
                           }}
                           variant="primary"
-                          disabled={!selectedProduct || parseInt(quantity) <= 0 || quantity === ""}
+                          disabled={
+                            !selectedProduct || parseFloat(quantity) <= 0 || quantity === ""
+                          }
                         >
                           Add Material
                         </Button>
@@ -436,8 +478,8 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
 
                 {/* Quantity Input */}
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 font-medium mb-1">
-                    Quantity
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 font-medium mb-1">
+                    Quantity ({editingMaterial.reference_impact_unit})
                   </label>
                   <input
                     type="number"

@@ -171,7 +171,7 @@ export default function ManageUserPage() {
                 </button>
               </div>
               <div className="w-100 max-w-full">
-                Type the username of the user you want to authenticate for this company.
+                Type the username of the user you want to authorize for this company.
               </div>
               <input
                 type="text"

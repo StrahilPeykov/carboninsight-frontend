@@ -189,19 +189,19 @@ function EmissionsTreePageContent() {
               <div>
                 <span className="font-semibold">Total emissions:</span>
                 <span className="ml-1" aria-label={`${product.emission_total} kilograms CO2 equivalent`}>
-                  {product.emission_total || "—"} kg CO₂e
+                  {product.emission_total || "—"} kg CO₂-eq
                 </span>
               </div>
               <div>
                 <span className="font-semibold">Biogenic emissions:</span>
                 <span className="ml-1" aria-label={`${product.emission_total_biogenic} kilograms CO2 equivalent biogenic`}>
-                  {product.emission_total_biogenic} kg CO₂e
+                  {product.emission_total_biogenic} kg CO₂-eq
                 </span>
               </div>
               <div>
                 <span className="font-semibold">Non-biogenic emissions:</span>
                 <span className="ml-1" aria-label={`${product.emission_total_non_biogenic} kilograms CO2 equivalent non-biogenic`}>
-                  {product.emission_total_non_biogenic} kg CO₂e
+                  {product.emission_total_non_biogenic} kg CO₂-eq
                 </span>
               </div>
               <div>

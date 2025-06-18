@@ -112,7 +112,6 @@ export default function Navbar() {
     setCompanyId(null);
     setCompanyData({ name: "", vat_number: "", business_registration_number: "" });
     logout();
-    router.push("/");
   };
 
   // Get companyId from localStorage and listen for changes
@@ -157,6 +156,13 @@ export default function Navbar() {
       setCompanyData(data);
     } catch (err) {
       console.error("Error fetching company data:", err);
+      // If we can't fetch the company, it might have been deleted or access revoked
+      // Clear the selected company
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("selected_company_id");
+        setCompanyId(null);
+        window.dispatchEvent(new CustomEvent("companyChanged"));
+      }
     }
   };
 
@@ -237,32 +243,44 @@ export default function Navbar() {
     router.push(path);
   };
 
-  // Enhanced company selector handlers
+  // Enhanced company selector handlers with better error handling
   const handleCompanySelect = (selectedCompanyId: string) => {
     console.log("Company selection started:", selectedCompanyId);
 
-    setLocalStorageItem("selected_company_id", selectedCompanyId);
+    try {
+      setLocalStorageItem("selected_company_id", selectedCompanyId);
 
-    // Force a state update first
-    setCompanyId(selectedCompanyId);
+      // Force a state update first
+      setCompanyId(selectedCompanyId);
 
-    // Dispatch events with slight delays to ensure proper order
-    if (typeof window !== "undefined") {
-      setTimeout(() => {
-        window.dispatchEvent(new CustomEvent("companyListChanged"));
-      }, 10);
+      // Dispatch events with slight delays to ensure proper order
+      if (typeof window !== "undefined") {
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent("companyListChanged"));
+        }, 10);
 
-      setTimeout(() => {
-        window.dispatchEvent(new CustomEvent("companyChanged"));
-      }, 20);
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent("companyChanged"));
+        }, 20);
 
-      console.log("Company selection events dispatched for:", selectedCompanyId);
-    }
+        console.log("Company selection events dispatched for:", selectedCompanyId);
+      }
 
-    // Don't force redirect - let user stay on current page
-    // Only redirect if they're on a page that requires no company (like list-companies)
-    if (pathname === "/list-companies" || (!companyId && pathname === "/")) {
-      router.push("/dashboard");
+      // Smart redirect based on current page
+      const isOnCompanyManagementPage = ["/list-companies", "/create-company"].includes(pathname);
+      const isOnPageRequiringCompany = ["/product-list", "/manage-user", "/product-data-sharing"].includes(pathname);
+      
+      if (isOnCompanyManagementPage) {
+        // Redirect to dashboard from company management pages
+        router.push("/dashboard");
+      } else if (!companyId && pathname === "/") {
+        // Redirect to dashboard if on home page and no company was selected before
+        router.push("/dashboard");
+      }
+      // For other pages, stay on the current page - it will reload with new company data
+      
+    } catch (error) {
+      console.error("Error selecting company:", error);
     }
   };
 

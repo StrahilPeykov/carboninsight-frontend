@@ -1,9 +1,14 @@
 "use client";
 
-import { createContext, useState, useContext, useEffect, ReactNode } from "react";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authApi, LoginCredentials, RegisterData } from "@/lib/api/authApi";
+<<<<<<< HEAD
 import { userApi, User } from "@/lib/api/userApi";
+import { companyApi } from "@/lib/api/companyApi";
+=======
+import { User, userApi } from "@/lib/api/userApi";
+>>>>>>> main
 import { ApiError, isTokenExpired } from "@/lib/api/apiClient";
 
 interface AuthContextType {
@@ -133,6 +138,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return false;
   };
 
+  // Helper function to determine where to redirect after login
+  const getPostLoginRedirect = async (): Promise<string> => {
+    try {
+      // Check if user has companies
+      const companies = await companyApi.listCompanies();
+      
+      if (companies.length === 0) {
+        // No companies - redirect to create first company
+        return "/create-company";
+      }
+      
+      // Check if user has a selected company
+      const selectedCompanyId = localStorage.getItem("selected_company_id");
+      
+      if (selectedCompanyId) {
+        // Verify the selected company still exists and user has access
+        try {
+          await companyApi.getCompany(selectedCompanyId);
+          return "/dashboard"; // Company exists, go to dashboard
+        } catch (error) {
+          // Selected company no longer accessible, clear it
+          localStorage.removeItem("selected_company_id");
+        }
+      }
+      
+      // No valid selected company - go to company list
+      return "/list-companies";
+      
+    } catch (error) {
+      console.error("Error determining post-login redirect:", error);
+      // Fallback to company list if we can't determine state
+      return "/list-companies";
+    }
+  };
+
   // Set up token refresh interval
   useEffect(() => {
     // Skip on the server side
@@ -163,6 +203,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Get user profile
       const userData = await userApi.getProfile();
       setUser(userData);
+
+      // Smart redirect based on user state
+      const redirectPath = await getPostLoginRedirect();
+      router.push(redirectPath);
+      
     } catch (error) {
       console.error("Login failed:", error);
       clearTokens();
@@ -203,25 +248,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("isNewUser", "true");
 
       setUser(response.user);
+
+      // For new users, always redirect to home page first
+      // They'll be guided to create their first company via tour
+      router.push("/");
+      
     } catch (error) {
       console.error("Registration failed:", error);
-      if (error instanceof ApiError) {
-        // Extract field-specific errors if available
-        if (typeof error.data === "object" && error.data !== null) {
-          const fieldErrors = Object.entries(error.data)
-            .map(([field, errors]) => {
-              // Handle both string and array error messages
-              const errorMsg = Array.isArray(errors) ? errors[0] : errors;
-              return `${field}: ${errorMsg}`;
-            })
-            .join(". ");
 
-          if (fieldErrors) {
-            throw new Error(fieldErrors);
-          }
-        }
-        throw new Error(error.message);
+      if (error instanceof ApiError) {
+        // Pass through the ApiError with its original data structure
+        // Create a new error with the original error data as the cause
+        throw new Error("Registration failed", {
+          cause: {
+            status: error.status,
+            data: error.data,
+          },
+        });
       }
+
       throw new Error("Registration failed. Please try again.");
     } finally {
       setIsLoading(false);

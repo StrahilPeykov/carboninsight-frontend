@@ -74,7 +74,7 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
       family: "",
       sku: "",
       reference_impact_unit: "",
-      pcf_calculation_method: "",
+      pcf_calculation_method: "ISO 14040/14044",
       is_public: false,
       override_factors: [],
     });

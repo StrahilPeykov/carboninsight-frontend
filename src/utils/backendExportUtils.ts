@@ -428,7 +428,6 @@ function generatePDFReportHTML(product: Product, emissionTrace: any): string {
         <p>Generated on: ${new Date().toLocaleString()}</p>
         <p>CarbonInsight - Carbon Footprint Report</p>
         <p>This report contains confidential carbon footprint data calculated according to ${emissionTrace.pcf_calculation_method || "ISO 14040/14044"} standards.</p>
-        <p>Compatible with Asset Administration Shell (AAS) and Smart Connected Supplier Network (SCSN) specifications.</p>
       </div>
     </body>
     </html>

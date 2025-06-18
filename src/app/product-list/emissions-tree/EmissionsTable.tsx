@@ -137,7 +137,7 @@ export const EmissionTreeItem: FC<EmissionTreeItemProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") {
+    if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       handleClick();
     }
@@ -152,19 +152,18 @@ export const EmissionTreeItem: FC<EmissionTreeItemProps> = ({
         >
           <div className="px-2 flex items-center">
             {hasChildren && (
-              <button
+              <button 
                 onClick={handleClick}
                 onKeyDown={handleKeyDown}
                 className="mr-2 p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 aria-expanded={isOpen}
-                aria-label={`${isOpen ? "Collapse" : "Expand"} details for ${emission.label}`}
+                aria-label={`${isOpen ? 'Collapse' : 'Expand'} details for ${emission.label}`}
                 type="button"
               >
-                {isOpen ? (
-                  <SquareMinus size={16} aria-hidden="true" />
-                ) : (
+                {isOpen ? 
+                  <SquareMinus size={16} aria-hidden="true" /> : 
                   <SquarePlus size={16} aria-hidden="true" />
-                )}
+                }
               </button>
             )}
             <span style={{ color: getSourceColor(emission.source) }} aria-hidden="true">
@@ -177,7 +176,11 @@ export const EmissionTreeItem: FC<EmissionTreeItemProps> = ({
         </td>
         <td className="px-2 py-2 text-sm text-gray-900 dark:text-white">{emission.methodology}</td>
         <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white hidden-when-closed">
-          {quantity ? `${quantity} ${unit}` : ""}
+          {quantity && (depth > 0 || 
+            emission.source === "Product" || 
+            emission.source === "ProductReference") 
+            ? `${quantity} ${unit}` 
+            : ""}
         </td>
         <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
           <span aria-label={`${emissionValue?.toFixed(3) || 0} kilograms CO2 equivalent`}>
@@ -189,11 +192,11 @@ export const EmissionTreeItem: FC<EmissionTreeItemProps> = ({
             <Tooltip
               content={
                 <div role="tooltip">
-                  <h4 className="font-semibold text-black dark:text-white mb-1">Emissions by Stage:</h4>
+                  <h4 className="font-semibold text-gray-100 mb-1">Emissions by Stage:</h4>
                   {Object.entries(emission.emissions_subtotal).map(([stage, factor]) => (
                     <div key={stage} className="mb-1">
-                      <p className="font-semibold text-black dark:text-white">{stage}</p>
-                      <p className="text-sm text-black dark:text-white">
+                      <p className="font-semibold text-gray-100">{stage}</p>
+                      <p className="text-sm text-gray-200">
                         Bio: {factor.biogenic.toFixed(2)}
                         <br />
                         Non-bio: {factor.non_biogenic.toFixed(2)}
@@ -274,8 +277,7 @@ export const EmissionsTable: FC<EmissionsTableProps> = ({ emissions }) => {
     <div className="overflow-x-auto" role="region" aria-label="Emissions breakdown table">
       <table className="min-w-full divide-y overflow-visible" role="table">
         <caption className="sr-only">
-          Emissions breakdown showing {totalEmissionSources} emission sources with expandable
-          details
+          Emissions breakdown showing {totalEmissionSources} emission sources with expandable details
         </caption>
         <thead className="border-b text-black dark:text-white">
           <tr role="row">
@@ -311,12 +313,13 @@ export const EmissionsTable: FC<EmissionsTableProps> = ({ emissions }) => {
           ))}
         </tbody>
       </table>
-
+      
       {/* Screen reader summary */}
       <div className="sr-only" aria-live="polite" aria-atomic="true">
-        {anyRowOpen
-          ? "Some emission details are expanded. Use Enter or Space to toggle expansion."
-          : "All emission details are collapsed. Use Enter or Space to expand details."}
+        {anyRowOpen ? 
+          "Some emission details are expanded. Use Enter or Space to toggle expansion." :
+          "All emission details are collapsed. Use Enter or Space to expand details."
+        }
       </div>
     </div>
   );

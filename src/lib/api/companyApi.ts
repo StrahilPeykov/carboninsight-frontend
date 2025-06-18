@@ -22,12 +22,43 @@ export interface AuthenticatedUser {
 }
 
 export const companyApi = {
-  // Search all companies
-  searchAllCompanies: (searchTerm: string) =>
-    apiRequest<Company[]>(searchTerm ? `/companies/${searchTerm}` : `/companies/`),
+  // Search all companies with defensive programming
+  searchAllCompanies: async (searchTerm: string): Promise<Company[]> => {
+    try {
+      const result = await apiRequest<Company[]>(
+        searchTerm ? `/companies/${searchTerm}` : `/companies/`
+      );
+      
+      // Defensive programming: ensure we always return an array
+      if (!Array.isArray(result)) {
+        console.warn("Search companies API returned non-array:", result);
+        return [];
+      }
+      
+      return result;
+    } catch (error) {
+      console.error("Error searching companies:", error);
+      return []; // Return empty array on error
+    }
+  },
 
-  // List all companies a user has access to
-  listCompanies: () => apiRequest<Company[]>("/companies/my/"),
+  // List all companies a user has access to with defensive programming
+  listCompanies: async (): Promise<Company[]> => {
+    try {
+      const result = await apiRequest<Company[]>("/companies/my/");
+      
+      // Defensive programming: ensure we always return an array
+      if (!Array.isArray(result)) {
+        console.warn("Companies API returned non-array:", result);
+        return []; // Return empty array if response is not an array
+      }
+      
+      return result;
+    } catch (error) {
+      console.error("Error fetching companies:", error);
+      return []; // Return empty array on error
+    }
+  },
 
   // Get a specific company by ID
   getCompany: (companyId: string) => apiRequest<Company>(`/companies/${companyId}/`),
@@ -52,9 +83,23 @@ export const companyApi = {
       method: "DELETE",
     }),
 
-  // User management within a company
-  listUsers: (companyId: string) =>
-    apiRequest<AuthenticatedUser[]>(`/companies/${companyId}/users/`),
+  // User management within a company with defensive programming
+  listUsers: async (companyId: string): Promise<AuthenticatedUser[]> => {
+    try {
+      const result = await apiRequest<AuthenticatedUser[]>(`/companies/${companyId}/users/`);
+      
+      // Defensive programming: ensure we always return an array
+      if (!Array.isArray(result)) {
+        console.warn("List users API returned non-array:", result);
+        return [];
+      }
+      
+      return result;
+    } catch (error) {
+      console.error("Error fetching company users:", error);
+      return []; // Return empty array on error
+    }
+  },
 
   addUser: (companyId: string, username: string) =>
     apiRequest<{ success: boolean }>(`/companies/${companyId}/users/`, {

@@ -43,7 +43,7 @@ CarbonInsight provides an intuitive interface for companies to track their carbo
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/carboninsight-frontend.git
+   git clone https://github.com/StrahilPeykov/carboninsight-frontend.git
    cd carboninsight-frontend
    ```
 
@@ -255,8 +255,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Author**: Strahil Peykov
 - **Live Demo**: [https://www.carboninsight.strahilpeykov.com/](https://www.carboninsight.strahilpeykov.com/)
-- **Backend Repository**: [carboninsight-backend](https://github.com/yourusername/carboninsight-backend)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/carboninsight-frontend/issues)
+- **Backend Repository**: [carboninsight-backend](https://github.com/StrahilPeykov/carboninsight-backend)
+- **Issues**: [GitHub Issues](https://github.com/StrahilPeykov/carboninsight-frontend/issues)
 
 ---
 

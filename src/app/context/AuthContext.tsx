@@ -141,8 +141,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const companies = await companyApi.listCompanies();
       
       if (companies.length === 0) {
-        // No companies - redirect to create first company
-        return "/create-company";
+        // No companies - go to list-companies page which has nice empty state
+        return "/list-companies";
       }
       
       // Check if user has a selected company
@@ -159,7 +159,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
       
-      // No valid selected company - go to company list
+      // No valid selected company - go to company list to select one
       return "/list-companies";
       
     } catch (error) {
@@ -245,9 +245,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setUser(response.user);
 
-      // For new users, always redirect to home page first
-      // They'll be guided to create their first company via tour
-      router.push("/");
+      // For new users, redirect to list-companies which will show empty state
+      // The tour will automatically trigger there for new users
+      router.push("/list-companies");
       
     } catch (error) {
       console.error("Registration failed:", error);

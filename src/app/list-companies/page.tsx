@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Building2, LogIn, Users, Boxes, Share2, Plus } from "lucide-react";
+import { Building2, LogIn, Users, Boxes, Share2, Plus, Play } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
@@ -10,6 +10,7 @@ import { companyApi, Company } from "@/lib/api/companyApi";
 import { setLocalStorageItem } from "@/lib/api/apiClient";
 import { useAuth } from "../context/AuthContext";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
+import { useTour } from "../components/TourProvider";
 
 export default function ListCompaniesPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -18,6 +19,7 @@ export default function ListCompaniesPage() {
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const { isLoading: authLoading, requireAuth } = useAuth();
+  const { startTour, resetTour } = useTour();
 
   // Require authentication for this page
   requireAuth();
@@ -81,12 +83,31 @@ export default function ListCompaniesPage() {
             You don't have any companies yet. Create your first company to start calculating product
             carbon footprints and generating Carbon Footprint Reports.
           </p>
-          <Link href="/create-company">
-            <Button size="lg" className="flex items-center gap-2 mx-auto">
-              <Plus className="w-5 h-5" />
-              Create Your First Company
+          
+          {/* Action buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link href="/create-company">
+              <Button size="lg" className="flex items-center gap-2">
+                <Plus className="w-5 h-5" />
+                Create Your First Company
+              </Button>
+            </Link>
+            
+            {/* Tour button for empty state */}
+            <Button 
+              variant="outline" 
+              size="lg" 
+              onClick={() => {
+                // Reset and start the main onboarding tour
+                resetTour("main-onboarding");
+                startTour("main-onboarding");
+              }}
+              className="flex items-center gap-2"
+            >
+              <Play className="w-4 h-4" />
+              Take a Tour
             </Button>
-          </Link>
+          </div>
         </div>
       ) : (
         <>

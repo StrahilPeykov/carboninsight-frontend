@@ -27,12 +27,15 @@ export function useTourTrigger() {
 
     // Only start new tours if no tour is active
     if (isNewUser && !isTourCompleted("main-onboarding")) {
-      // Small delay to ensure page is fully loaded
-      setTimeout(() => {
-        startTour("main-onboarding");
-        localStorage.removeItem("isNewUser");
-      }, 1000);
-      return;
+      // New users can land on either home or list-companies, trigger tour on both
+      if (pathname === "/" || pathname === "/list-companies") {
+        // Small delay to ensure page is fully loaded
+        setTimeout(() => {
+          startTour("main-onboarding");
+          localStorage.removeItem("isNewUser");
+        }, 1000);
+        return;
+      }
     }
 
     // Check if user has a company

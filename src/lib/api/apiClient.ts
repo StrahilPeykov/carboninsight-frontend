@@ -98,19 +98,12 @@ export async function apiRequest<R, T = Record<string, unknown>>(
       throw new ApiError(response.status, errorMessage, errorData);
     }
 
-    // For DELETE requests or responses with no content, return an empty object
-    if (method === "DELETE" || response.status === 204 || response.headers.get("content-length") === "0") {
-      return {} as R;
-    }
-
     // Parse the response based on responseType
     let data: any;
     if (responseType === "blob") {
       data = await response.blob();
     } else {
-      // Check if there is content to parse
-      const text = await response.text();
-      data = text.trim() ? JSON.parse(text) : {};
+      data = await response.json();
     }
 
     return data as R;

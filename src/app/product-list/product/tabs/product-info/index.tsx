@@ -1,12 +1,10 @@
 "use client";
 
 import React, { forwardRef, useEffect, useImperativeHandle, useState } from "react";
-import Button from "@/app/components/ui/Button";
-import { Plus, X } from "lucide-react";
 import { DataPassedToTabs, TabHandle } from "../../page";
 import RadioField from "../components/RadioField";
 import TextField from "../components/TextField";
-import { Fieldset, Legend, Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { Fieldset, Legend } from "@headlessui/react";
 import DropdownField from "../components/DropdownField";
 import TextareaField from "../components/TextareaField";
 import * as apiCalls from "./api-calls";
@@ -62,7 +60,6 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
     const company_pk = localStorage.getItem("selected_company_id") ?? ("" as string);
     const access_token = localStorage.getItem("access_token");
     const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
-    const [isModalOpen, setIsModalOpen] = useState(false);
 
     // ── State for all fields and errors ──
     const [fieldValues, setFieldValues] = useState<FieldValues>({
@@ -195,69 +192,21 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
           );
         case "override-factors-modal":
           return (
-            <>
-              <div className="mt-6">
-                <Button
-                  onClick={() => setIsModalOpen(true)}
-                  className="flex items-center gap-2"
-                  variant={fieldValues.override_factors.length === 0 ? "primary" : "outline"}
-                >
-                  {fieldValues.override_factors.length === 0 ? (
-                    <>
-                      <Plus className="w-4 h-4" /> Add product emissions override
-                    </>
-                  ) : (
-                    <>
-                      Edit {fieldValues.override_factors.length} emissions
-                    </>
-                  )}
-                </Button>
-              </div>
-                    <Dialog
-                      open={isModalOpen}
-                      as="div"
-                      className="fixed inset-0 overflow-y-auto pt-12 z-20"
-                      onClose={() => setIsModalOpen(false)}
-                    >
-                      <div className="min-h-screen px-4 text-center">
-                        <div className="fixed inset-0 bg-black/50" />
-                        <span className="inline-block h-screen align-middle" aria-hidden="true">
-                          &#8203;
-                        </span>
-                        <DialogPanel className="relative inline-block w-full max-w-lg p-6 my-8 overflow-visible text-left align-middle bg-white dark:bg-gray-800 shadow-xl rounded-lg z-30">
-                          <div className="flex justify-between items-center mb-4">
-                            <DialogTitle as="h3" className="text-lg font-semibold text-gray-900 dark:text-white">
-                              Override product emissions
-                            </DialogTitle>
-                            <button
-                              onClick={() => setIsModalOpen(false)}
-                              className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-900"
-                              aria-label="Close modal"
-                            >
-                              <X className="w-5 h-5" />
-                            </button>
-                          </div>
-              <OverrideModal
-                formData={fieldValues}
-                setFormData={setFieldValues as (a: FormDataWithOverrideFactors) => void}
-                lifecycleChoices={lifecycleChoices}
-                isModalOpen={isModalOpen} // Pass modal state
-                setIsModalOpen={setIsModalOpen} // Pass setter function
-                onFieldChange={(val: OverrideFactor[]) =>
-                  Helpers.handleFieldChange(
-                    fieldKey,
-                    val as FieldValues[typeof fieldKey],
-                    setFieldValues,
-                    setFieldErrors,
-                    onFieldChange
-                  )
-                }
-                renderField={renderField}
-              />
-                        </DialogPanel>
-        </div>
-      </Dialog>
-            </>
+            <OverrideModal
+              formData={fieldValues}
+              setFormData={setFieldValues as (a: FormDataWithOverrideFactors) => void}
+              lifecycleChoices={lifecycleChoices}
+              onFieldChange={(val: OverrideFactor[]) =>
+                Helpers.handleFieldChange(
+                  fieldKey,
+                  val as FieldValues[typeof fieldKey],
+                  setFieldValues,
+                  setFieldErrors,
+                  onFieldChange
+                )
+              }
+              renderField={renderField}
+            />
           );
         default:
           return (

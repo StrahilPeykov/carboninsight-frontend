@@ -1,13 +1,23 @@
+// Import types from API models for emission data
 import { OverrideFactor } from "@/lib/api";
 import { TransportEmission } from "@/lib/api/transportEmissionApi";
+// Import UI component for table structure
 import { Column } from "@/app/components/ui/OurTable";
+// Import type for emission reference data
 import { EmissionReference } from "@/lib/api/emissionReferenceApi";
+// Import icons for action buttons
 import { Edit, Trash } from "lucide-react";
+// Import custom button component
 import Button from "@/app/components/ui/Button";
+// Import helper functions for transportation emissions calculations and operations
 import * as Helpers from "./helpers";
+// Import types for Bill of Materials data
 import { LineItem } from "@/lib/api/bomApi";
+// Import lifecycle stage choices for emission categorization
 import { LifecycleStageChoice } from "@/lib/api";
 
+// FormData type definition for transportation emission forms
+// Contains fields for distance, weight, reference ID, override factors, and associated line items
 export type FormData = {
   distance: string;
   weight: string;
@@ -16,7 +26,9 @@ export type FormData = {
   line_items: number[];
 };
 
-// This is a factory function that returns the columns with proper dependencies
+// Factory function that generates table columns for transport emissions
+// Takes multiple dependencies to handle various user interactions and state updates
+// Returns an array of Column objects configured for TransportEmission data
 export const getTransportColumns = (
   references: EmissionReference[],
   setShowOverridesForEmission: (emission: TransportEmission | null) => void,
@@ -32,6 +44,8 @@ export const getTransportColumns = (
   setDeletingEmissionId: (id: number | null) => void,
   setIsDeleteModalOpen: (isOpen: boolean) => void
 ): Column<TransportEmission>[] => [
+  // Reference column - displays the emission reference name or its ID
+  // Falls back to a dash if no reference is available
   {
     key: "reference",
     label: "Reference",
@@ -40,21 +54,32 @@ export const getTransportColumns = (
         ? references.find(ref => ref.id === emission.reference)?.name || emission.reference
         : "—",
   },
+  
+  // Distance column - displays the transportation distance in kilometers
   {
     key: "distance",
     label: "Distance",
     render: distance => distance + " km",
   },
+  
+  // Weight column - displays the transported weight in tonnes
   {
     key: "weight",
     label: "Weight",
     render: weight => weight + " tonnes",
   },
+  
+  // Emission Factor column - displays the combined biogenic and non-biogenic emissions
+  // Uses helper function to calculate the total emission factor
   {
     key: "custom emission factor",
     label: "Emission Factor",
     render: (_, emission) => Helpers.sumBioAndNonBioEmissions(emission).toFixed(3),
   },
+  
+  // Total CO2 column - displays the total transport emissions in kg CO₂e
+  // Uses helper function to compute total emissions
+  // Shows a dash if calculation results in non-finite value
   {
     key: "total co2",
     label: "Total Transport Emission",
@@ -63,6 +88,10 @@ export const getTransportColumns = (
       return Number.isFinite(total) ? total.toFixed(3) + " kg CO₂e" : "—";
     },
   },
+  
+  // Overrides column - displays a button to view emission override factors
+  // Shows count of overrides in parentheses
+  // Shows a dash if no overrides exist
   {
     key: "override_factors",
     label: "Overrides",
@@ -79,6 +108,10 @@ export const getTransportColumns = (
         "-"
       ),
   },
+  
+  // BOM items column - displays a button to view associated bill of materials items
+  // Shows count of items in parentheses
+  // Shows a dash if no items are associated
   {
     key: "line_items",
     label: "BOM items",
@@ -97,6 +130,10 @@ export const getTransportColumns = (
         "-"
       ),
   },
+  
+  // Actions column - contains edit and delete buttons for each emission entry
+  // Edit button opens a modal with the emission data for editing
+  // Delete button triggers a confirmation modal before deletion
   {
     key: "actions",
     label: "Actions",

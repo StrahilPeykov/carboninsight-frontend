@@ -54,6 +54,13 @@ type EmissionSplit = {
   non_biogenic: number;
 };
 
+export interface AiAdvice {
+  id: number;
+  user_prompt: string;
+  response: string;
+  created_at: string;
+}
+
 export interface EmissionTrace {
   label: string;
   reference_impact_unit: string;
@@ -120,6 +127,25 @@ export const productApi = {
     apiRequest(`companies/${companyId}/products/${productId}/`, {
       method: "DELETE",
     }),
+
+  // Request AI advice for a product
+  requestProductAdvice: (companyId: string, productId: string, prompt: string) =>
+    apiRequest<AiAdvice>(
+      `/companies/${companyId}/products/${productId}/ai/`,
+      {
+        method: "POST",
+        body: { user_prompt: prompt },
+      }
+    ),
+
+  getExport: (companyId: string, format: string, template: string) =>
+    apiRequest<Blob>(
+      `/companies/${companyId}/products/export/${format}/?template=${template}`,
+      {
+        method: "GET",
+        responseType: "blob",
+      }
+    ),
 
   // Data sharing operations
   getProductSharingRequests: (companyId: string) =>

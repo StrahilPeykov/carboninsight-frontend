@@ -11,7 +11,6 @@ import { Building2, BarChart3, FileText, Share2, Shield, ArrowRight } from "luci
 export default function Home() {
   const { isAuthenticated } = useAuth();
   const [hasCompanies, setHasCompanies] = useState(false);
-  const [hasSelectedCompany, setHasSelectedCompany] = useState(false);
   const [checkingCompanies, setCheckingCompanies] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -20,62 +19,34 @@ export default function Home() {
     setMounted(true);
   }, []);
 
-  // Check user's company state when authenticated
+  // Check if user has companies when authenticated
   useEffect(() => {
     if (!mounted) return;
 
-    async function checkUserState() {
+    async function checkCompanies() {
       if (!isAuthenticated) {
         setHasCompanies(false);
-        setHasSelectedCompany(false);
         return;
       }
 
       setCheckingCompanies(true);
       try {
-        // Check if user has companies
         const companies = await companyApi.listCompanies();
         setHasCompanies(companies.length > 0);
-        
-        // Check if they have a selected company
-        const selectedCompanyId = localStorage.getItem("selected_company_id");
-        if (selectedCompanyId && companies.length > 0) {
-          // Verify the selected company is still valid
-          try {
-            await companyApi.getCompany(selectedCompanyId);
-            setHasSelectedCompany(true);
-          } catch (error) {
-            // Selected company is invalid
-            localStorage.removeItem("selected_company_id");
-            setHasSelectedCompany(false);
-          }
-        } else {
-          setHasSelectedCompany(false);
-        }
       } catch (err) {
-        console.error("Error checking user state:", err);
+        console.error("Error checking companies:", err);
         setHasCompanies(false);
-        setHasSelectedCompany(false);
       } finally {
         setCheckingCompanies(false);
       }
     }
 
-    checkUserState();
+    checkCompanies();
   }, [isAuthenticated, mounted]);
 
   // Determine the right CTA based on user state
   const getCtaButton = () => {
-    if (!mounted) {
-      return (
-        <Button size="lg" disabled>
-          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2"></div>
-          Loading...
-        </Button>
-      );
-    }
-
-    if (!isAuthenticated) {
+    if (!mounted || !isAuthenticated) {
       return (
         <Link href="/login">
           <Button size="lg">Get Started</Button>
@@ -92,7 +63,6 @@ export default function Home() {
       );
     }
 
-    // User is authenticated, determine next step based on their state
     if (!hasCompanies) {
       return (
         <Link href="/create-company">
@@ -101,54 +71,9 @@ export default function Home() {
       );
     }
 
-    if (!hasSelectedCompany) {
-      return (
-        <Link href="/list-companies">
-          <Button size="lg">Select a Company</Button>
-        </Link>
-      );
-    }
-
-    // User has companies and one selected - go to dashboard
     return (
-      <Link href="/dashboard">
+      <Link href="/list-companies">
         <Button size="lg">Go to Dashboard</Button>
-      </Link>
-    );
-  };
-
-  // Get secondary CTA based on user state
-  const getSecondaryCta = () => {
-    if (!mounted || !isAuthenticated) {
-      return (
-        <Link href="#how-it-works">
-          <Button variant="outline" size="lg" className="w-full sm:w-auto">
-            See How It Works
-          </Button>
-        </Link>
-      );
-    }
-
-    if (checkingCompanies) {
-      return null; // Don't show secondary CTA while loading
-    }
-
-    if (!hasCompanies || !hasSelectedCompany) {
-      return (
-        <Link href="#how-it-works">
-          <Button variant="outline" size="lg" className="w-full sm:w-auto">
-            See How It Works
-          </Button>
-        </Link>
-      );
-    }
-
-    // User is fully set up - offer alternative action
-    return (
-      <Link href="/product-list">
-        <Button variant="outline" size="lg" className="w-full sm:w-auto">
-          Manage Products
-        </Button>
       </Link>
     );
   };
@@ -172,19 +97,14 @@ export default function Home() {
 
           <div className="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4">
             <div className="w-full sm:w-auto">{getCtaButton()}</div>
-            <div className="w-full sm:w-auto">{getSecondaryCta()}</div>
-          </div>
-
-          {/* User state indicator for authenticated users */}
-          {mounted && isAuthenticated && !checkingCompanies && (
-            <div className="mt-6">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {!hasCompanies && "Ready to create your first company"}
-                {hasCompanies && !hasSelectedCompany && "Choose a company to continue"}
-                {hasCompanies && hasSelectedCompany && "Welcome back! Your workspace is ready"}
-              </p>
+            <div className="w-full sm:w-auto">
+              <Link href="#how-it-works">
+                <Button variant="outline" size="lg" className="w-full sm:w-auto">
+                  See How It Works
+                </Button>
+              </Link>
             </div>
-          )}
+          </div>
         </div>
       </div>
 
@@ -433,7 +353,7 @@ export default function Home() {
             stay ahead of regulations.
           </p>
           <div className="mt-8">
-            {!isAuthenticated && mounted ? (
+            {!isAuthenticated ? (
               <Link href="/register">
                 <Button size="lg">Create Free Account</Button>
               </Link>

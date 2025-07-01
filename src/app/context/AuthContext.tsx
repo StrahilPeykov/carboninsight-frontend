@@ -4,7 +4,6 @@ import { createContext, ReactNode, useContext, useEffect, useState } from "react
 import { useRouter } from "next/navigation";
 import { authApi, LoginCredentials, RegisterData } from "@/lib/api/authApi";
 import { User, userApi } from "@/lib/api/userApi";
-import { companyApi } from "@/lib/api/companyApi";
 import { ApiError, isTokenExpired } from "@/lib/api/apiClient";
 
 interface AuthContextType {
@@ -100,21 +99,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Clear all user-related application data
     localStorage.removeItem("selected_company_id");
     localStorage.removeItem("currentAssessmentId");
-
-    // DON'T clear tour data on logout - it should persist per user
-    // Only clear generic tour data (old format) and active session data
-    localStorage.removeItem("completedTours"); // Only clear old generic format
-    
-    // Clear session storage tour data (active tours only)
-    const sessionKeys = Object.keys(sessionStorage);
-    sessionKeys.forEach(key => {
-      if (key.startsWith("activeTour") || key.startsWith("currentTourStep") || key.includes("hasSeenTour")) {
-        sessionStorage.removeItem(key);
-      }
-    });
-
-    // Clear the new user flag
-    localStorage.removeItem("isNewUser");
   };
 
   // Helper function to detect blocked account errors based on backend response
@@ -132,41 +116,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
     return false;
-  };
-
-  // Helper function to determine where to redirect after login
-  const getPostLoginRedirect = async (): Promise<string> => {
-    try {
-      // Check if user has companies
-      const companies = await companyApi.listCompanies();
-      
-      if (companies.length === 0) {
-        // No companies - go to list-companies page which has nice empty state
-        return "/list-companies";
-      }
-      
-      // Check if user has a selected company
-      const selectedCompanyId = localStorage.getItem("selected_company_id");
-      
-      if (selectedCompanyId) {
-        // Verify the selected company still exists and user has access
-        try {
-          await companyApi.getCompany(selectedCompanyId);
-          return "/dashboard"; // Company exists, go to dashboard
-        } catch (error) {
-          // Selected company no longer accessible, clear it
-          localStorage.removeItem("selected_company_id");
-        }
-      }
-      
-      // No valid selected company - go to company list to select one
-      return "/list-companies";
-      
-    } catch (error) {
-      console.error("Error determining post-login redirect:", error);
-      // Fallback to company list if we can't determine state
-      return "/list-companies";
-    }
   };
 
   // Set up token refresh interval
@@ -199,11 +148,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Get user profile
       const userData = await userApi.getProfile();
       setUser(userData);
-
-      // Smart redirect based on user state
-      const redirectPath = await getPostLoginRedirect();
-      router.push(redirectPath);
-      
     } catch (error) {
       console.error("Login failed:", error);
       clearTokens();
@@ -244,11 +188,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("isNewUser", "true");
 
       setUser(response.user);
-
-      // For new users, redirect to list-companies which will show empty state
-      // The tour will automatically trigger there for new users
-      router.push("/list-companies");
-      
     } catch (error) {
       console.error("Registration failed:", error);
 

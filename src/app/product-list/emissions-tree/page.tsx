@@ -13,7 +13,7 @@ import { Suspense } from "react";
 import AuditLog from "@/app/components/ui/AuditLog";
 import { auditLogApi, LogItem } from "@/lib/api/auditLogApi";
 import { productApi, EmissionTrace, Product } from "@/lib/api/productApi";
-import * as Helpers from "./helpers";
+import * as Helpers from "../helpers";
 import AIAdviceModal from "../components/AIAdviceModal";
 import DeleteProductModal from "../components/DeleteProductModal";
 
@@ -47,7 +47,6 @@ function EmissionsTreePageContent() {
 
   // Deletion states
   const [toDeleteProduct, setToDeleteProduct] = useState<Product | null>(null);
-  const [confirmInput, setConfirmInput] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteSuccess, setDeleteSuccess] = useState(false);
   const [deleteError, setDeleteError] = useState("");
@@ -172,45 +171,52 @@ function EmissionsTreePageContent() {
             </h2>
           </div>
           <div className="flex flex-col md:flex-row gap-6">
-            {/* Product information */}
-            <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-8">
-              <div>
-                <span className="font-semibold">SKU:</span>
-                <span className="ml-1">{product.sku || "—"}</span>
+            {/* Two-column detail section */}
+            <div className="flex-1 flex flex-col md:flex-row gap-8">
+              {/* Left column */}
+              <div className="flex-1 space-y-2">
+                <div>
+                  <span className="font-semibold">Supplier:</span>
+                  <span className="ml-1">{product.supplier_name || "—"}</span>
+                </div>
+                <div>
+                  <span className="font-semibold">Manufacturer:</span>
+                  <span className="ml-1">{product.manufacturer_name || "—"}</span>
+                </div>
+                <div>
+                  <span className="font-semibold"><abbr title="Stock Keeping Unit">SKU</abbr>:</span>
+                  <span className="ml-1">{product.sku || "—"}</span>
+                </div>
+                <div>
+                  <span className="font-semibold">Public:</span>
+                  <span className="ml-1">{product.is_public ? "Yes" : "No"}</span>
+                </div>
+                <div className="md:col-span-2">
+                  <span className="font-semibold">Description:</span>
+                  <span className="ml-1">{product.description}</span>
+                </div>
               </div>
-              <div>
-                <span className="font-semibold">Manufacturer:</span>
-                <span className="ml-1">{product.manufacturer_name || "—"}</span>
-              </div>
-              <div>
-                <span className="font-semibold">Supplier:</span>
-                <span className="ml-1">{product.supplier_name || "—"}</span>
-              </div>
-              <div>
-                <span className="font-semibold">Total emissions:</span>
-                <span className="ml-1" aria-label={`${product.emission_total} kilograms CO2 equivalent`}>
-                  {product.emission_total || "—"} kg CO₂-eq
-                </span>
-              </div>
-              <div>
-                <span className="font-semibold">Biogenic emissions:</span>
-                <span className="ml-1" aria-label={`${product.emission_total_biogenic} kilograms CO2 equivalent biogenic`}>
-                  {product.emission_total_biogenic} kg CO₂-eq
-                </span>
-              </div>
-              <div>
-                <span className="font-semibold">Non-biogenic emissions:</span>
-                <span className="ml-1" aria-label={`${product.emission_total_non_biogenic} kilograms CO2 equivalent non-biogenic`}>
-                  {product.emission_total_non_biogenic} kg CO₂-eq
-                </span>
-              </div>
-              <div>
-                <span className="font-semibold">Public:</span>
-                <span className="ml-1">{product.is_public ? "Yes" : "No"}</span>
-              </div>
-              <div className="md:col-span-2">
-                <span className="font-semibold">Description:</span>
-                <span className="ml-1">{product.description}</span>
+
+              {/* Right column */}
+              <div className="flex-1 space-y-2">
+                <div>
+                  <span className="font-semibold">Total emissions:</span>
+                  <span className="ml-1" aria-label={`${product.emission_total} kilograms CO2 equivalent`}>
+                    {product.emission_total} kg CO₂-eq
+                  </span>
+                </div>
+                <div>
+                  <span className="font-semibold">Biogenic emissions:</span>
+                  <span className="ml-1" aria-label={`${product.emission_total_biogenic} kilograms CO2 equivalent biogenic`}>
+                    {product.emission_total_biogenic} kg CO₂-eq
+                  </span>
+                </div>
+                <div>
+                  <span className="font-semibold">Non-biogenic emissions:</span>
+                  <span className="ml-1" aria-label={`${product.emission_total_non_biogenic} kilograms CO2 equivalent non-biogenic`}>
+                    {product.emission_total_non_biogenic} kg CO₂-eq
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -279,8 +285,7 @@ function EmissionsTreePageContent() {
                   e.stopPropagation();
                   Helpers.setupProductDeletion({
                     product,
-                    setToDeleteProduct,
-                    setConfirmInput
+                    setToDeleteProduct
                   });
                 }}
                 disabled={isDeleting}
@@ -323,10 +328,10 @@ function EmissionsTreePageContent() {
         setUserPromptInput={setUserPromptInput}
         onRequestAdvice={async (prompt) => {
           if (pendingProductId !== null) {
-            await Helpers.requestProductAdvice({
+            await Helpers.handleRequestProductAdvice({
               productId: pendingProductId,
               prompt,
-              product,
+              productName: product?.name || "",
               setAiModalStep,
               setAiAdvice,
               setPendingProductName
@@ -341,12 +346,12 @@ function EmissionsTreePageContent() {
         toDeleteProduct={toDeleteProduct}
         deleteSuccess={deleteSuccess}
         deleteError={deleteError}
+        displaySuccessModal={true}
         isDeleting={isDeleting}
         setIsDeleting={setIsDeleting}
         setDeleteSuccess={setDeleteSuccess}
         setDeleteError={setDeleteError}
         setToDeleteProduct={setToDeleteProduct}
-        setConfirmInput={setConfirmInput}
       />
 
       {/* Emissions Breakdown Card */}

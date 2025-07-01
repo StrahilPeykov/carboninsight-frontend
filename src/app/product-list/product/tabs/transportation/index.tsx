@@ -1,6 +1,7 @@
 "use client";
 
 import React, { forwardRef, useImperativeHandle, useState, useEffect } from "react";
+import ImportExportDropdown from "@/app/components/ui/ImportExportDropdown";
 import { DataPassedToTabs, TabHandle } from "../../page";
 import { TransportEmission } from "@/lib/api/transportEmissionApi";
 import { LineItem } from "@/lib/api/bomApi";
@@ -51,13 +52,14 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
       useState<TransportEmission | null>(null);
     const [showBomItemsForEmission, setShowBomItemsForEmission] =
       useState<TransportEmission | null>(null);
+    const [showTemplateModal, setShowTemplateModal] = useState(false);
 
     // Parse productId
     const productId = () => {
       const id = parseInt(productIdString || "", 10);
-      if (isNaN(id)) {
-        throw new Error("productId is not a number");
-      }
+      // if (isNaN(id)) {
+      //   throw new Error("productId is not a number");
+      // }
       return id;
     };
 
@@ -147,7 +149,37 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
           >
             <Plus className="w-4 h-4" /> Add Transport Emission
           </Button>
+          <ImportExportDropdown
+            companyId={company_pk}
+            productId={productId()}
+            section="transport"
+            onImportComplete={() =>
+              apiCalls.fetchEmissions(setIsLoading, company_pk, productId, setEmissions)
+            }
+            showTemplateModal={showTemplateModal}
+            setShowTemplateModal={setShowTemplateModal}
+          />
         </div>
+        {showTemplateModal && (
+          <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md shadow-lg">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                Template File Blocked
+              </h3>
+              <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
+                Template files cannot be uploaded. Please provide a valid data file instead.
+              </p>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowTemplateModal(false)}
+                  className="bg-red text-white px-4 py-2 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Add/Edit Emission Modal */}
         <Dialog

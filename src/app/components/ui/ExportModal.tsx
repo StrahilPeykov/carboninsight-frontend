@@ -172,7 +172,7 @@ export default function ExportModal({ isOpen, onClose, product, companyId }: Exp
                 </h3>
                 <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 dark:text-gray-300">
                   <div>
-                    <span className="font-medium">SKU:</span> {product.sku}
+                    <span className="font-medium"><abbr title="Stock Keeping Unit">SKU</abbr>:</span> {product.sku}
                   </div>
                   <div>
                     <span className="font-medium">

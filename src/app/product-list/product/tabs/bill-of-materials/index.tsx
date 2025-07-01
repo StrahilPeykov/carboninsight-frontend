@@ -28,7 +28,6 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
     const [quantity, setQuantity] = useState<string>("1");
     const [searchCompany, setSearchCompany] = useState("");
     const [searchProduct, setSearchProduct] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
     const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [newQuantity, setNewQuantity] = useState<string>("1");
@@ -36,29 +35,9 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
     const [deleteMaterial, setDeleteMaterial] = useState<Material | null>(null);
     const [addMaterialError, setAddMaterialError] = useState<string | null>(null);
     const [isEstimationMode, setIsEstimationMode] = useState(false);
-
-    useEffect(() => {
-      // ── Fetch companies when searching in modal ────────────────
-      if (
-        isModalOpen &&
-        currentStep === 1 &&
-        (searchCompany.length >= 4 || searchCompany.length === 0)
-      ) {
-        apiCalls.fetchCompanies(setIsLoading, setCompanies, searchCompany);
-      }
-      // ── Fetch products when searching in modal ─────────────────
-      if (
-        selectedCompany &&
-        currentStep === 2 &&
-        (searchProduct.length >= 2 || searchProduct.length === 0)
-      ) {
-        apiCalls.fetchProducts(setIsLoading, setProducts, selectedCompany.id, searchProduct);
-      }
-      // ── Fetch all BoM data if editing ───────────────────────────
-      if (mode == Mode.EDIT) {
-        apiCalls.fetchBOMItems(company_pk, productId, setMaterials);
-      }
-    }, [isModalOpen, searchCompany, selectedCompany, searchProduct, currentStep, mode]);
+    const [isTableLoading, setIsTableLoading] = useState(false);
+    const [isCompanySearchLoading, setIsCompanySearchLoading] = useState(false);
+    const [isProductSearchLoading, setIsProductSearchLoading] = useState(false);
 
     // ── Get company ID from localStorage ────────────────────────
     let company_pk_string = localStorage.getItem("selected_company_id");
@@ -80,6 +59,37 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
 
       return id;
     };
+
+    // Update the main BoM fetch useEffect
+    useEffect(() => {
+      if (mode == Mode.EDIT) {
+        setIsTableLoading(true); // Use table-specific loading state
+        apiCalls.fetchBOMItems(company_pk, productId, setMaterials)
+        setIsTableLoading(false);
+      }
+    }, [mode, company_pk, productId_string]);
+
+    // Update company search useEffect
+    useEffect(() => {
+      if (
+        isModalOpen &&
+        currentStep === 1 &&
+        (searchCompany.length >= 4 || searchCompany.length === 0)
+      ) {
+        apiCalls.fetchCompanies(setIsCompanySearchLoading, setCompanies, searchCompany);
+      }
+    }, [isModalOpen, searchCompany, currentStep]);
+
+    // Update product search useEffect
+    useEffect(() => {
+      if (
+        selectedCompany &&
+        currentStep === 2 &&
+        (searchProduct.length >= 2 || searchProduct.length === 0)
+      ) {
+        apiCalls.fetchProducts(setIsProductSearchLoading, setProducts, selectedCompany.id, searchProduct);
+      }
+    }, [selectedCompany, searchProduct, currentStep]);
 
     // ── Expose saveTab/updateTab to parent ──────────────────────
     useImperativeHandle(ref, () => ({ saveTab, updateTab }));
@@ -114,7 +124,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
         </div>
 
         {/* ── BOM Table ───────────────────────────────────────── */}
-        {isLoading ? (
+        {isTableLoading ? (
           <div className="text-center py-6">Data loading...</div>
         ) : materials.length === 0 ? (
           <div className="text-center py-6">No BOM items yet.</div>
@@ -238,7 +248,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
                         <div className="relative mb-4">
                           <input
                             type="text"
-                            placeholder="Search companies..."
+                            placeholder="Search companies... (At least 4 characters)"
                             value={searchCompany}
                             onChange={e => setSearchCompany(e.target.value)}
                             className="w-full p-2 pl-10 border rounded-lg"
@@ -247,7 +257,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
                         </div>
 
                         <div className="max-h-[40vh] sm:max-h-80 overflow-y-auto">
-                          {isLoading ? (
+                          {isCompanySearchLoading ? (
                             <div className="text-center py-4">Loading...</div>
                           ) : companies.length > 0 ? (
                             companies.map(company => (
@@ -338,7 +348,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
                         <div className="relative mb-4">
                           <input
                             type="text"
-                            placeholder="Search products..."
+                            placeholder="Search products... (At least 4 characters)"
                             value={searchProduct}
                             onChange={e => setSearchProduct(e.target.value)}
                             className="w-full p-2 pl-10 border rounded-lg"
@@ -347,7 +357,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
                         </div>
 
                         <div className="max-h-60 overflow-y-auto mb-4">
-                          {isLoading ? (
+                          {isProductSearchLoading ? (
                             <div className="text-center py-4">Loading products...</div>
                           ) : products.length > 0 ? (
                             products.map(product => (
@@ -358,7 +368,7 @@ const BillOfMaterials = forwardRef<TabHandle, DataPassedToTabs>(
                               >
                                 <p className="font-medium">{product.name}</p>
                                 <div className="flex justify-between text-sm text-gray-500 mt-1">
-                                  <span>SKU: {product.sku || "N/A"}</span>
+                                  <span><abbr title="Stock Keeping Unit">SKU</abbr>: {product.sku || "N/A"}</span>
                                 </div>
                               </div>
                             ))

@@ -58,42 +58,34 @@ export default function RegisterPage() {
     }
   };
 
-  const validatePassword = () => {
-    // Do basic validation here, most of it is handled by the backend
-    if (formData.password !== formData.confirm_password) {
-      return "Passwords do not match.";
-    }
-
-    return null;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
     setFieldErrors({}); // Clear any previous field errors
 
-    // Validate password
-    const passwordError = validatePassword();
-    if (passwordError) {
-      setFieldErrors({ confirm_password: passwordError });
-      setIsLoading(false);
-      document.getElementById("confirm_password")?.focus();
-      return;
-    }
-
     try {
       await register(formData);
 
-      // Success handling - redirect is now handled by AuthContext
+      // Success handling (existing code)
       const announcement = document.createElement("div");
       announcement.setAttribute("role", "status");
       announcement.setAttribute("aria-live", "polite");
       announcement.className = "sr-only";
-      announcement.textContent = "Registration successful. Redirecting...";
+      announcement.textContent = "Registration successful. Redirecting to home page...";
       document.body.appendChild(announcement);
 
+      setTimeout(() => {
+        router.push("/");
+      }, 100);
     } catch (err) {
+      // Clear password fields immediately when any error occurs
+      setFormData(prev => ({
+        ...prev,
+        password: "",
+        confirm_password: ""
+      }));
+
       // Handle field-specific validation errors
       if (err instanceof Error && err.cause) {
         const errorCause = err.cause as any;
@@ -311,15 +303,6 @@ export default function RegisterPage() {
             <span id="confirm-password-hint" className="sr-only">
               Re-enter your password
             </span>
-            {formData.password !== formData.confirm_password && formData.confirm_password && (
-              <p
-                id="password-mismatch"
-                className="mt-1 text-xs text-red-600 dark:text-red-400"
-                role="alert"
-              >
-                Passwords do not match
-              </p>
-            )}
           </div>
 
           <div className="flex items-center">

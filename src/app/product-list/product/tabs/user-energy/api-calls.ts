@@ -9,6 +9,9 @@ export const fetchEmissions = async (
   productId: () => number,
   setEmissions: (a: UserEnergyEmission[]) => void
 ) => {
+  if (isNaN(productId())) {
+    return;
+  }
   setIsLoading(true);
   try {
     const data = await userEnergyEmissionApi.getAllUserEnergyEmissions(company_pk, productId());

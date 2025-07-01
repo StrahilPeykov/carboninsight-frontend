@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import OnboardingTour from "./OnboardingTour";
 import { usePathname, useRouter } from "next/navigation";
-import { useAuth } from "../context/AuthContext";
 
 // Define proper interfaces for tour steps
 interface BaseTourStep {
@@ -15,7 +14,6 @@ interface BaseTourStep {
   spotlightPadding?: number;
   allowSkip?: boolean;
   allowClickOutside?: boolean;
-  requiresCompany?: boolean; // Flag to indicate if step requires a company
 }
 
 interface InteractiveTourStep extends BaseTourStep {
@@ -33,10 +31,8 @@ type TourStep = InteractiveTourStep | StaticTourStep;
 interface TourContextType {
   startTour: (tourId: string) => void;
   completeTour: (tourId: string) => void;
-  skipTour: (tourId: string) => void; // separate skip function
   resetTour: (tourId: string) => void;
   isTourCompleted: (tourId: string) => boolean;
-  isTourSkipped: (tourId: string) => boolean; // check if tour was skipped
   isAnyTourActive: boolean;
   currentTourStep: number;
   setCurrentTourStep: (step: number) => void;
@@ -62,10 +58,9 @@ const TOURS: Record<string, TourStep[]> = {
       expectedAction: "click-company-selector",
       allowSkip: true,
       allowClickOutside: false,
-      requiresCompany: false, // This tour helps create the first company
     },
     {
-      page: "*",
+      page: "*", // Still on the same page with dropdown open
       target: '[data-tour-target="create-company"]',
       title: "Create Your First Company",
       content:
@@ -75,7 +70,6 @@ const TOURS: Record<string, TourStep[]> = {
       expectedAction: "navigate-to-create-company",
       allowSkip: true,
       allowClickOutside: false,
-      requiresCompany: false,
     },
     {
       page: "/create-company",
@@ -87,7 +81,6 @@ const TOURS: Record<string, TourStep[]> = {
       spotlightPadding: 20,
       allowSkip: true,
       allowClickOutside: false,
-      requiresCompany: false,
     },
     {
       page: "/create-company",
@@ -99,7 +92,6 @@ const TOURS: Record<string, TourStep[]> = {
       spotlightPadding: 20,
       allowSkip: true,
       allowClickOutside: false,
-      requiresCompany: false,
     },
     {
       page: "/create-company",
@@ -111,7 +103,6 @@ const TOURS: Record<string, TourStep[]> = {
       spotlightPadding: 20,
       allowSkip: true,
       allowClickOutside: false,
-      requiresCompany: false,
     },
     {
       page: "/create-company",
@@ -123,7 +114,6 @@ const TOURS: Record<string, TourStep[]> = {
       spotlightPadding: 20,
       allowSkip: true,
       allowClickOutside: false,
-      requiresCompany: false,
     },
   ],
   "product-list-tour": [
@@ -138,7 +128,6 @@ const TOURS: Record<string, TourStep[]> = {
       expectedAction: "navigate-to-products",
       allowClickOutside: false,
       allowSkip: true,
-      requiresCompany: true,
     },
     {
       page: "/product-list",
@@ -149,7 +138,6 @@ const TOURS: Record<string, TourStep[]> = {
       placement: "center",
       allowClickOutside: false,
       allowSkip: true,
-      requiresCompany: true,
     },
     {
       page: "/product-list",
@@ -161,7 +149,6 @@ const TOURS: Record<string, TourStep[]> = {
       spotlightPadding: 8,
       allowClickOutside: false,
       allowSkip: true,
-      requiresCompany: true,
     },
     {
       page: "/product-list",
@@ -172,7 +159,6 @@ const TOURS: Record<string, TourStep[]> = {
       placement: "center",
       allowClickOutside: false,
       allowSkip: true,
-      requiresCompany: true,
     },
     {
       page: "/product-list",
@@ -183,7 +169,6 @@ const TOURS: Record<string, TourStep[]> = {
       placement: "center",
       allowClickOutside: false,
       allowSkip: true,
-      requiresCompany: true,
     },
   ],
   "company-tour": [
@@ -198,7 +183,6 @@ const TOURS: Record<string, TourStep[]> = {
       expectedAction: "navigate-to-dashboard",
       allowClickOutside: false,
       allowSkip: true,
-      requiresCompany: true,
     },
     {
       page: "/dashboard",
@@ -211,7 +195,6 @@ const TOURS: Record<string, TourStep[]> = {
       expectedAction: "navigate-to-companies",
       allowClickOutside: false,
       allowSkip: true,
-      requiresCompany: true,
     },
     {
       page: "/list-companies",
@@ -222,7 +205,6 @@ const TOURS: Record<string, TourStep[]> = {
       placement: "bottom",
       allowClickOutside: false,
       allowSkip: true,
-      requiresCompany: true,
     },
     {
       page: "/list-companies",
@@ -233,7 +215,6 @@ const TOURS: Record<string, TourStep[]> = {
       placement: "bottom",
       allowClickOutside: false,
       allowSkip: true,
-      requiresCompany: true,
     },
     {
       page: "/list-companies",
@@ -244,7 +225,6 @@ const TOURS: Record<string, TourStep[]> = {
       placement: "right",
       allowClickOutside: false,
       allowSkip: true,
-      requiresCompany: true,
     },
   ],
 };
@@ -253,17 +233,9 @@ export default function TourProvider({ children }: TourProviderProps) {
   const [activeTour, setActiveTour] = useState<string | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [completedTours, setCompletedTours] = useState<Set<string>>(new Set());
-  const [skippedTours, setSkippedTours] = useState<Set<string>>(new Set()); // track skipped tours
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isAuthenticated } = useAuth(); // Get user info for user-specific storage
-
-  // Generate user-specific storage keys
-  const getUserStorageKey = (key: string) => {
-    if (!user?.id) return key; // Fallback to generic key if no user
-    return `${key}_user_${user.id}`;
-  };
 
   // Ensure component is mounted
   useEffect(() => {
@@ -275,111 +247,51 @@ export default function TourProvider({ children }: TourProviderProps) {
     };
   }, []);
 
-  // Load tour state from storage when user changes or component mounts
+  // Load tour state from storage on mount
   useEffect(() => {
-    if (!mounted || !isAuthenticated || !user?.id) return;
+    if (!mounted) return;
 
-    // Load completed tours for this specific user
-    const completedKey = getUserStorageKey("completedTours");
-    const completedStored = localStorage.getItem(completedKey);
-    if (completedStored) {
+    // Load completed tours
+    const stored = localStorage.getItem("completedTours");
+    if (stored) {
       try {
-        setCompletedTours(new Set(JSON.parse(completedStored)));
+        setCompletedTours(new Set(JSON.parse(stored)));
       } catch (e) {
         console.error("Failed to parse completed tours:", e);
-        setCompletedTours(new Set()); // Reset to empty set if parsing fails
       }
-    } else {
-      setCompletedTours(new Set());
     }
 
-    // Load skipped tours for this specific user
-    const skippedKey = getUserStorageKey("skippedTours");
-    const skippedStored = localStorage.getItem(skippedKey);
-    if (skippedStored) {
-      try {
-        setSkippedTours(new Set(JSON.parse(skippedStored)));
-      } catch (e) {
-        console.error("Failed to parse skipped tours:", e);
-        setSkippedTours(new Set());
-      }
-    } else {
-      setSkippedTours(new Set());
-    }
-
-    // Load active tour state from sessionStorage (keep user-specific)
-    const activeTourKey = getUserStorageKey("activeTour");
-    const currentStepKey = getUserStorageKey("currentTourStep");
-    
-    const activeTourStored = sessionStorage.getItem(activeTourKey);
-    const currentStepStored = sessionStorage.getItem(currentStepKey);
+    // Load active tour state from sessionStorage
+    const activeTourStored = sessionStorage.getItem("activeTour");
+    const currentStepStored = sessionStorage.getItem("currentTourStep");
 
     if (activeTourStored) {
       setActiveTour(activeTourStored);
       setCurrentStep(currentStepStored ? parseInt(currentStepStored, 10) : 0);
       document.body.classList.add("tour-active");
     }
-  }, [mounted, isAuthenticated, user?.id]);
+  }, [mounted]);
 
-  // Clear tour data when user logs out
-  useEffect(() => {
-    if (!isAuthenticated && mounted) {
-      // User logged out, clear tour state but NOT localStorage data
-      setCompletedTours(new Set());
-      setSkippedTours(new Set());
-      setActiveTour(null);
-      setCurrentStep(0);
-      
-      // Clear session storage (active tour state)
-      const sessionKeys = Object.keys(sessionStorage);
-      sessionKeys.forEach(key => {
-        if (key.includes("activeTour") || key.includes("currentTourStep")) {
-          sessionStorage.removeItem(key);
-        }
-      });
-      
-      document.body.classList.remove("tour-active");
-    }
-  }, [isAuthenticated, mounted]);
-
-  // Save completed tours to localStorage with user-specific key
+  // Save completed tours to localStorage
   const saveCompletedTours = (tours: Set<string>) => {
-    if (typeof window !== "undefined" && user?.id) {
-      const userSpecificKey = getUserStorageKey("completedTours");
-      localStorage.setItem(userSpecificKey, JSON.stringify(Array.from(tours)));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("completedTours", JSON.stringify(Array.from(tours)));
     }
   };
 
-  // Save skipped tours to localStorage with user-specific key
-  const saveSkippedTours = (tours: Set<string>) => {
-    if (typeof window !== "undefined" && user?.id) {
-      const userSpecificKey = getUserStorageKey("skippedTours");
-      localStorage.setItem(userSpecificKey, JSON.stringify(Array.from(tours)));
-    }
-  };
-
-  // Save active tour state to sessionStorage with user-specific key
+  // Save active tour state to sessionStorage
   const saveActiveTourState = (tourId: string | null, step: number) => {
-    if (typeof window !== "undefined" && user?.id) {
-      const activeTourKey = getUserStorageKey("activeTour");
-      const currentStepKey = getUserStorageKey("currentTourStep");
-      
+    if (typeof window !== "undefined") {
       if (tourId) {
-        sessionStorage.setItem(activeTourKey, tourId);
-        sessionStorage.setItem(currentStepKey, step.toString());
+        sessionStorage.setItem("activeTour", tourId);
+        sessionStorage.setItem("currentTourStep", step.toString());
         document.body.classList.add("tour-active");
       } else {
-        sessionStorage.removeItem(activeTourKey);
-        sessionStorage.removeItem(currentStepKey);
+        sessionStorage.removeItem("activeTour");
+        sessionStorage.removeItem("currentTourStep");
         document.body.classList.remove("tour-active");
       }
     }
-  };
-
-  // Check if user has company selected
-  const hasCompany = () => {
-    if (typeof window === "undefined") return false;
-    return !!localStorage.getItem("selected_company_id");
   };
 
   const startTour = (tourId: string) => {
@@ -388,100 +300,33 @@ export default function TourProvider({ children }: TourProviderProps) {
       return;
     }
 
-    if (!user?.id) {
-      console.warn("Cannot start tour: user not authenticated");
-      return;
-    }
-
-    // Check if tour requires a company and user doesn't have one
-    const tourSteps = TOURS[tourId];
-    const requiresCompany = tourSteps.some(step => step.requiresCompany);
-    
-    if (requiresCompany && !hasCompany()) {
-      console.warn(`Tour ${tourId} requires a company to be selected`);
-      
-      // Show a helpful message to the user
-      if (typeof window !== "undefined") {
-        const message = "This tour requires a company to be selected. Please create or select a company first.";
-        
-        // Create a temporary announcement
-        const announcement = document.createElement("div");
-        announcement.setAttribute("role", "alert");
-        announcement.setAttribute("aria-live", "assertive");
-        announcement.className = "sr-only";
-        announcement.textContent = message;
-        document.body.appendChild(announcement);
-        
-        setTimeout(() => {
-          if (announcement.parentNode) {
-            document.body.removeChild(announcement);
-          }
-        }, 3000);
-      }
-      
-      return;
-    }
-
     // Always start from step 0, regardless of current page
     setActiveTour(tourId);
     setCurrentStep(0);
     saveActiveTourState(tourId, 0);
+
+    // Don't auto-navigate - let the tour guide the user
   };
 
   const completeTour = (tourId: string) => {
-    if (!user?.id) return;
-    
     const newCompleted = new Set(completedTours);
     newCompleted.add(tourId);
     setCompletedTours(newCompleted);
     saveCompletedTours(newCompleted);
-    
-    // Remove from skipped if it was there
-    const newSkipped = new Set(skippedTours);
-    newSkipped.delete(tourId);
-    setSkippedTours(newSkipped);
-    saveSkippedTours(newSkipped);
-    
-    setActiveTour(null);
-    setCurrentStep(0);
-    saveActiveTourState(null, 0);
-  };
-
-  // Separate skip function that doesn't mark as completed
-  const skipTour = (tourId: string) => {
-    if (!user?.id) return;
-    
-    const newSkipped = new Set(skippedTours);
-    newSkipped.add(tourId);
-    setSkippedTours(newSkipped);
-    saveSkippedTours(newSkipped);
-    
     setActiveTour(null);
     setCurrentStep(0);
     saveActiveTourState(null, 0);
   };
 
   const resetTour = (tourId: string) => {
-    if (!user?.id) return;
-    
-    // Remove from both completed and skipped
     const newCompleted = new Set(completedTours);
     newCompleted.delete(tourId);
     setCompletedTours(newCompleted);
     saveCompletedTours(newCompleted);
-    
-    const newSkipped = new Set(skippedTours);
-    newSkipped.delete(tourId);
-    setSkippedTours(newSkipped);
-    saveSkippedTours(newSkipped);
   };
 
   const isTourCompleted = (tourId: string) => {
     return completedTours.has(tourId);
-  };
-
-  const isTourSkipped = (tourId: string) => {
-    return skippedTours.has(tourId);
   };
 
   const setCurrentTourStep = (step: number) => {
@@ -501,13 +346,6 @@ export default function TourProvider({ children }: TourProviderProps) {
     const currentStepData = allSteps[currentStep];
 
     if (!currentStepData) {
-      return [];
-    }
-
-    // Additional safety check: if step requires company but user doesn't have one, skip tour
-    if (currentStepData.requiresCompany && !hasCompany()) {
-      console.warn(`Current tour step requires company but none selected. Skipping tour.`);
-      skipTour(activeTour);
       return [];
     }
 
@@ -544,13 +382,6 @@ export default function TourProvider({ children }: TourProviderProps) {
       const currentPage =
         pathname.endsWith("/") && pathname !== "/" ? pathname.slice(0, -1) : pathname;
 
-      // Additional safety check: if next step requires company but user doesn't have one, skip tour
-      if (nextStepData.requiresCompany && !hasCompany()) {
-        console.warn(`Next tour step requires company but none selected. Skipping tour.`);
-        skipTour(activeTour);
-        return;
-      }
-
       // Check if next step is on a different page
       if (nextStepData.page !== "*" && nextStepData.page !== currentPage) {
         // Save the step progression before navigation
@@ -561,7 +392,7 @@ export default function TourProvider({ children }: TourProviderProps) {
         setCurrentTourStep(nextStep);
       }
     } else {
-      // Tour complete - actually completed, not skipped
+      // Tour complete
       completeTour(activeTour);
     }
   };
@@ -601,7 +432,7 @@ export default function TourProvider({ children }: TourProviderProps) {
 
   const handleSkipTour = () => {
     if (activeTour) {
-      skipTour(activeTour); // Use skip function instead of complete
+      completeTour(activeTour);
     }
   };
 
@@ -636,7 +467,7 @@ export default function TourProvider({ children }: TourProviderProps) {
           // Wait for dropdown to open before advancing
           setTimeout(() => {
             handleStepProgressionRef.current?.();
-          }, 500);
+          }, 500); // Increased delay to ensure dropdown animation completes
           return;
         }
       }
@@ -715,10 +546,8 @@ export default function TourProvider({ children }: TourProviderProps) {
       value={{
         startTour,
         completeTour,
-        skipTour, // expose skip function
         resetTour,
         isTourCompleted,
-        isTourSkipped, // expose skip check
         isAnyTourActive: !!activeTour,
         currentTourStep: currentStep,
         setCurrentTourStep,
@@ -730,7 +559,7 @@ export default function TourProvider({ children }: TourProviderProps) {
         <OnboardingTour
           steps={stepsToDisplay}
           onComplete={handleCompleteTour}
-          onSkip={handleSkipTour} // This will call skipTour, not completeTour
+          onSkip={handleSkipTour}
           currentStepIndex={0}
           totalSteps={allSteps.length}
           globalCurrentStep={currentStep}

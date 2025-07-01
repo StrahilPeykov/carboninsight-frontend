@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
+import PopupModal from "../components/ui/PopupModal";
 import { useAuth } from "../context/AuthContext";
 import { companyApi, CompanyCreateData } from "@/lib/api/companyApi";
 import { ApiError } from "@/lib/api/apiClient";
@@ -24,8 +25,9 @@ export default function CreateCompanyPage() {
   });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string[] }>({});
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [newCompanyId, setNewCompanyId] = useState<string>("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -36,48 +38,82 @@ export default function CreateCompanyPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+    console.log("Form submission starting");
     e.preventDefault();
+    console.log("preventDefault called");
     setIsSubmitting(true);
     setError("");
     setFieldErrors({});
-    setSuccessMessage("");
 
     try {
-      // Using companyApi instead of direct fetch
+      console.log("About to call API");
       const newCompany = await companyApi.createCompany(formData);
+      console.log("API call successful");
 
-      setSuccessMessage("Company successfully created!");
+      setNewCompanyId(newCompany.id);
 
-      // Store the new company ID in localStorage using the helper function
-      setLocalStorageItem("selected_company_id", newCompany.id);
-
-      // Notify navbar that company list changed
-      if (typeof window !== "undefined") {
-        console.log("Company created - dispatching events");
-        window.dispatchEvent(new CustomEvent("companyListChanged"));
-        window.dispatchEvent(new CustomEvent("companyChanged"));
-      }
-
-      // Redirect after a short delay to show the success message
-      setTimeout(() => {
-        router.push("/dashboard");
-      }, 2000);
+      // Show success modal
+      setShowSuccessModal(true);
     } catch (err) {
-      console.error("Error creating company:", err);
+      console.log("Error caught:", err);
 
       // Handle validation errors from API
       if (err instanceof ApiError && err.data && typeof err.data === "object") {
-        setFieldErrors(err.data as { [key: string]: string[] });
-        setError("Please check company details.");
+        const errorResponse = err.data as { type: string, errors: Array<{ attr: string, code: string, detail: string }> };
+        
+        if (errorResponse.errors && Array.isArray(errorResponse.errors)) {
+          // Process field-specific errors
+          const newFieldErrors: { [key: string]: string[] } = {};
+          
+          // Group error messages by field
+          errorResponse.errors.forEach(error => {
+            if (!newFieldErrors[error.attr]) {
+              newFieldErrors[error.attr] = [];
+            }
+            newFieldErrors[error.attr].push(error.detail);
+          });
+          
+          setFieldErrors(newFieldErrors);
+          
+          // Only display non-field errors at the top
+          const nonFieldErrors = newFieldErrors['non_field_errors'] || [];
+          if (nonFieldErrors.length > 0) {
+            setError(nonFieldErrors.join('. '));
+          } else {
+            // Don't show any general error if there are no non-field errors
+            setError("");
+          }
+        } else {
+          setError("Invalid response format from server");
+        }
       } else {
         setError(err instanceof Error ? err.message : "An unexpected error occurred.");
       }
     } finally {
+      console.log("Submit handling complete");
       setIsSubmitting(false);
     }
   };
 
-  const isDisabled = isSubmitting || !!successMessage;
+  const handleModalConfirmation = () => {
+    setShowSuccessModal(false);
+    
+    // Navigate first
+    router.push("/dashboard");
+    
+    // Set localStorage after navigation starts
+    setTimeout(() => {
+      setLocalStorageItem("selected_company_id", newCompanyId);
+      
+      // Dispatch them events after a short delay
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("companyListChanged"));
+        window.dispatchEvent(new CustomEvent("companyChanged"));
+      }
+    }, 200); // Small delay gives navigation time to start
+  };
+
+  const isDisabled = isSubmitting;
 
   if (isLoading) {
     return (
@@ -100,10 +136,6 @@ export default function CreateCompanyPage() {
 
       <Card className="max-w-md mx-auto">
         {error && <div className="mb-4 p-3 bg-red-100 text-red-800 rounded-md">{error}</div>}
-
-        {successMessage && (
-          <div className="mb-4 p-3 bg-green-100 text-green-800 rounded-md">{successMessage}</div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -183,6 +215,20 @@ export default function CreateCompanyPage() {
             {isSubmitting ? "Creating company..." : "Submit"}
           </Button>
         </form>
+        {/* Success Modal */}
+        {showSuccessModal && (
+          <PopupModal
+            title="Company created successfully!"
+            confirmLabel="Ok"
+            showCancel={false}
+            onConfirm={handleModalConfirmation}
+            onClose={handleModalConfirmation}
+          >
+            <p className="text-gray-800 dark:text-gray-200">
+              Your company has been successfully created. You can now start managing your carbon footprint data.
+            </p>
+          </PopupModal>
+        )}
       </Card>
     </div>
   );

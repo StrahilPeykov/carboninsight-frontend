@@ -70,9 +70,10 @@ export default function LoginPage() {
       announcement.setAttribute("role", "status");
       announcement.setAttribute("aria-live", "polite");
       announcement.className = "sr-only";
-      announcement.textContent = "Login successful. Redirecting...";
+      announcement.textContent = "Login successful. Redirecting to dashboard...";
       document.body.appendChild(announcement);
 
+      router.push("/dashboard");
     } catch (err) {
       console.error("Login error:", err);
 

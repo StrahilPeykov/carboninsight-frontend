@@ -27,24 +27,21 @@ export function useTourTrigger() {
 
     // Only start new tours if no tour is active
     if (isNewUser && !isTourCompleted("main-onboarding")) {
-      // New users can land on either home or list-companies, trigger tour on both
-      if (pathname === "/" || pathname === "/list-companies") {
-        // Small delay to ensure page is fully loaded
-        setTimeout(() => {
-          startTour("main-onboarding");
-          localStorage.removeItem("isNewUser");
-        }, 1000);
-        return;
-      }
+      // Small delay to ensure page is fully loaded
+      setTimeout(() => {
+        startTour("main-onboarding");
+        localStorage.removeItem("isNewUser");
+      }, 1000);
+      return;
     }
 
     // Check if user has a company
     const hasCompany = localStorage.getItem("selected_company_id");
 
-    // Only trigger context-specific tours if user has completed onboarding AND has a company
-    if (isTourCompleted("main-onboarding") && hasCompany) {
+    // Only trigger context-specific tours if user has completed onboarding or has a company
+    if (isTourCompleted("main-onboarding") || hasCompany) {
       // Product tour - only if user has a company and hasn't completed it
-      if (pathname === "/product-list" && !isTourCompleted("product-list-tour")) {
+      if (pathname === "/product-list" && hasCompany && !isTourCompleted("product-list-tour")) {
         const hasSeenProductList = sessionStorage.getItem("hasSeenProductListTour") === "true";
         if (!hasSeenProductList) {
           setTimeout(() => {
@@ -54,7 +51,7 @@ export function useTourTrigger() {
         }
       }
 
-      // Company tour - only available when user has a company selected
+      // Company tour - available to all authenticated users
       if (pathname === "/list-companies" && !isTourCompleted("company-tour")) {
         const hasSeenCompanyList = sessionStorage.getItem("hasSeenCompanyListTour") === "true";
         if (!hasSeenCompanyList) {

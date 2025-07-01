@@ -322,7 +322,7 @@ export default function ProductClientPage() {
                         {/* step circle */}
                         <div
                           className={`
-                            z-10 w-8 h-8 rounded-full flex items-center justify-center mb-1
+                            z-10 w-8 h-8 rounded-full flex items-center justify-center mt-1 mb-1
                             text-white text-sm font-medium
                             ${
                               selected
@@ -382,11 +382,17 @@ export default function ProductClientPage() {
                       tabKey={t.key}
                       mode={mode}
                       setProductId={setProductId}
-                      onFieldChange={() =>
-                        setTabConfig(cfg =>
-                          cfg.map((tab, i) => (i === activeTab ? { ...tab, saved: false } : tab))
-                        )
-                      }
+                      onFieldChange={() => {
+                        if (t.key === "productInfo") {
+                          setTabConfig(cfg =>
+                            cfg.map((tab, i) => (i === activeTab  ? { ...tab, saved: false } : tab))
+                          );
+                        } else {
+                          setTabConfig(cfg =>
+                            cfg.map((tab, i) => (i === activeTab  ? { ...tab, saved: true } : tab))
+                          )
+                        }
+                      }}
                     />
                   </div>
                 </TabPanel>

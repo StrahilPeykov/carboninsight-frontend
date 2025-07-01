@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Building2, LogIn, Users, Boxes, Share2, Plus, Play } from "lucide-react";
+import { Building2, LogIn, Users, Boxes, Share2, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Link from "next/link";
 import { companyApi, Company } from "@/lib/api/companyApi";
+import { setLocalStorageItem } from "@/lib/api/apiClient";
 import { useAuth } from "../context/AuthContext";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
-import { useTour } from "../components/TourProvider";
 
 export default function ListCompaniesPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
@@ -18,7 +18,6 @@ export default function ListCompaniesPage() {
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const { isLoading: authLoading, requireAuth } = useAuth();
-  const { startTour, resetTour } = useTour();
 
   // Require authentication for this page
   requireAuth();
@@ -50,40 +49,15 @@ export default function ListCompaniesPage() {
   }, [authLoading, mounted]);
 
   const selectCompany = (companyId: string) => {
-    console.log("List companies: selecting company", companyId);
-    
-    // Check if already selected to prevent unnecessary work
-    const currentCompanyId = localStorage.getItem("selected_company_id");
-    if (currentCompanyId === companyId) {
-      console.log("Company already selected, just navigating to dashboard");
-      router.push("/dashboard");
-      return;
+    setLocalStorageItem("selected_company_id", companyId);
+
+    // Notify navbar that company selection changed
+    if (typeof window !== "undefined") {
+      console.log("Company selected - dispatching events");
+      window.dispatchEvent(new CustomEvent("companyChanged"));
     }
 
-    localStorage.setItem("selected_company_id", companyId);
-
-    // Dispatch events to notify other components
-    setTimeout(() => {
-      if (typeof window !== "undefined") {
-        console.log("List companies: dispatching events for company selection");
-        
-        // Dispatch events with source information
-        window.dispatchEvent(new CustomEvent("companyListChanged"));
-        window.dispatchEvent(new CustomEvent("companyChanged", {
-          detail: { 
-            companyId, 
-            action: 'selected',
-            source: 'list-companies' 
-          }
-        }));
-      }
-
-      // Navigate after events are dispatched
-      setTimeout(() => {
-        console.log("List companies: navigating to dashboard");
-        router.push("/dashboard");
-      }, 100);
-    }, 0);
+    window.location.href = "/dashboard";
   };
 
   if (authLoading || loading || !mounted) {
@@ -107,31 +81,12 @@ export default function ListCompaniesPage() {
             You don't have any companies yet. Create your first company to start calculating product
             carbon footprints and generating Carbon Footprint Reports.
           </p>
-          
-          {/* Action buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link href="/create-company">
-              <Button size="lg" className="flex items-center gap-2">
-                <Plus className="w-5 h-5" />
-                Create Your First Company
-              </Button>
-            </Link>
-            
-            {/* Tour button for empty state */}
-            <Button 
-              variant="outline" 
-              size="lg" 
-              onClick={() => {
-                // Reset and start the main onboarding tour
-                resetTour("main-onboarding");
-                startTour("main-onboarding");
-              }}
-              className="flex items-center gap-2"
-            >
-              <Play className="w-4 h-4" />
-              Take a Tour
+          <Link href="/create-company">
+            <Button size="lg" className="flex items-center gap-2 mx-auto">
+              <Plus className="w-5 h-5" />
+              Create Your First Company
             </Button>
-          </div>
+          </Link>
         </div>
       ) : (
         <>
@@ -204,7 +159,7 @@ export default function ListCompaniesPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        localStorage.setItem("selected_company_id", company.id);
+                        setLocalStorageItem("selected_company_id", company.id);
                         // Notify navbar
                         if (typeof window !== "undefined") {
                           window.dispatchEvent(new CustomEvent("companyChanged"));
@@ -222,7 +177,7 @@ export default function ListCompaniesPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        localStorage.setItem("selected_company_id", company.id);
+                        setLocalStorageItem("selected_company_id", company.id);
                         // Notify navbar
                         if (typeof window !== "undefined") {
                           window.dispatchEvent(new CustomEvent("companyChanged"));
@@ -240,7 +195,7 @@ export default function ListCompaniesPage() {
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        localStorage.setItem("selected_company_id", company.id);
+                        setLocalStorageItem("selected_company_id", company.id);
                         // Notify navbar
                         if (typeof window !== "undefined") {
                           window.dispatchEvent(new CustomEvent("companyChanged"));

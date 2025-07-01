@@ -24,6 +24,7 @@ import * as apiCalls from "./api-calls";
 import * as Helpers from "./helpers";
 import { lifecycleOptions, FormData, getUserEnergyColumns } from "./types";
 import { OurTable } from "@/app/components/ui/OurTable";
+import ImportExportDropdown from "@/app/components/ui/ImportExportDropdown";
 
 // ── UserEnergy Tab: Handles user energy emissions CRUD ──────────────────────
 const UserEnergy = forwardRef<TabHandle, DataPassedToTabs>(
@@ -63,9 +64,9 @@ const UserEnergy = forwardRef<TabHandle, DataPassedToTabs>(
 
     const productId = () => {
       const id = parseInt(productIdString, 10);
-      if (isNaN(id)) {
-        throw new Error("productId is not a number");
-      }
+      // if (isNaN(id)) {
+      //   throw new Error("productId is not a number");
+      // }
       return id;
     };
 
@@ -162,6 +163,14 @@ const UserEnergy = forwardRef<TabHandle, DataPassedToTabs>(
           >
             <Plus className="w-4 h-4" aria-hidden="true" /> Add User Energy
           </Button>
+          <ImportExportDropdown
+            companyId={company_pk}
+            productId={productId()}
+            section="user"
+            onImportComplete={() =>
+              apiCalls.fetchEmissions(setIsLoading, company_pk, productId, setEmissions)
+            }
+          />
         </div>
 
         {/* Add/Edit Emission Modal */}

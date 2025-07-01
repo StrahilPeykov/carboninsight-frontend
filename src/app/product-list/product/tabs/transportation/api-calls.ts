@@ -15,6 +15,9 @@ export const fetchEmissions = async (
   productId: () => number,
   setEmissions: (a: TransportEmission[]) => void
 ) => {
+  if (isNaN(productId())) {
+    return;
+  }
   setIsLoading(true);
   try {
     const data = await transportEmissionApi.getAllTransportEmissions(company_pk, productId());

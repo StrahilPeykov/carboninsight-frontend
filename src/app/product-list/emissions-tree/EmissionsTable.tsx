@@ -7,11 +7,10 @@ import {
   SquareMinus,
   Building2,
   Truck,
-  Box,
   Users,
-  BarChart,
   Edit,
   Info,
+  Cog,
 } from "lucide-react";
 import { EmissionTrace } from "@/lib/api/productApi";
 
@@ -67,15 +66,12 @@ function getSourceIcon(source: string) {
     case "TransportEmission":
     case "TransportEmissionReference":
       return <Truck size={16} aria-hidden="true" />;
-    case "Material":
-    case "MaterialReference":
-      return <Box size={16} aria-hidden="true" />;
-    case "UserEnergy":
-    case "UserEnergyReference":
+    case "UserEnergyEmission":
+    case "UserEnergyEmissionReference":
       return <Users size={16} aria-hidden="true" />;
-    case "ProductionEnergy":
-    case "ProductionEnergyReference":
-      return <BarChart size={16} aria-hidden="true" />;
+    case "ProductionEnergyEmission":
+    case "ProductionEnergyEmissionReference":
+      return <Cog size={16} aria-hidden="true" />;
     default:
       return <Edit size={16} aria-hidden="true" />;
   }
@@ -89,15 +85,12 @@ function getSourceColor(source: string) {
     case "TransportEmission":
     case "TransportEmissionReference":
       return "#f59e42"; // orange-400
-    case "Material":
-    case "MaterialReference":
-      return "#10b981"; // green-500
-    case "UserEnergy":
-    case "UserEnergyReference":
-      return "#a21caf"; // purple-700
-    case "ProductionEnergy":
-    case "ProductionEnergyReference":
-      return "#eab308"; // yellow-400
+    case "UserEnergyEmission":
+    case "UserEnergyEmissionReference":
+      return "#047857"; // green-700
+    case "ProductionEnergyEmission":
+    case "ProductionEnergyEmissionReference":
+      return "#ef4444" // red-500	
     default:
       return "#6b7280"; // gray-500
   }
@@ -192,11 +185,11 @@ export const EmissionTreeItem: FC<EmissionTreeItemProps> = ({
             <Tooltip
               content={
                 <div role="tooltip">
-                  <h4 className="font-semibold text-gray-100 mb-1">Emissions by Stage:</h4>
+                  <h4 className="font-semibold dark:text-gray-100 text-black mb-1">Emissions by Stage:</h4>
                   {Object.entries(emission.emissions_subtotal).map(([stage, factor]) => (
                     <div key={stage} className="mb-1">
-                      <p className="font-semibold text-gray-100">{stage}</p>
-                      <p className="text-sm text-gray-200">
+                      <p className="font-semibold dark:text-gray-100 text-black">{stage}</p>
+                      <p className="text-sm dark:text-gray-200 text-black">
                         Bio: {factor.biogenic.toFixed(2)}
                         <br />
                         Non-bio: {factor.non_biogenic.toFixed(2)}
@@ -209,6 +202,13 @@ export const EmissionTreeItem: FC<EmissionTreeItemProps> = ({
               <Info className="w-4 h-4 text-gray-400 ml-1 inline" />
             </Tooltip>
           )}
+        </td>
+        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+          <span aria-label={`Total: ${((emissionValue || 0) * quantity).toFixed(3)} kilograms CO2 equivalent`}>
+            {emissionValue !== undefined && Number.isFinite(emissionValue) && quantity
+              ? `${(emissionValue * quantity).toFixed(3)} kg CO₂-eq`
+              : "0"}
+          </span>
         </td>
       </tr>
       {isOpen &&
@@ -291,7 +291,10 @@ export const EmissionsTable: FC<EmissionsTableProps> = ({ emissions }) => {
               Quantity
             </th>
             <th scope="col" className="p-2 text-left text-sm font-medium">
-              Emissions (kg CO₂e)
+              Emissions
+            </th>
+            <th scope="col" className="p-2 text-left text-sm font-medium">
+              Total
             </th>
           </tr>
         </thead>

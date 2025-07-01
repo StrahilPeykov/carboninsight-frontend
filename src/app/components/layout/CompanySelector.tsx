@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Building2, Search, Settings, Users, Plus, Check, ChevronDown, Share2 } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 interface Company {
   id: string;
@@ -36,7 +35,6 @@ export default function CleanCompanySelector({
   onClose,
 }: CleanCompanySelectorProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const router = useRouter();
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -185,9 +183,7 @@ export default function CleanCompanySelector({
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
               Select Company
             </h3>
-            
-            {/* Clean 4-button grid */}
-            <div className="grid grid-cols-4 gap-2 mb-3">
+            <div className="grid grid-cols-4 gap-2">
               <button
                 onClick={e => {
                   e.preventDefault();
@@ -206,7 +202,6 @@ export default function CleanCompanySelector({
                 <span className="hidden sm:inline">Settings</span>
                 <span className="sm:hidden text-[10px]">Set</span>
               </button>
-              
               <button
                 onClick={e => {
                   e.preventDefault();
@@ -225,7 +220,6 @@ export default function CleanCompanySelector({
                 <span className="hidden sm:inline">Users</span>
                 <span className="sm:hidden text-[10px]">Use</span>
               </button>
-              
               <button
                 onClick={e => {
                   e.preventDefault();
@@ -244,7 +238,6 @@ export default function CleanCompanySelector({
                 <span className="hidden sm:inline">Sharing</span>
                 <span className="sm:hidden text-[10px]">Shr</span>
               </button>
-              
               <button
                 onClick={() => {
                   onCreateCompany();
@@ -259,23 +252,6 @@ export default function CleanCompanySelector({
                 <span className="sm:hidden text-[10px]">New</span>
               </button>
             </div>
-            
-            {/* Contextual manage companies button */}
-            <button
-              onClick={() => {
-                router.push("/list-companies");
-                onClose();
-              }}
-              className="w-full text-left px-3 py-2 text-sm text-blue-700 hover:text-blue-800 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/30 rounded-md transition-colors flex items-center justify-center border border-blue-200 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700"
-            >
-              <Building2 size={14} className="mr-2" />
-              {companies.length === 0 
-                ? "Get Started" 
-                : companies.length === 1 
-                  ? "Manage Company" 
-                  : "Manage All Companies"
-              }
-            </button>
           </div>
 
           {/* Search (if many companies) */}

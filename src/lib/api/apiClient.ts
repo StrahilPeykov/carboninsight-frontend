@@ -24,6 +24,7 @@ export interface RequestOptions<T = Record<string, unknown>> {
   body?: T;
   headers?: Record<string, string>;
   requiresAuth?: boolean;
+  responseType?: "json" | "blob"; // Add this field
 }
 
 // Function to safely get token from localStorage (browser-safe)
@@ -39,7 +40,7 @@ export async function apiRequest<R, T = Record<string, unknown>>(
   endpoint: string,
   options: RequestOptions<T> = {}
 ): Promise<R> {
-  const { method = "GET", body, headers = {}, requiresAuth = true } = options;
+  const { method = "GET", body, headers = {}, requiresAuth = true, responseType = "json" } = options;
 
   // Get authentication token if required
   const token = requiresAuth ? getAuthToken() : null;
@@ -66,7 +67,7 @@ export async function apiRequest<R, T = Record<string, unknown>>(
     headers: requestHeaders,
   };
 
-  // Add body for non-GET requests
+  // Add body to request if it exists
   if (body && method !== "GET") {
     requestOptions.body = JSON.stringify(body);
   }
@@ -75,24 +76,34 @@ export async function apiRequest<R, T = Record<string, unknown>>(
     // Make the request
     const response = await fetch(`${API_URL}${endpoint}`, requestOptions);
 
-    // Parse response
-    let data: unknown;
-    const contentType = response.headers.get("content-type");
-    if (contentType && contentType.includes("application/json")) {
-      data = await response.json();
-    } else {
-      data = await response.text();
-    }
-
     // Handle errors
     if (!response.ok) {
+      // Parse error response first
+      let errorData;
+      try {
+        // Try to parse error as JSON
+        errorData = await response.json();
+      } catch (e) {
+        // Error response wasn't valid JSON
+        errorData = null;
+      }
+      
+      // Now create the error message
       const errorMessage =
-        typeof data === "object" && data !== null && "detail" in data
-          ? String(data.detail)
+        typeof errorData === "object" && errorData !== null && "detail" in errorData
+          ? String(errorData.detail)
           : `API Error: ${response.status}`;
 
-      console.error(`API Error (${response.status}):`, errorMessage, data);
-      throw new ApiError(response.status, errorMessage, data);
+      console.error(`API Error (${response.status}):`, errorMessage, errorData);
+      throw new ApiError(response.status, errorMessage, errorData);
+    }
+
+    // Parse the response based on responseType
+    let data: any;
+    if (responseType === "blob") {
+      data = await response.blob();
+    } else {
+      data = await response.json();
     }
 
     return data as R;
@@ -181,8 +192,8 @@ export function useApi() {
 
 // localStorage helper functions
 
-// Sets an item in localStorage and optionally dispatches a custom event
-export function setLocalStorageItem(key: string, value: string, dispatchEvent: boolean = false): void {
+// Sets an item in localStorage and dispatches a custom event to notify other components
+export function setLocalStorageItem(key: string, value: string): void {
   if (typeof window === "undefined") return;
 
   // Check if the value is actually changing
@@ -195,29 +206,21 @@ export function setLocalStorageItem(key: string, value: string, dispatchEvent: b
   localStorage.setItem(key, value);
 
   // Only dispatch custom event if value actually changed
-  if (dispatchEvent) {
-    // Use synchronous dispatch to avoid race conditions
-    window.dispatchEvent(new CustomEvent("companyChanged", { 
-      detail: { key, value, previousValue: currentValue, source: 'helper' } 
-    }));
-  }
+  window.dispatchEvent(new CustomEvent("companyChanged", { detail: { key, value } }));
 }
 
-// Removes an item from localStorage and optionally dispatches a custom event
-export function removeLocalStorageItem(key: string, dispatchEvent: boolean = false): void {
+// Removes an item from localStorage and dispatches a custom event
+export function removeLocalStorageItem(key: string): void {
   if (typeof window === "undefined") return;
 
   // Check if there was actually a value to remove
   const hadValue = localStorage.getItem(key) !== null;
-  const previousValue = localStorage.getItem(key);
 
   localStorage.removeItem(key);
 
   // Only dispatch event if there was actually a value removed
-  if (dispatchEvent && hadValue) {
-    window.dispatchEvent(new CustomEvent("companyChanged", { 
-      detail: { key, value: null, previousValue, source: 'helper' } 
-    }));
+  if (hadValue) {
+    window.dispatchEvent(new CustomEvent("companyChanged", { detail: { key, value: null } }));
   }
 }
 

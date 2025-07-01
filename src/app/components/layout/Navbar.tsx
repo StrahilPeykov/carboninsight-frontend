@@ -19,6 +19,7 @@ import {
   Share2,
 } from "lucide-react";
 import { companyApi } from "@/lib/api/companyApi";
+import { setLocalStorageItem } from "@/lib/api/apiClient";
 import CleanCompanySelector from "./CompanySelector";
 
 export default function Navbar() {
@@ -111,6 +112,7 @@ export default function Navbar() {
     setCompanyId(null);
     setCompanyData({ name: "", vat_number: "", business_registration_number: "" });
     logout();
+    router.push("/");
   };
 
   // Get companyId from localStorage and listen for changes
@@ -155,13 +157,6 @@ export default function Navbar() {
       setCompanyData(data);
     } catch (err) {
       console.error("Error fetching company data:", err);
-      // If we can't fetch the company, it might have been deleted or access revoked
-      // Clear the selected company
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("selected_company_id");
-        setCompanyId(null);
-        window.dispatchEvent(new CustomEvent("companyChanged"));
-      }
     }
   };
 
@@ -242,50 +237,39 @@ export default function Navbar() {
     router.push(path);
   };
 
-  // Enhanced company selector handlers with better error handling
+  // Enhanced company selector handlers
   const handleCompanySelect = (selectedCompanyId: string) => {
     console.log("Company selection started:", selectedCompanyId);
 
-    try {
-      // Check if the value is actually changing
-      const currentCompanyId = localStorage.getItem("selected_company_id");
-      if (currentCompanyId === selectedCompanyId) {
-        console.log("Company already selected, no change needed");
-        return;
-      }
+    setLocalStorageItem("selected_company_id", selectedCompanyId);
 
-      localStorage.setItem("selected_company_id", selectedCompanyId);
+    // Force a state update first
+    setCompanyId(selectedCompanyId);
 
-      // Force a state update first
-      setCompanyId(selectedCompanyId);
+    // Dispatch events with slight delays to ensure proper order
+    if (typeof window !== "undefined") {
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("companyListChanged"));
+      }, 10);
 
       setTimeout(() => {
-        if (typeof window !== "undefined") {
-          console.log("Company selection events dispatching for:", selectedCompanyId);
-          
-          // Only dispatch companyChanged event - no need for companyListChanged here
-          window.dispatchEvent(new CustomEvent("companyChanged", {
-            detail: { 
-              companyId: selectedCompanyId, 
-              action: 'selected',
-              source: 'navbar' 
-            }
-          }));
-          
-          console.log("Company selection events dispatched");
-        }
-      }, 0);
+        window.dispatchEvent(new CustomEvent("companyChanged"));
+      }, 20);
 
-      
-    } catch (error) {
-      console.error("Error selecting company:", error);
+      console.log("Company selection events dispatched for:", selectedCompanyId);
+    }
+
+    // Don't force redirect - let user stay on current page
+    // Only redirect if they're on a page that requires no company (like list-companies)
+    if (pathname === "/list-companies" || (!companyId && pathname === "/")) {
+      router.push("/dashboard");
     }
   };
 
   const handleCompanySettings = () => {
     if (companyId) {
       // Ensure the selected company is set before navigating
-      localStorage.setItem("selected_company_id", companyId);
+      setLocalStorageItem("selected_company_id", companyId);
       router.push("/company-details");
     }
   };
@@ -293,14 +277,14 @@ export default function Navbar() {
   const handleManageUsers = () => {
     if (companyId) {
       // Ensure the selected company is set before navigating
-      localStorage.setItem("selected_company_id", companyId);
+      setLocalStorageItem("selected_company_id", companyId);
       router.push("/manage-user");
     }
   };
 
   const handleDataSharing = () => {
     if (companyId) {
-      localStorage.setItem("selected_company_id", companyId);
+      setLocalStorageItem("selected_company_id", companyId);
       router.push("/product-data-sharing");
     }
   };

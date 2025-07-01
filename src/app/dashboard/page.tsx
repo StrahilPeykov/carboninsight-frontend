@@ -412,20 +412,23 @@ export default function DashboardPage() {
             Create and manage companies, add authorized users, and handle data sharing requests.
           </p>
           <div className="space-y-3">
-            <Button 
+            <button
               onClick={() => handleTourNavigation("/list-companies", "navigate-to-companies")}
-              className="w-full flex justify-between items-center"
+              className="block w-full"
             >
-              <span>View Companies</span>
-              <Building2 className="ml-2 h-4 w-4" />
-            </Button>
-            <Button 
-              variant="outline" 
-              className="w-full"
+              <Button className="w-full flex justify-between items-center">
+                <span>View Companies</span>
+                <Building2 className="ml-2 h-4 w-4" />
+              </Button>
+            </button>
+            <button
               onClick={() => handleTourNavigation("/create-company", undefined)}
+              className="block w-full"
             >
-              Create New Company
-            </Button>
+              <Button variant="outline" className="w-full">
+                Create New Company
+              </Button>
+            </button>
           </div>
         </Card>
 
@@ -436,20 +439,23 @@ export default function DashboardPage() {
             generate Carbon Footprint Reports.
           </p>
           <div className="space-y-3">
-            <Button 
+            <button
               onClick={() => handleTourNavigation("/product-list", "navigate-to-products")}
-              className="w-full flex justify-between items-center"
+              className="block w-full"
             >
-              <span>View Products</span>
-              <BoxesIcon className="ml-2 h-4 w-4" />
-            </Button>
-            <Button 
-              variant="outline" 
-              className="w-full"
+              <Button className="w-full flex justify-between items-center">
+                <span>View Products</span>
+                <BoxesIcon className="ml-2 h-4 w-4" />
+              </Button>
+            </button>
+            <button
               onClick={() => handleTourNavigation("/product-list/product", undefined)}
+              className="block w-full"
             >
-              Add New Product
-            </Button>
+              <Button variant="outline" className="w-full">
+                Add New Product
+              </Button>
+            </button>
           </div>
         </Card>
       </div>

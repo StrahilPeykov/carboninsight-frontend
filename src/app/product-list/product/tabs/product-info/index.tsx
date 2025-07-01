@@ -106,13 +106,15 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
 
     // ── Fetch product data if editing ──
     useEffect(() => {
-      apiCalls
-        .fetchProductData(API_URL, company_pk, access_token, setFieldValues, productId)
-        .then(responseOk => {
-          if (responseOk) {
-            console.log("Product data fetched successfully", productId);
-          }
-        });
+      if (productId && productId.trim() !== "") {
+        apiCalls
+          .fetchProductData(API_URL, company_pk, access_token, setFieldValues, productId)
+          .then(responseOk => {
+            if (responseOk) {
+              console.log("Product data fetched successfully", productId);
+            }
+          });
+      }
     }, [productId]);
 
     // ── List of all field keys ──

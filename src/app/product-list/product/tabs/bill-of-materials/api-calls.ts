@@ -3,6 +3,7 @@ import { companyApi, Company } from "@/lib/api/companyApi";
 import { productApi, Product } from "@/lib/api/productApi";
 import { Material } from "./types";
 import { closeDeleteModal } from "@/app/product-list/product/tabs/bill-of-materials/helpers";
+import { ApiError } from "@/lib/api";
 
 // ── Fetch all BoM items from API ────────────────────────────
 export const fetchBOMItems = async (
@@ -174,57 +175,34 @@ export const handleAddProduct = async (
     } catch (error: unknown) {
       console.error("Error adding material:", error);
 
-      // Log the entire error object to see what we're working with
-      console.log("Full error response:", JSON.stringify(error));
+      let errorMessage = "An error occurred while adding the material.";
 
-      let errorMessage = "Failed to add material. Please try again.";
+      if (error instanceof ApiError && error.data) {
+        const errorData = error.data as any;
 
-      // Try to extract error from various possible formats
-      try {
-        if (typeof error === "object" && error !== null) {
-          // Try to extract directly from the response data
-          const errorObj = error as any;
+        // Check if the error has the expected structure with multiple errors
+        if (errorData?.errors && Array.isArray(errorData.errors) && errorData.errors.length > 0) {
+          if (errorData.errors.length === 1) {
+            // Single error case
+            const firstError = errorData.errors[0];
+            if (firstError?.detail) {
+              errorMessage = firstError.detail;
+            }
+          } else {
+            // Multiple errors case - join all details with a space
+            const errorDetails = errorData.errors
+              .map((err: {detail: string}) => err.detail)
+              .filter((detail: string) => detail)
+              .join(" ");
 
-          // Check for errors array in the raw error object
-          if (errorObj.errors && Array.isArray(errorObj.errors)) {
-            const detail = errorObj.errors.find((e: any) => e.attr === "non_field_errors")?.detail;
-            if (detail) {
-              errorMessage = detail;
+            if (errorDetails) {
+              errorMessage = errorDetails;
             }
           }
-
-          // Check in response property (common in fetch/axios wrappers)
-          else if (errorObj.response?.data?.errors) {
-            const detail = errorObj.response.data.errors.find(
-              (e: any) => e.attr === "non_field_errors"
-            )?.detail;
-            if (detail) {
-              errorMessage = detail;
-            }
-          }
-
-          // Check in body property (common in some API clients)
-          else if (errorObj.body?.errors) {
-            const detail = errorObj.body.errors.find(
-              (e: any) => e.attr === "non_field_errors"
-            )?.detail;
-            if (detail) {
-              errorMessage = detail;
-            }
-          }
-
-          // Access potentially raw error data
-          else if (errorObj.data?.errors) {
-            const detail = errorObj.data.errors.find(
-              (e: any) => e.attr === "non_field_errors"
-            )?.detail;
-            if (detail) {
-              errorMessage = detail;
-            }
-          }
+        } else if (typeof errorData?.detail === 'string') {
+          // Handle direct detail property
+          errorMessage = errorData.detail;
         }
-      } catch (parseError) {
-        console.error("Error parsing error response:", parseError);
       }
 
       setAddMaterialError(errorMessage);

@@ -84,26 +84,21 @@ export default function CompanyDetailsPage() {
 
       // Show success message
       setSuccessMessage("Company data successfully edited!");
+      setIsLoading(false);
 
-      // Immediately refetch the company data to update the UI
-      try {
-        const updatedCompanyData = await companyApi.getCompany(companyId);
-        setFormData(updatedCompanyData);
-      } catch (fetchError) {
-        console.error("Error refetching company data:", fetchError);
-        // Don't fail the save operation, just log the error
-      }
+      // Store success state in sessionStorage to persist after refresh
+      sessionStorage.setItem("company_edit_success", "true");
 
-      // Notify other components that company data has changed
-      if (typeof window !== "undefined") {
-        console.log("Company updated - dispatching events");
-        
-        // Dispatch both events to update navbar and other components
-        window.dispatchEvent(new CustomEvent("companyListChanged"));
-        window.dispatchEvent(new CustomEvent("companyChanged", {
-          detail: { companyId, action: 'updated' }
-        }));
-      }
+      // Delay event dispatch to allow user to see the success message
+      setTimeout(() => {
+        if (typeof window !== "undefined") {
+          console.log("Company updated - dispatching events");
+          // Only dispatch one event to minimize side effects
+          window.dispatchEvent(new CustomEvent("companyChanged", {
+            detail: { companyId }
+          }));
+        }
+      }, 1500); // 1.5 second delay
 
       return;
     } catch (err) {

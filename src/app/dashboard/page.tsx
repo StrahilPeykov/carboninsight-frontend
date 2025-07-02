@@ -13,6 +13,9 @@ import { productApi } from "@/lib/api/productApi";
 import { auditLogApi, LogItem } from "@/lib/api/auditLogApi";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
+/**
+ * Company data interface for dashboard statistics and information display
+ */
 interface CompanyData {
   id: string;
   name: string;
@@ -23,21 +26,40 @@ interface CompanyData {
   companies_using_count: number;
 }
 
+/**
+ * Dashboard Page Component
+ * 
+ * The main dashboard provides users with an overview of their CarbonInsight activities,
+ * including company statistics, quick actions, and recent activity logs.
+ * 
+ * Key Features:
+ * - Company selection and statistics display
+ * - Product and company counts with quick navigation
+ * - Pending data sharing requests overview
+ * - Environmental impact metrics and tooltips
+ * - Integrated guided tour support
+ * - Real-time audit log display
+ * - Responsive card-based layout
+ * - Authentication requirement enforcement
+ */
 export default function DashboardPage() {
   const { user, isLoading, requireAuth } = useAuth();
   const router = useRouter();
 
-  // Require authentication for this page
+  // Require authentication for this page - redirect to login if not authenticated
   requireAuth();
 
-  const [companyCount, setCompanyCount] = useState(0);
-  const [productCount, setProductCount] = useState(0);
-  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
-  const [selectedCompany, setSelectedCompany] = useState<CompanyData | null>(null);
-  const [logItems, setLogItems] = useState<LogItem[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [dataLoading, setDataLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
+  // Dashboard statistics state management
+  const [companyCount, setCompanyCount] = useState(0);                    // Total companies user has access to
+  const [productCount, setProductCount] = useState(0);                   // Products in selected company
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);   // Pending data sharing requests
+  const [selectedCompany, setSelectedCompany] = useState<CompanyData | null>(null); // Currently selected company
+  const [logItems, setLogItems] = useState<LogItem[]>([]);               // Audit log entries
+  const [error, setError] = useState<string | null>(null);               // Error state for API failures
+  const [dataLoading, setDataLoading] = useState(true);                  // Loading state for data fetching
+  const [mounted, setMounted] = useState(false);                         // Client-side mounting state
+
+  // Company statistics for environmental impact display
   const [companyStats, setCompanyStats] = useState<{
     total_emissions_across_products: number;
     products_using_count: number;
@@ -48,15 +70,21 @@ export default function DashboardPage() {
     companies_using_count: 0,
   });
 
-  // API URL from environment variables with fallback
+  // API URL configuration with fallback for development
   const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
-  // Ensure component is mounted before accessing localStorage
+  /**
+   * Ensure component is mounted before accessing localStorage
+   * Prevents hydration mismatches between server and client
+   */
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Check if company is selected
+  /**
+   * Check if a company is selected and redirect if none found
+   * This ensures users have selected a company before viewing the dashboard
+   */
   useEffect(() => {
     if (
       !isLoading &&
@@ -68,7 +96,10 @@ export default function DashboardPage() {
     }
   }, [isLoading, router, mounted]);
 
-  // Handle navigation with tour support
+  /**
+   * Handle navigation with guided tour support
+   * Dispatches tour events when active tour is detected in session storage
+   */
   const handleTourNavigation = (path: string, tourAction?: string) => {
     const activeTour = sessionStorage.getItem("activeTour");
     if (activeTour && tourAction) {
@@ -81,23 +112,29 @@ export default function DashboardPage() {
     router.push(path);
   };
 
-  // Handle unauthorized access
+  /**
+   * Handle unauthorized API responses
+   * Clears authentication data and redirects to login when receiving 401 errors
+   */
   const handleUnauthorized = (status: number) => {
     if (status === 401) {
-      // Clear authentication data
+      // Clear authentication data on unauthorized access
       if (typeof window !== "undefined") {
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
         localStorage.removeItem("selected_company_id");
       }
-      // Redirect to login page
+      // Redirect to login page for re-authentication
       router.push("/login");
       return true;
     }
     return false;
   };
 
-  // Load dashboard data
+  /**
+   * Main dashboard data fetching effect
+   * Loads companies, products, sharing requests, and audit logs
+   */
   useEffect(() => {
     if (!mounted) return;
 
@@ -112,7 +149,7 @@ export default function DashboardPage() {
           return;
         }
 
-        // Fetch companies
+        // Fetch user's companies for count display
         const companiesResponse = await fetch(`${API_URL}/companies/my/`, {
           method: "GET",
           headers: {
@@ -130,12 +167,12 @@ export default function DashboardPage() {
         const companiesData = await companiesResponse.json();
         setCompanyCount(companiesData.length);
 
-        // Get the selected company ID
+        // Get the selected company ID from localStorage
         const selectedCompanyId =
           typeof window !== "undefined" ? localStorage.getItem("selected_company_id") : null;
 
         if (selectedCompanyId) {
-          // Fetch selected company details
+          // Fetch detailed information for the selected company
           const companyResponse = await fetch(`${API_URL}/companies/${selectedCompanyId}/`, {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -151,7 +188,7 @@ export default function DashboardPage() {
           const companyData = await companyResponse.json();
           setSelectedCompany(companyData);
 
-          // Fetch products for the selected company
+          // Fetch products for the selected company to get product count
           const productsResponse = await fetch(
             `${API_URL}/companies/${selectedCompanyId}/products/`,
             {
@@ -178,6 +215,7 @@ export default function DashboardPage() {
             ).length;
             setPendingRequestsCount(pendingCount);
           } catch (err) {
+            // Handle sharing request errors gracefully
             if (
               typeof err === 'object' &&
               err !== null &&
@@ -194,7 +232,7 @@ export default function DashboardPage() {
             setPendingRequestsCount(0);
           }
 
-          // Load audit log items
+          // Load audit log items for activity tracking
           try {
             const auditLogItems = await auditLogApi.getCompanyAuditLogs(
               parseInt(selectedCompanyId)
@@ -204,7 +242,7 @@ export default function DashboardPage() {
             console.error("Error fetching audit logs:", err);
           }
 
-          // fetch company details on external usage
+          // Update company statistics for environmental impact display
           setCompanyStats({
             total_emissions_across_products: companyData.total_emissions_across_products || 0,
             products_using_count: companyData.products_using_count || 0,
@@ -221,11 +259,13 @@ export default function DashboardPage() {
       }
     };
 
+    // Only fetch data when authentication is complete and component is mounted
     if (!isLoading && mounted) {
       fetchDashboardData();
     }
   }, [API_URL, isLoading, mounted]);
 
+  // Show loading skeleton while authentication or data loading is in progress
   if (isLoading || dataLoading || !mounted) {
     return (
       <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -234,6 +274,7 @@ export default function DashboardPage() {
     );
   }
 
+  // Show error state if data fetching failed
   if (error) {
     return (
       <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -246,6 +287,7 @@ export default function DashboardPage() {
 
   return (
     <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Welcome header with user name and company information */}
       <div className="mb-8">
         <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white">
           Welcome,{" "}
@@ -260,8 +302,9 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Quick Stats */}
+      {/* Quick Statistics Grid - First Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        {/* Companies Card - Navigation to company list with tour support */}
         <button
           onClick={() => handleTourNavigation("/list-companies", "navigate-to-companies")}
           className="block transition-transform hover:scale-105 w-full text-left"
@@ -282,6 +325,7 @@ export default function DashboardPage() {
           </Card>
         </button>
 
+        {/* Products Card - Navigation to product list */}
         <button
           onClick={() => handleTourNavigation("/product-list", "navigate-to-products")}
           className="block transition-transform hover:scale-105 w-full text-left"
@@ -299,6 +343,7 @@ export default function DashboardPage() {
           </Card>
         </button>
 
+        {/* Pending Requests Card - Data sharing management */}
         <Link href="/product-data-sharing" className="block transition-transform hover:scale-105">
           <Card className="bg-gradient-to-r from-green-50 to-white dark:from-green-900/20 dark:to-gray-800 cursor-pointer hover:shadow-lg">
             <div className="flex items-center">
@@ -310,20 +355,16 @@ export default function DashboardPage() {
                   Pending Requests
                 </h3>
                 <p className="text-2xl font-semibold">{pendingRequestsCount}</p>
-                {/* {pendingRequestsCount > 0 && (
-                  <p className="text-xs text-green-600 dark:text-green-400">
-                    {pendingRequestsCount} awaiting approval
-                  </p>
-                )} */}
               </div>
             </div>
           </Card>
         </Link>
       </div>
 
-      {/* Updated second grid */}
+      {/* Environmental Impact Statistics Grid - Second Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
         <TooltipProvider delayDuration={0}>
+          {/* Companies Using Your Products - Supply chain impact metric */}
           <Card className="bg-gradient-to-r from-purple-50 to-white dark:from-purple-900/20 dark:to-gray-800">
             <div className="flex items-center">
               <div className="p-3 rounded-full bg-purple-100 dark:bg-purple-800">
@@ -349,6 +390,7 @@ export default function DashboardPage() {
             </div>
           </Card>
 
+          {/* Products Using Your Products - Product network reach */}
           <Card className="bg-gradient-to-r from-orange-50 to-white dark:from-orange-900/20 dark:to-gray-800">
             <div className="flex items-center">
               <div className="p-3 rounded-full bg-orange-100 dark:bg-orange-800">
@@ -374,6 +416,7 @@ export default function DashboardPage() {
             </div>
           </Card>
 
+          {/* Total Environmental Impact - Cumulative emissions calculation */}
           <Card className="bg-gradient-to-r from-teal-50 to-white dark:from-teal-900/20 dark:to-gray-800">
             <div className="flex items-center">
               <div className="p-3 rounded-full bg-teal-100 dark:bg-teal-800">
@@ -404,14 +447,16 @@ export default function DashboardPage() {
         </TooltipProvider>
       </div>
 
-      {/* Main Actions */}
+      {/* Main Action Cards - Primary workflow entry points */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+        {/* Company Management Card */}
         <Card>
           <h2 className="text-xl font-semibold mb-4">Manage Companies</h2>
           <p className="text-gray-500 dark:text-gray-400 mb-4">
             Create and manage companies, add authorized users, and handle data sharing requests.
           </p>
           <div className="space-y-3">
+            {/* View Companies button with tour support */}
             <button
               onClick={() => handleTourNavigation("/list-companies", "navigate-to-companies")}
               className="block w-full"
@@ -421,6 +466,7 @@ export default function DashboardPage() {
                 <Building2 className="ml-2 h-4 w-4" />
               </Button>
             </button>
+            {/* Create New Company button */}
             <button
               onClick={() => handleTourNavigation("/create-company", undefined)}
               className="block w-full"
@@ -432,6 +478,7 @@ export default function DashboardPage() {
           </div>
         </Card>
 
+        {/* Product Management Card */}
         <Card>
           <h2 className="text-xl font-semibold mb-4">Manage Products</h2>
           <p className="text-gray-500 dark:text-gray-400 mb-4">
@@ -439,6 +486,7 @@ export default function DashboardPage() {
             generate Carbon Footprint Reports.
           </p>
           <div className="space-y-3">
+            {/* View Products button with tour support */}
             <button
               onClick={() => handleTourNavigation("/product-list", "navigate-to-products")}
               className="block w-full"
@@ -448,6 +496,7 @@ export default function DashboardPage() {
                 <BoxesIcon className="ml-2 h-4 w-4" />
               </Button>
             </button>
+            {/* Add New Product button */}
             <button
               onClick={() => handleTourNavigation("/product-list/product", undefined)}
               className="block w-full"
@@ -460,7 +509,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Audit log of company */}
+      {/* Audit Log Section - Activity tracking and compliance */}
       <AuditLog caption="A table displaying the auditlog of a company." logItems={logItems} />
     </div>
   );

@@ -5,16 +5,38 @@ import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import Link from "next/link";
 
+/**
+ * Privacy Policy Page Component
+ * 
+ * This component displays CarbonInsight's comprehensive privacy policy,
+ * covering data collection, usage, sharing, and user rights under GDPR.
+ * 
+ * Key Features:
+ * - Complete GDPR compliance information
+ * - Detailed data collection and usage explanations
+ * - User rights and data retention policies
+ * - Contact information for privacy concerns
+ * - Technical specifications and security measures
+ * - Cookie and tracking policy details
+ * - Data controller information
+ * - Clear section organization with card-based layout
+ */
 export default function PrivacyPage() {
+  // State to track component mounting for hydration safety
   const [mounted, setMounted] = useState(false);
   const lastUpdated = "May 2024";
 
+  /**
+   * Ensure component is mounted before displaying date-sensitive content
+   * Prevents hydration mismatches between server and client rendering
+   */
   useEffect(() => {
     setMounted(true);
   }, []);
 
   return (
     <div className="py-12 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Page header with title and description */}
       <div className="text-center mb-12">
         <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
           Privacy Policy
@@ -24,6 +46,7 @@ export default function PrivacyPage() {
         </p>
       </div>
 
+      {/* Information Collection Section - Details what data we gather */}
       <Card className="mb-8">
         <h2 className="text-2xl font-semibold mb-6">Information We Collect</h2>
         <div className="space-y-4 text-gray-600 dark:text-gray-400">
@@ -31,6 +54,7 @@ export default function PrivacyPage() {
             We collect information necessary to provide our carbon footprint calculation services.
           </p>
 
+          {/* Account Information subsection */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               Account Information
@@ -42,6 +66,7 @@ export default function PrivacyPage() {
             </p>
           </div>
 
+          {/* Business Data subsection */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               Business Data
@@ -54,6 +79,7 @@ export default function PrivacyPage() {
             </p>
           </div>
 
+          {/* Usage Data subsection */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Usage Data</h3>
             <p>
@@ -65,6 +91,7 @@ export default function PrivacyPage() {
         </div>
       </Card>
 
+      {/* Data Usage Section - Explains how we use collected information */}
       <Card className="mb-8">
         <h2 className="text-2xl font-semibold mb-6">How We Use Your Information</h2>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -79,6 +106,7 @@ export default function PrivacyPage() {
         </p>
       </Card>
 
+      {/* Data Sharing Section - When and why we share information */}
       <Card className="mb-8">
         <h2 className="text-2xl font-semibold mb-6">Data Sharing and Disclosure</h2>
         <div className="space-y-4 text-gray-600 dark:text-gray-400">
@@ -87,6 +115,7 @@ export default function PrivacyPage() {
             only in these specific circumstances.
           </p>
 
+          {/* With User Consent subsection */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               With Your Consent
@@ -97,6 +126,7 @@ export default function PrivacyPage() {
             </p>
           </div>
 
+          {/* Service Providers subsection */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               Service Providers
@@ -107,6 +137,7 @@ export default function PrivacyPage() {
             </p>
           </div>
 
+          {/* Legal Requirements subsection */}
           <div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
               Legal Requirements
@@ -116,6 +147,7 @@ export default function PrivacyPage() {
         </div>
       </Card>
 
+      {/* Data Security Section - Security measures and protections */}
       <Card className="mb-8">
         <h2 className="text-2xl font-semibold mb-6">Data Security</h2>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -129,11 +161,13 @@ export default function PrivacyPage() {
         </p>
       </Card>
 
+      {/* GDPR Rights Section - User rights under European data protection law */}
       <Card className="mb-8">
         <h2 className="text-2xl font-semibold mb-6">Your Rights Under GDPR</h2>
         <div className="space-y-4 text-gray-600 dark:text-gray-400">
           <p>You have comprehensive rights regarding your personal data.</p>
 
+          {/* Rights grid for organized display */}
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <h3 className="font-medium text-gray-900 dark:text-white">Access & Portability</h3>
@@ -153,6 +187,7 @@ export default function PrivacyPage() {
             </div>
           </div>
 
+          {/* Contact information for exercising rights */}
           <p className="mt-4">
             To exercise these rights, contact us at{" "}
             <a
@@ -165,11 +200,13 @@ export default function PrivacyPage() {
         </div>
       </Card>
 
+      {/* Data Retention Section - How long we keep data */}
       <Card className="mb-8">
         <h2 className="text-2xl font-semibold mb-6">Data Retention</h2>
         <p className="text-gray-600 dark:text-gray-400 mb-4">
           We retain your data only as long as necessary.
         </p>
+        {/* Retention policy details in highlighted box */}
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
           <p className="text-gray-600 dark:text-gray-400">
             Account data is kept until you delete your account. Product and emissions data is
@@ -180,6 +217,7 @@ export default function PrivacyPage() {
         </div>
       </Card>
 
+      {/* Cookies and Tracking Section - Website tracking policies */}
       <Card className="mb-8">
         <h2 className="text-2xl font-semibold mb-6">Cookies and Tracking</h2>
         <p className="text-gray-600 dark:text-gray-400">
@@ -190,13 +228,17 @@ export default function PrivacyPage() {
         </p>
       </Card>
 
+      {/* Contact Information Section - How to reach us about privacy */}
       <Card className="mb-8">
         <h2 className="text-2xl font-semibold mb-6">Contact Information</h2>
         <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg space-y-3">
+          {/* Data Controller information */}
           <div>
             <p className="font-medium text-gray-900 dark:text-white">Data Controller</p>
             <p className="text-gray-600 dark:text-gray-400">Brainport Industries / TU Eindhoven</p>
           </div>
+          
+          {/* Contact email */}
           <div>
             <p className="font-medium text-gray-900 dark:text-white">Email</p>
             <p>
@@ -208,12 +250,16 @@ export default function PrivacyPage() {
               </a>
             </p>
           </div>
+          
+          {/* Physical address */}
           <div>
             <p className="font-medium text-gray-900 dark:text-white">Address</p>
             <p className="text-gray-600 dark:text-gray-400">
               Eindhoven, North Brabant, Netherlands
             </p>
           </div>
+          
+          {/* Last updated information with mounting check */}
           <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
             <p className="text-sm text-gray-600 dark:text-gray-400">
               <strong>Last Updated:</strong> {mounted ? lastUpdated : "Loading..."}
@@ -222,6 +268,7 @@ export default function PrivacyPage() {
         </div>
       </Card>
 
+      {/* Policy Updates Section - How we handle changes */}
       <Card>
         <h2 className="text-2xl font-semibold mb-6">Updates to This Policy</h2>
         <p className="text-gray-600 dark:text-gray-400">
@@ -231,6 +278,7 @@ export default function PrivacyPage() {
         </p>
       </Card>
 
+      {/* Navigation back to home */}
       <div className="text-center mt-8">
         <Link href="/">
           <Button variant="outline" size="lg">

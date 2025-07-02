@@ -29,7 +29,7 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
   ({ productId, tabKey, mode, setProductId, onFieldChange }, ref) => {
     const [lifecycleChoices, setLifecycleChoices] = useState<LifecycleStageChoice[]>([]);
 
-    // Define updateTab function
+    // ── Handles updating product info if editing ──
     const updateTab = async (): Promise<string> => {
       return apiCalls.updateTab(
         API_URL,
@@ -41,7 +41,9 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
       );
     };
 
-    // Define saveTab function
+    // ── Handles saving a new product entry ──
+    // This function sends a POST request with form data to the backend
+    // It uses auth and company context from localStorage and sets errors or product ID accordingly
     const saveTab = async (): Promise<string> => {
       return apiCalls.saveTab(
         API_URL,
@@ -53,7 +55,7 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
       );
     };
 
-    // Expose saveTab and updateTab to parent via ref
+    // Make saveTab and updateTab available to parent components via ref
     useImperativeHandle(ref, () => ({ saveTab, updateTab }));
 
     console.log("mode", mode);
@@ -100,6 +102,7 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
       override_factors: "",
     });
 
+    // Fetch lifecycle stage options for emissions override modal on initial mount
     useEffect(() => {
       apiCalls
         .fetchLifecycleStageOptions(API_URL, company_pk)
@@ -107,7 +110,7 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
         .catch(() => setLifecycleChoices([])); // handle errors if needed
     }, []);
 
-    // ── Fetch product data if editing ──
+    // Load existing product data when productId is present (edit mode)
     useEffect(() => {
       if (productId && productId.trim() !== "") {
         apiCalls
@@ -123,7 +126,7 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
     // ── List of all field keys ──
     const fieldKeys = Object.keys(fieldValues) as Array<keyof FieldValues>;
 
-    // ── Helper function to render a specific field ──
+    // Render appropriate input field based on field type metadata
     function renderField(fieldKey: FieldKey) {
       const common = {
         name: String(fieldKey),
@@ -134,6 +137,7 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
       };
 
       switch (fieldTypes[fieldKey]) {
+        // Render a boolean radio group
         case "radio":
           return (
             <RadioField
@@ -155,6 +159,7 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
               }
             />
           );
+        // Render a dropdown field
         case "dropdown":
           return (
             <DropdownField
@@ -175,6 +180,7 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
               }
             />
           );
+        // Render a multiline textarea
         case "textarea":
           return (
             <TextareaField
@@ -193,6 +199,7 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
               }
             />
           );
+        // Render override modal for emissions adjustment
         case "override-factors-modal":
           return (
             <>
@@ -259,6 +266,7 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
       </Dialog>
             </>
           );
+        // Render standard text input
         default:
           return (
             <TextField
@@ -282,7 +290,7 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
       }
     }
 
-    // ── Render the form layout ──
+    // ── Form Layout: Split into left and right columns ──
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
         {/* Left Column */}

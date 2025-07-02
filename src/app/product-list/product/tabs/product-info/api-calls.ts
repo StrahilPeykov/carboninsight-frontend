@@ -12,7 +12,9 @@ import RadioField from "@/app/product-list/product/tabs/components/RadioField";
 import DropdownField from "@/app/product-list/product/tabs/components/DropdownField";
 import { LifecycleStageChoice } from "@/lib/api";
 
-// ── Fetch product data from API ──
+// ─────────────────────────────────────────────────────────────
+// Fetch detailed product information by ID for initial form load
+// ─────────────────────────────────────────────────────────────
 export const fetchProductData = async (
   API_URL: string,
   company_pk: string,
@@ -29,6 +31,7 @@ export const fetchProductData = async (
       },
     });
     if (res.ok) {
+      // Parse and apply the returned product data to the form fields
       const data = await res.json();
       setFieldValues(data);
       return true;
@@ -42,7 +45,10 @@ export const fetchProductData = async (
   }
 };
 
-// ── Update existing product on server ──
+// ─────────────────────────────────────────────────────────────
+// Update product data on the server using PUT
+// Returns error messages if any validation fails
+// ─────────────────────────────────────────────────────────────
 export const updateTab = async (
   API_URL: string,
   company_pk: string,
@@ -89,7 +95,10 @@ export const updateTab = async (
   }
 };
 
-// ── Save new product to server ──
+// ─────────────────────────────────────────────────────────────
+// Create a new product entry on the server using POST
+// Stores the new product ID and handles form-level validation
+// ─────────────────────────────────────────────────────────────
 export const saveTab = async (
   API_URL: string,
   company_pk: string,
@@ -145,6 +154,10 @@ export const saveTab = async (
   }
 };
 
+// ─────────────────────────────────────────────────────────────
+// Fetch the lifecycle stage options for dropdown input fields
+// Uses the OPTIONS method to retrieve metadata about the API
+// ─────────────────────────────────────────────────────────────
 export const fetchLifecycleStageOptions = async (
   apiUrl: string,
   companyId: string
@@ -166,6 +179,7 @@ export const fetchLifecycleStageOptions = async (
       throw new Error(`HTTP error! Status: ${res.status}`);
     }
     const data = await res.json();
+    // Log raw choices data for debugging purposes
     console.log(
       "Lifecycle stage options data:",
       data.actions?.POST?.override_factors.child?.children?.lifecycle_stage?.choices

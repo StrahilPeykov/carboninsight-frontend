@@ -8,24 +8,48 @@ import Button from "../components/ui/Button";
 import { useAuth } from "../context/AuthContext";
 import { LoginCredentials } from "@/lib/api/authApi";
 
+/**
+ * Login Page Component
+ * 
+ * This component provides a secure login interface for CarbonInsight users.
+ * It handles user authentication with comprehensive error handling and accessibility features.
+ * 
+ * Key Features:
+ * - Form validation with real-time feedback
+ * - Account blocking detection and user guidance
+ * - Screen reader announcements for status changes
+ * - Password field clearing on errors for security
+ * - Comprehensive error messaging and support links
+ * - Accessible form design with proper labeling
+ * - Loading states and disabled form elements
+ * - Support contact information and troubleshooting
+ */
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
+  
+  // Loading and error state management
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isAccountBlocked, setIsAccountBlocked] = useState(false);
+  
+  // Form and accessibility references
   const formRef = useRef<HTMLFormElement>(null);
   const errorAnnouncementRef = useRef<HTMLDivElement>(null);
 
+  // Login form data state
   const [formData, setFormData] = useState<LoginCredentials>({
     username: "",
     password: "",
   });
 
-  // Announce errors to screen readers
+  /**
+   * Announce errors to screen readers for accessibility
+   * Creates live region announcements when errors occur
+   */
   useEffect(() => {
     if (error && errorAnnouncementRef.current) {
-      // Create a live region announcement
+      // Create a temporary live region for screen reader announcement
       const announcement = document.createElement("div");
       announcement.setAttribute("role", "alert");
       announcement.setAttribute("aria-live", "assertive");
@@ -33,7 +57,7 @@ export default function LoginPage() {
       announcement.textContent = error;
       document.body.appendChild(announcement);
 
-      // Remove after announcement
+      // Remove announcement element after it's been read
       setTimeout(() => {
         if (announcement.parentNode) {
           document.body.removeChild(announcement);
@@ -42,6 +66,10 @@ export default function LoginPage() {
     }
   }, [error]);
 
+  /**
+   * Handle form input changes
+   * Updates form data and clears errors when user starts typing
+   */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -49,13 +77,17 @@ export default function LoginPage() {
       [name]: value,
     }));
 
-    // Clear error when user starts typing
+    // Clear error state when user starts typing to provide immediate feedback
     if (error) {
       setError(null);
       setIsAccountBlocked(false);
     }
   };
 
+  /**
+   * Handle login form submission
+   * Validates credentials, handles authentication, and manages error states
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -63,9 +95,10 @@ export default function LoginPage() {
     setIsAccountBlocked(false);
 
     try {
+      // Attempt login via authentication context
       await login(formData);
 
-      // Announce successful login
+      // Announce successful login to screen readers
       const announcement = document.createElement("div");
       announcement.setAttribute("role", "status");
       announcement.setAttribute("aria-live", "polite");
@@ -73,24 +106,25 @@ export default function LoginPage() {
       announcement.textContent = "Login successful. Redirecting to dashboard...";
       document.body.appendChild(announcement);
 
+      // Navigate to dashboard after successful authentication
       router.push("/dashboard");
     } catch (err) {
       console.error("Login error:", err);
 
-      // Clear password while preserving the username
+      // Clear password field while preserving username for security and usability
       setFormData(prev => ({
         ...prev,
         password: ""
       }));
 
       if (err instanceof Error) {
-        // Check if this is our custom AuthError with blocking info
+        // Check if this is account blocking error with special handling
         const isBlocked = (err as any).isAccountBlocked === true;
 
         setIsAccountBlocked(isBlocked);
         setError(err.message);
 
-        // Focus on error message for screen readers
+        // Focus on error message for screen readers when account is blocked
         if (isBlocked) {
           formRef.current?.querySelector<HTMLElement>('[role="alert"]')?.focus();
         }
@@ -104,6 +138,7 @@ export default function LoginPage() {
 
   return (
     <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Page header with title and description */}
       <div className="text-center mb-12">
         <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
           Login
@@ -113,8 +148,9 @@ export default function LoginPage() {
         </p>
       </div>
 
+      {/* Login form card */}
       <Card className="max-w-md mx-auto">
-        {/* Regular Error Message */}
+        {/* Regular Error Message Display */}
         {error && !isAccountBlocked && (
           <div
             ref={errorAnnouncementRef}
@@ -132,7 +168,7 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Blocked Account Message - Enhanced styling and information */}
+        {/* Enhanced Blocked Account Message - Special handling for account lockouts */}
         {isAccountBlocked && (
           <div
             role="alert"
@@ -151,11 +187,13 @@ export default function LoginPage() {
               <p className="text-sm text-red-700 dark:text-red-200">
                 <strong>What you can do:</strong>
               </p>
+              {/* Actionable steps for users with blocked accounts */}
               <ul className="text-sm text-red-700 dark:text-red-200 list-disc list-inside space-y-1">
                 <li>Wait a few minutes and try again</li>
                 <li>Ensure you're using the correct email and password</li>
                 <li>Contact support if the issue persists</li>
               </ul>
+              {/* Support contact information */}
               <div className="mt-3 pt-3 border-t border-red-200 dark:border-red-800">
                 <p className="text-sm text-red-700 dark:text-red-200">
                   <strong>Support:</strong>{" "}
@@ -174,7 +212,9 @@ export default function LoginPage() {
           </div>
         )}
 
+        {/* Login Form */}
         <form ref={formRef} onSubmit={handleSubmit} className="space-y-6" noValidate>
+          {/* Email/Username Field */}
           <div>
             <label
               htmlFor="username"
@@ -201,11 +241,13 @@ export default function LoginPage() {
               className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="your@email.com"
             />
+            {/* Screen reader hint for email field */}
             <span id="email-hint" className="sr-only">
               Enter your registered email address
             </span>
           </div>
 
+          {/* Password Field */}
           <div>
             <label
               htmlFor="password"
@@ -230,6 +272,7 @@ export default function LoginPage() {
               disabled={isLoading}
               className="p-2 mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 dark:bg-gray-700 dark:border-gray-600 disabled:opacity-50 disabled:cursor-not-allowed"
             />
+            {/* Screen reader hints for password field */}
             <span id="password-hint" className="sr-only">
               Enter your password
             </span>
@@ -240,6 +283,7 @@ export default function LoginPage() {
             )}
           </div>
 
+          {/* Navigation and Support Links */}
           <div className="flex items-center justify-between">
             <div className="text-sm">
               <Link
@@ -259,12 +303,13 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {/* Submit Button with Loading State */}
           <Button type="submit" className="w-full" disabled={isLoading} loading={isLoading}>
             {isLoading ? "Signing in..." : "Login"}
           </Button>
         </form>
 
-        {/* Additional Support Information */}
+        {/* Additional Support Information Section */}
         <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
           <div className="text-center">
             <p className="text-xs text-gray-500 dark:text-gray-400">

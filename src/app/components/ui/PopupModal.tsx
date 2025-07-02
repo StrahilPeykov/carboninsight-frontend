@@ -1,19 +1,37 @@
+/**
+ * PopupModal component provides a flexible modal dialog with confirmation features.
+ * Supports type-to-confirm functionality, custom actions, accessibility features,
+ * and proper focus management. Used for confirmations, alerts, and user interactions.
+ */
+
 "use client";
 
 import { ReactNode, useEffect, useState, useRef } from "react";
 import ReactDOM from "react-dom";
 import Button from "./Button";
 
+// Interface defining props for PopupModal component
 interface PopupModalProps {
-  title: string;
-  confirmationRequiredText?: string;
-  confirmLabel?: string;
-  onConfirm?: () => void;
-  onClose: () => void;
-  showCancel?: boolean;
-  children: ReactNode;
+  title: string; // Modal title displayed in header
+  confirmationRequiredText?: string; // Text user must type to enable confirmation
+  confirmLabel?: string; // Label for confirm button
+  onConfirm?: () => void; // Callback for confirm action
+  onClose: () => void; // Callback for closing modal
+  showCancel?: boolean; // Whether to show cancel button
+  children: ReactNode; // Modal content body
 }
 
+/**
+ * PopupModal component for confirmations and user interactions
+ * @param title - Text displayed in the modal header
+ * @param confirmationRequiredText - Optional text user must type to confirm dangerous actions
+ * @param confirmLabel - Custom text for the confirm button (default: "Confirm")
+ * @param onConfirm - Function called when user confirms the action
+ * @param onClose - Function called when modal should be closed
+ * @param showCancel - Whether to display the cancel button (default: true)
+ * @param children - Content displayed in the modal body
+ * @returns Modal dialog with confirmation functionality and accessibility features
+ */
 export default function PopupModal({
   title,
   confirmationRequiredText = "",
@@ -23,31 +41,33 @@ export default function PopupModal({
   showCancel = true,
   children,
 }: PopupModalProps) {
+  // References for focus management and accessibility
   const modalRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
   const titleId = useRef(`modal-title-${Math.random().toString(36).substr(2, 9)}`);
 
-  // Local state for the "type-to-confirm" input
+  // State for type-to-confirm functionality
   const [inputValue, setInputValue] = useState("");
-  // Only enable confirm when (a) no text required or (b) input matches exactly
+  
+  // Validation: confirm button enabled when no confirmation text required OR input matches exactly
   const isMatch = confirmationRequiredText ? inputValue === confirmationRequiredText : true;
 
-  // Focus management and body scroll lock
+  // Focus management and body scroll lock setup
   useEffect(() => {
-    // Store previously focused element
+    // Store previously focused element for restoration
     previousActiveElement.current = document.activeElement as HTMLElement;
 
-    // Lock body scroll
+    // Lock body scroll to prevent background interaction
     const origOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
-    // Add aria-hidden to main content
+    // Hide main content from screen readers while modal is open
     const mainContent = document.getElementById("main-content");
     if (mainContent) {
       mainContent.setAttribute("aria-hidden", "true");
     }
 
-    // Focus the modal
+    // Focus the modal container for keyboard navigation
     modalRef.current?.focus();
 
     // Announce modal opening to screen readers
@@ -58,6 +78,7 @@ export default function PopupModal({
     announcement.textContent = `${title} dialog opened`;
     document.body.appendChild(announcement);
 
+    // Cleanup function
     return () => {
       // Restore body scroll
       document.body.style.overflow = origOverflow;
@@ -67,7 +88,7 @@ export default function PopupModal({
         mainContent.removeAttribute("aria-hidden");
       }
 
-      // Remove announcement
+      // Remove announcement element
       if (announcement.parentNode) {
         document.body.removeChild(announcement);
       }
@@ -77,14 +98,15 @@ export default function PopupModal({
     };
   }, [title]);
 
-  // Handle keyboard interactions
+  // Keyboard interaction handling
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Close modal on Escape key
       if (e.key === "Escape") {
         onClose();
       }
 
-      // Focus trap
+      // Implement focus trap for accessibility compliance
       if (e.key === "Tab") {
         const focusableElements = modalRef.current?.querySelectorAll(
           'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
@@ -94,10 +116,13 @@ export default function PopupModal({
           const firstElement = focusableElements[0] as HTMLElement;
           const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
 
+          // Handle shift+tab on first element
           if (e.shiftKey && document.activeElement === firstElement) {
             e.preventDefault();
             lastElement.focus();
-          } else if (!e.shiftKey && document.activeElement === lastElement) {
+          } 
+          // Handle tab on last element
+          else if (!e.shiftKey && document.activeElement === lastElement) {
             e.preventDefault();
             firstElement.focus();
           }
@@ -111,14 +136,14 @@ export default function PopupModal({
 
 return ReactDOM.createPortal(
   <>
-    {/* Backdrop */}
+    {/* Modal backdrop for overlay effect */}
     <div
       className="fixed inset-0 bg-black/50 z-55"
       onClick={onClose}
       aria-hidden="true"
     />
 
-    {/* Modal Container: full height flex column to center modal */}
+    {/* Modal container with proper positioning and overflow handling */}
     <div
       className="fixed inset-0 z-100 overflow-y-auto"
       role="dialog"
@@ -132,7 +157,7 @@ return ReactDOM.createPortal(
           className="relative inline-block w-full max-w-xl p-6 bg-white dark:bg-gray-800 shadow-xl rounded-lg"
           tabIndex={-1}
         >
-          {/* Modal content */}
+          {/* Modal header with title and close button */}
           <header className="flex justify-between items-center mb-4">
             <h2
               id={titleId.current}
@@ -146,6 +171,7 @@ return ReactDOM.createPortal(
               ariaLabel="Close dialog"
               className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 -m-2"
             >
+              {/* Close icon with proper accessibility */}
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -163,11 +189,12 @@ return ReactDOM.createPortal(
             </Button>
           </header>
 
+          {/* Modal body content */}
           <div id="modal-description" className="mb-4 text-gray-700 dark:text-gray-300">
             {children}
           </div>
 
-          {/* Confirmation input */}
+          {/* Type-to-confirm input section for dangerous actions */}
           {confirmationRequiredText && (
             <div className="mb-4">
               <label
@@ -189,6 +216,7 @@ return ReactDOM.createPortal(
                 aria-describedby="confirmation-help"
                 aria-invalid={inputValue.length > 0 && !isMatch}
               />
+              {/* Validation feedback for confirmation input */}
               {inputValue.length > 0 && !isMatch && (
                 <p
                   id="confirmation-help"
@@ -201,13 +229,16 @@ return ReactDOM.createPortal(
             </div>
           )}
 
+          {/* Modal footer with action buttons */}
           {(onConfirm || confirmationRequiredText) && (
             <footer className="flex justify-end space-x-2 mt-4">
+              {/* Cancel button (optional) */}
               {showCancel && (
                 <Button variant="outline" onClick={onClose}>
                   Cancel
                 </Button>
               )}
+              {/* Confirm button with validation */}
               <Button
                 onClick={onConfirm}
                 disabled={!isMatch}

@@ -9,28 +9,45 @@ import Modal from "../components/ui/PopupModal";
 import { userApi } from "@/lib/api/userApi";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 
+/**
+ * Account Settings Page Component
+ * 
+ * This component provides a comprehensive account management interface where users can:
+ * - Update their personal profile information (name, email)
+ * - Change their password securely
+ * - Delete their account permanently
+ * 
+ * Features:
+ * - Form validation with field-specific error handling
+ * - Password change with confirmation matching
+ * - Account deletion with confirmation safeguards
+ * - Authentication requirements and redirects
+ * - Success/error message display
+ * - Loading states and disabled form elements during operations
+ */
 export default function AccountPage() {
   const router = useRouter();
   const { user, logout, isLoading, requireAuth } = useAuth();
 
-  // Require authentication for this page
+  // Require authentication for this page - redirect to login if not authenticated
   requireAuth();
 
-  const [isSaving, setIsSaving] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [confirmInput, setConfirmInput] = useState("");
-  const isConfirmMatch = user?.username ? confirmInput === user.username : false;
+  // Loading and operation states for different sections
+  const [isSaving, setIsSaving] = useState(false);              // Profile update loading state
+  const [isDeleting, setIsDeleting] = useState(false);         // Account deletion loading state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false); // Delete confirmation modal
+  const [confirmInput, setConfirmInput] = useState("");        // User input for deletion confirmation
+  const isConfirmMatch = user?.username ? confirmInput === user.username : false; // Validation for deletion
 
-  // Password state
-  const [showPasswordForm, setShowPasswordForm] = useState(false);
-  const [isPasswordSubmitting, setIsPasswordSubmitting] = useState(false);
+  // Password change states and UI toggles
+  const [showPasswordForm, setShowPasswordForm] = useState(false);       // Toggle password change form
+  const [isPasswordSubmitting, setIsPasswordSubmitting] = useState(false); // Password change loading state
 
-  // Error and success messages
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  // Error and success message states for user feedback
+  const [error, setError] = useState<string | null>(null);       // General error messages
+  const [success, setSuccess] = useState<string | null>(null);   // Success messages
 
-  // Form data
+  // Form data state management for profile information
   const [formData, setFormData] = useState<{
     first_name: string;
     last_name: string;
@@ -41,12 +58,17 @@ export default function AccountPage() {
     email: "",
   });
 
+  // Password change form data with current and new password fields
   const [passwordData, setPasswordData] = useState({
     current_password: "",
     new_password: "",
     confirm_password: "",
   });
 
+  /**
+   * Initialize form data when user information becomes available
+   * This effect runs when the user object changes (after authentication)
+   */
   useEffect(() => {
     if (user) {
       setFormData({
@@ -57,6 +79,10 @@ export default function AccountPage() {
     }
   }, [user]);
 
+  /**
+   * Handle profile form input changes
+   * Updates the form data state as user types in profile fields
+   */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -65,6 +91,10 @@ export default function AccountPage() {
     }));
   };
 
+  /**
+   * Handle password form input changes
+   * Updates password data state for all password-related fields
+   */
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setPasswordData(prev => ({
@@ -73,6 +103,10 @@ export default function AccountPage() {
     }));
   };
 
+  /**
+   * Handle profile information update submission
+   * Validates data, calls API, and provides user feedback
+   */
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -80,23 +114,29 @@ export default function AccountPage() {
     setIsSaving(true);
 
     try {
-      // Using userApi.updateProfile instead of direct fetch
+      // Update user profile via API using centralized user service
       await userApi.updateProfile(formData);
       setSuccess("Your profile has been updated successfully!");
     } catch (error) {
       console.error("Error updating profile:", error);
+      // Display user-friendly error message
       setError(error instanceof Error ? error.message : "An unknown error occurred");
     } finally {
       setIsSaving(false);
     }
   };
 
+  /**
+   * Handle password change submission
+   * Validates new password confirmation and submits to API
+   */
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
     setIsPasswordSubmitting(true);
 
+    // Client-side validation for password confirmation match
     if (passwordData.new_password !== passwordData.confirm_password) {
       setError("New passwords don't match.");
       setIsPasswordSubmitting(false);
@@ -104,7 +144,7 @@ export default function AccountPage() {
     }
 
     try {
-      // Using userApi.changePassword instead of direct fetch
+      // Change password via API with proper parameter mapping
       await userApi.changePassword({
         old_password: passwordData.current_password,
         new_password: passwordData.new_password,
@@ -113,6 +153,7 @@ export default function AccountPage() {
 
       setSuccess("Your password has been changed successfully!");
 
+      // Reset password form and hide it after successful change
       setPasswordData({
         current_password: "",
         new_password: "",
@@ -127,11 +168,19 @@ export default function AccountPage() {
     }
   };
 
+  /**
+   * Initiate account deletion process
+   * Shows confirmation modal to prevent accidental deletions
+   */
   const handleDeleteAccount = () => {
     setShowDeleteConfirm(true);
     setConfirmInput("");
   };
 
+  /**
+   * Confirm and execute account deletion
+   * Performs deletion, cleans up local data, and redirects user
+   */
   const confirmDeleteAccount = async () => {
     setIsDeleting(true);
     setError(null);
@@ -143,13 +192,13 @@ export default function AccountPage() {
       // Show success message briefly before logout
       setSuccess("Account successfully deleted. Redirecting to login...");
 
-      // Clear all user-related localStorage data
+      // Clear all user-related localStorage data to ensure clean logout
       if (typeof window !== "undefined") {
         localStorage.removeItem("selected_company_id");
         localStorage.removeItem("currentAssessmentId"); // For future PCF calculation data
       }
 
-      // Brief delay to show success message
+      // Brief delay to show success message before redirecting
       setTimeout(() => {
         logout(); // This handles token cleanup and redirect to /login
       }, 1500);
@@ -161,6 +210,7 @@ export default function AccountPage() {
     }
   };
 
+  // Show loading skeleton while authentication state is being determined
   if (isLoading) {
     return (
       <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -171,6 +221,7 @@ export default function AccountPage() {
 
   return (
     <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Page header with title and description */}
       <div className="text-center mb-12">
         <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
           Account Settings
@@ -180,12 +231,14 @@ export default function AccountPage() {
         </p>
       </div>
 
+      {/* Global error message display */}
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md text-red-700 dark:bg-red-900/20 dark:border-red-900 dark:text-red-300">
           {error}
         </div>
       )}
 
+      {/* Global success message display */}
       {success && (
         <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md text-green-700 dark:bg-green-900/20 dark:border-green-900 dark:text-green-300">
           {success}
@@ -193,9 +246,11 @@ export default function AccountPage() {
       )}
 
       <div className="space-y-8">
+        {/* Profile Information Section */}
         <Card className="max-w-3xl mx-auto">
           <h2 className="text-xl font-semibold mb-6">Profile Information</h2>
           <form onSubmit={handleProfileSubmit} className="space-y-6">
+            {/* Name fields in a responsive grid layout */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label
@@ -232,6 +287,7 @@ export default function AccountPage() {
               </div>
             </div>
 
+            {/* Email field - full width */}
             <div>
               <label
                 htmlFor="email"
@@ -249,6 +305,7 @@ export default function AccountPage() {
               />
             </div>
 
+            {/* Save button with loading state */}
             <div className="flex justify-end">
               <Button type="submit" disabled={isSaving}>
                 {isSaving ? "Saving..." : "Save Changes"}
@@ -257,10 +314,13 @@ export default function AccountPage() {
           </form>
         </Card>
 
+        {/* Security Section - Password Management */}
         <Card className="max-w-3xl mx-auto">
           <h2 className="text-xl font-semibold mb-6">Security</h2>
 
+          {/* Password change toggle or form display */}
           {!showPasswordForm ? (
+            // Password change invitation when form is hidden
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">Password</h3>
@@ -273,7 +333,9 @@ export default function AccountPage() {
               </Button>
             </div>
           ) : (
+            // Password change form when visible
             <form onSubmit={handlePasswordSubmit} className="space-y-6">
+              {/* Current password field */}
               <div>
                 <label
                   htmlFor="current_password"
@@ -292,6 +354,7 @@ export default function AccountPage() {
                 />
               </div>
 
+              {/* New password field with validation help text */}
               <div>
                 <label
                   htmlFor="new_password"
@@ -314,6 +377,7 @@ export default function AccountPage() {
                 </p>
               </div>
 
+              {/* Confirm password field */}
               <div>
                 <label
                   htmlFor="confirm_password"
@@ -332,12 +396,14 @@ export default function AccountPage() {
                 />
               </div>
 
+              {/* Form action buttons */}
               <div className="flex justify-end space-x-4">
                 <Button
                   variant="outline"
                   type="button"
                   onClick={() => {
                     setShowPasswordForm(false);
+                    // Reset password form data when canceling
                     setPasswordData({
                       current_password: "",
                       new_password: "",
@@ -355,9 +421,11 @@ export default function AccountPage() {
           )}
         </Card>
 
+        {/* Account Management Section - Dangerous Actions */}
         <Card className="max-w-3xl mx-auto">
           <h2 className="text-xl font-semibold mb-6">Account Management</h2>
 
+          {/* Account deletion warning section */}
           <div className="bg-red-50 border border-red-200 rounded-md p-4 dark:bg-red-900/20 dark:border-red-900">
             <h3 className="text-lg font-medium text-red-800 dark:text-red-300">Delete Account</h3>
             <p className="mt-1 text-sm text-red-700 dark:text-red-200">
@@ -378,6 +446,7 @@ export default function AccountPage() {
           </div>
         </Card>
 
+        {/* Account Deletion Confirmation Modal */}
         {showDeleteConfirm && (
           <Modal
             title="Confirm Delete Account"
@@ -390,6 +459,7 @@ export default function AccountPage() {
             }}
           >
             <div className="space-y-4">
+              {/* Warning message and consequences list */}
               <p className="text-sm text-grey-400 dark:white">
                 Are you sure you want to delete your account? This action will:
               </p>

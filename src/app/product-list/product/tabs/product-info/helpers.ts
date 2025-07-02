@@ -5,6 +5,10 @@ import {
 } from "@/app/product-list/product/tabs/product-info/types";
 import React from "react";
 
+// ─────────────────────────────────────────────────────────────
+// Handle input field changes in the product info form
+// Updates field values, validates required fields, and triggers change callback
+// ─────────────────────────────────────────────────────────────
 // ── Handle field value changes ──
 export const handleFieldChange = <K extends FieldKey>(
   name: K,
@@ -13,14 +17,16 @@ export const handleFieldChange = <K extends FieldKey>(
   setFieldErrors: React.Dispatch<React.SetStateAction<FieldErrors>>,
   onFieldChange: () => void
 ): void => {
+  // Update local state with new field value
   setFieldValues((d: FieldValues) => ({
     ...d,
     [name]: value,
   }));
-  // clear previous error for this field, or set error if field is empty
+  // Clear or set validation error for the modified field
   setFieldErrors((e: FieldErrors) => ({
     ...e,
     [name]: value === "" || value === null || value === undefined ? "Please enter the value" : "",
   }));
+  // Notify parent that a field has changed (used to mark tab as dirty)
   onFieldChange();
 };

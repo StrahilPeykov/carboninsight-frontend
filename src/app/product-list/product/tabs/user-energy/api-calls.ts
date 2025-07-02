@@ -63,8 +63,8 @@ export const handleSubmit = async (
       energy_consumption: energyConsumption,
       reference,
       override_factors:
-        formData.override_factors.length > 0 ? formData.override_factors : undefined,
-      line_items: formData.line_items.length > 0 ? formData.line_items : undefined,
+        formData.override_factors,
+      line_items: formData.line_items,
     };
 
     if (currentEmission) {

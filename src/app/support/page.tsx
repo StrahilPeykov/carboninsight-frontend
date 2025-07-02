@@ -7,27 +7,56 @@ import Link from "next/link";
 import { useAuth } from "../context/AuthContext";
 import { Mail } from "lucide-react";
 
+/**
+ * Support Center Page Component
+ * 
+ * This component provides a comprehensive support interface for CarbonInsight users,
+ * offering multiple ways to get help and troubleshoot common issues.
+ * 
+ * Key Features:
+ * - Dynamic email composition based on authentication status
+ * - Email copying functionality for accessibility
+ * - Comprehensive troubleshooting guide with common solutions
+ * - Frequently asked questions section
+ * - Account blocking troubleshooting assistance
+ * - Context-aware navigation based on user authentication
+ * - Pre-filled support email templates with user information
+ * - Clear instructions for effective support requests
+ * - Response time expectations and contact methods
+ */
 export default function SupportPage() {
   const { user, isAuthenticated } = useAuth();
+  // State for email copying feedback
   const [copiedEmail, setCopiedEmail] = useState(false);
 
+  // Support contact information
   const supportEmail = "support@carboninsight.win.tue.nl";
 
+  /**
+   * Copy support email to clipboard for accessibility
+   * Provides visual feedback when email is successfully copied
+   */
   const copyEmailToClipboard = async () => {
     try {
       await navigator.clipboard.writeText(supportEmail);
       setCopiedEmail(true);
+      // Reset feedback state after 2 seconds
       setTimeout(() => setCopiedEmail(false), 2000);
     } catch (err) {
       console.error("Failed to copy email:", err);
     }
   };
 
+  /**
+   * Open default mail client with pre-filled support email
+   * Customizes email content based on user authentication status
+   */
   const openMailClient = () => {
     let subject = "CarbonInsight Support Request";
     let body = "";
 
     if (isAuthenticated && user) {
+      // Authenticated user template with pre-filled user information
       subject = "CarbonInsight Support Request";
       body = `Hello Support Team,
 
@@ -56,6 +85,7 @@ Thank you for your assistance.
 Best regards,
 ${user.first_name} ${user.last_name}`;
     } else {
+      // Non-authenticated user template
       body = `Hello Support Team,
 
 I need assistance with CarbonInsight.
@@ -75,12 +105,14 @@ Steps you've already tried:
 Thank you for your assistance.`;
     }
 
+    // Create mailto link with encoded parameters
     const mailtoLink = `mailto:${supportEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = mailtoLink;
   };
 
   return (
     <div className="py-12 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Page header with title and description */}
       <div className="text-center mb-12">
         <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
           Support Center
@@ -90,23 +122,27 @@ Thank you for your assistance.`;
         </p>
       </div>
 
-      {/* Main Contact Section */}
+      {/* Main Contact Section - Primary support information */}
       <Card className="mb-8">
         <div className="text-center">
           <h2 className="text-2xl font-semibold mb-6">Contact Support</h2>
 
           <div className="mb-6">
+            {/* Support scope description */}
             <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">
               Get help with account issues, technical problems, carbon footprint calculations, or
               general questions
             </p>
 
+            {/* Email contact interface with copy and send options */}
             <div className="support-email-container mb-4">
               <div className="support-email-text">{supportEmail}</div>
               <div className="flex gap-2 flex-shrink-0">
+                {/* Copy email button with feedback state */}
                 <Button variant="outline" size="sm" onClick={copyEmailToClipboard}>
                   {copiedEmail ? "Copied!" : "Copy"}
                 </Button>
+                {/* Send email button with mail client integration */}
                 <Button onClick={openMailClient} className="flex items-center gap-2">
                   <Mail size={16} />
                   <span className="hidden sm:inline">Send Email</span>
@@ -115,9 +151,11 @@ Thank you for your assistance.`;
               </div>
             </div>
 
+            {/* Response time expectations */}
             <p className="text-sm text-gray-500 dark:text-gray-400">Response time: 24-48 hours</p>
           </div>
 
+          {/* Guidelines for effective support requests */}
           <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
             <h3 className="text-lg font-medium mb-4">What to Include in Your Support Request:</h3>
             <div className="text-left max-w-lg mx-auto space-y-2 text-gray-600 dark:text-gray-400">
@@ -126,16 +164,18 @@ Thank you for your assistance.`;
               <p>• Steps you were taking when the issue occurred</p>
               <p>• Any error messages you've seen</p>
               <p>• Screenshots (if helpful)</p>
+              {/* Conditional guidance for non-authenticated users */}
               {!isAuthenticated && <p>• Your registered email address</p>}
             </div>
           </div>
         </div>
       </Card>
 
-      {/* Quick Self-Help */}
+      {/* Self-Help Troubleshooting Section */}
       <Card className="mb-8">
         <h2 className="text-xl font-semibold mb-6">Troubleshooting Guide</h2>
         <div className="grid md:grid-cols-2 gap-6">
+          {/* Basic troubleshooting steps */}
           <div>
             <h3 className="font-medium text-gray-900 dark:text-white mb-3">Try These First:</h3>
             <ul className="space-y-2 text-gray-600 dark:text-gray-400">
@@ -147,6 +187,8 @@ Thank you for your assistance.`;
               <li>• Disable browser extensions temporarily</li>
             </ul>
           </div>
+          
+          {/* Common issue-specific solutions */}
           <div>
             <h3 className="font-medium text-gray-900 dark:text-white mb-3">Common Issues:</h3>
             <ul className="space-y-2 text-gray-600 dark:text-gray-400">
@@ -170,10 +212,11 @@ Thank you for your assistance.`;
         </div>
       </Card>
 
-      {/* FAQ Section */}
+      {/* Frequently Asked Questions Section */}
       <Card className="mb-8">
         <h2 className="text-xl font-semibold mb-6">Frequently Asked Questions</h2>
         <div className="space-y-4">
+          {/* Carbon footprint calculation FAQ */}
           <div>
             <h3 className="font-medium text-gray-900 dark:text-white">
               How do I calculate my product's carbon footprint?
@@ -184,6 +227,7 @@ Thank you for your assistance.`;
             </p>
           </div>
 
+          {/* User management FAQ */}
           <div>
             <h3 className="font-medium text-gray-900 dark:text-white">
               How do I add users to my company?
@@ -193,6 +237,7 @@ Thank you for your assistance.`;
             </p>
           </div>
 
+          {/* Export formats FAQ */}
           <div>
             <h3 className="font-medium text-gray-900 dark:text-white">
               What file formats can I export?
@@ -203,6 +248,7 @@ Thank you for your assistance.`;
             </p>
           </div>
 
+          {/* Account blocking FAQ with specific guidance */}
           <div>
             <h3 className="font-medium text-gray-900 dark:text-white">
               My account is blocked, what should I do?
@@ -215,15 +261,17 @@ Thank you for your assistance.`;
         </div>
       </Card>
 
-      {/* Navigation */}
+      {/* Context-aware navigation based on authentication status */}
       <div className="text-center space-x-4">
         {isAuthenticated ? (
+          // Authenticated users return to dashboard
           <Link href="/dashboard">
             <Button variant="outline" size="lg">
               Back to Dashboard
             </Button>
           </Link>
         ) : (
+          // Non-authenticated users return to login
           <Link href="/login">
             <Button variant="outline" size="lg">
               Back to Login

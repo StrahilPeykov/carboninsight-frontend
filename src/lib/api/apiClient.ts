@@ -98,12 +98,43 @@ export async function apiRequest<R, T = Record<string, unknown>>(
       throw new ApiError(response.status, errorMessage, errorData);
     }
 
+    // For DELETE requests or responses with no content, return an empty object
+    if (method === "DELETE" || response.status === 204 || response.headers.get("content-length") === "0") {
+      return {} as R;
+    }
+
     // Parse the response based on responseType
     let data: any;
     if (responseType === "blob") {
       data = await response.blob();
     } else {
-      data = await response.json();
+      // Check if response has content before trying to parse as JSON
+      // Status 204 (No Content) and 205 (Reset Content) should not have a body
+      if (response.status === 204 || response.status === 205) {
+        // Return null for no-content responses
+        data = null;
+      } else {
+        // Check if response has any content
+        const contentLength = response.headers.get('content-length');
+        const hasContent = contentLength === null || parseInt(contentLength, 10) > 0;
+        
+        if (hasContent) {
+          // Try to parse as JSON, but handle empty responses gracefully
+          const text = await response.text();
+          if (text.trim() === '') {
+            data = null;
+          } else {
+            try {
+              data = JSON.parse(text);
+            } catch (error) {
+              console.warn('Failed to parse response as JSON:', text);
+              data = null;
+            }
+          }
+        } else {
+          data = null;
+        }
+      }
     }
 
     return data as R;

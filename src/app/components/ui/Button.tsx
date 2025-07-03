@@ -1,43 +1,3 @@
-<<<<<<< HEAD
-/**
- * Button component provides a flexible, accessible button with multiple variants and sizes.
- * Supports loading states, custom ARIA attributes, and follows design system patterns.
- * Used throughout the application for user interactions and form submissions.
- */
-
-import { ButtonHTMLAttributes, ReactNode } from "react";
-
-// Interface extending native button attributes with custom props
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  children: ReactNode; // Button content (text, icons, etc.)
-  variant?: "primary" | "secondary" | "outline" | "icon"; // Visual style variants
-  size?: "sm" | "md" | "lg"; // Size options for different contexts
-  loading?: boolean; // Shows loading spinner when true
-  ariaLabel?: string; // Custom accessible label
-  ariaPressed?: boolean; // For toggle buttons
-  ariaExpanded?: boolean; // For dropdown/collapsible buttons
-  ariaControls?: string; // ID of element this button controls
-  ariaDescribedBy?: string; // ID of element that describes this button
-}
-
-/**
- * Reusable Button component with accessibility features and design variants
- * @param children - Content to display inside the button
- * @param variant - Visual style: primary (red), secondary (gray), outline, or icon
- * @param size - Button size: sm, md, or lg
- * @param loading - When true, shows loading spinner and disables interaction
- * @param disabled - Native disabled state
- * @param className - Additional CSS classes
- * @param ariaLabel - Custom accessible label for screen readers
- * @param ariaPressed - ARIA pressed state for toggle buttons
- * @param ariaExpanded - ARIA expanded state for dropdown buttons
- * @param ariaControls - ID of element controlled by this button
- * @param ariaDescribedBy - ID of element describing this button
- * @param type - HTML button type (button, submit, reset)
- * @param props - Additional HTML button attributes
- * @returns Styled button element with accessibility features
- */
-=======
 // React type imports for component props and children handling
 // ButtonHTMLAttributes provides all standard HTML button attributes for type safety
 // ReactNode allows flexible content including text, elements, and components
@@ -63,7 +23,6 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 // Implements WCAG 2.1 AA standards with proper focus management and keyboard navigation
 // Supports multiple variants, sizes, and states for consistent UI across application
 // Features loading states, disabled handling, and extensive ARIA attribute support
->>>>>>> main
 export default function Button({
   children,
   variant = "primary",             // Default to primary variant for prominent actions
@@ -79,13 +38,6 @@ export default function Button({
   type = "button",                 // Default button type to prevent form submission
   ...props                         // Spread remaining props for maximum flexibility
 }: ButtonProps) {
-<<<<<<< HEAD
-  // Base styles applied to all button variants
-  const baseStyles =
-    "rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus-visible:ring-2 focus-visible:ring-offset-2 inline-flex items-center justify-center";
-
-  // Variant-specific styling for different button types
-=======
   // Base styling foundation with accessibility and interaction patterns
   // Implements focus-visible for keyboard navigation without mouse focus rings
   // Uses flexbox for consistent content alignment and icon positioning
@@ -95,7 +47,6 @@ export default function Button({
   // Variant-specific styling definitions for design system consistency
   // Each variant serves different UI hierarchy needs with proper contrast ratios
   // Includes dark mode support and disabled states for complete accessibility
->>>>>>> main
   const variantStyles = {
     // Primary variant for main call-to-action buttons with high visual prominence
     primary:
@@ -110,26 +61,18 @@ export default function Button({
     icon: "p-2 rounded hover:bg-gray-100 focus:ring focus:ring-red-500 focus-visible:ring focus-visible:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed min-w-[44px] min-h-[44px]",
   };
 
-<<<<<<< HEAD
-  // Size-specific styling for different use cases
-=======
   // Size variant definitions with WCAG minimum touch target requirements
   // All sizes meet 44px minimum for mobile accessibility compliance
   // Consistent padding and typography scaling across size variants
->>>>>>> main
   const sizeStyles = {
     sm: "px-3 py-1.5 text-sm min-h-[36px]",    // Small size for compact interfaces
     md: "px-4 py-2 text-base min-h-[44px]",    // Standard size meeting touch target minimums
     lg: "px-6 py-3 text-lg min-h-[48px]",      // Large size for prominent actions
   };
 
-<<<<<<< HEAD
-  // Focus-visible polyfill styles for better keyboard navigation
-=======
   // Focus-visible polyfill styles for cross-browser keyboard navigation consistency
   // Prevents focus rings on mouse clicks while maintaining keyboard accessibility
   // Essential for professional UI that doesn't interfere with pointer interactions
->>>>>>> main
   const focusVisibleStyles =
     "focus:not(:focus-visible):ring-0 focus:not(:focus-visible):ring-offset-0";
 

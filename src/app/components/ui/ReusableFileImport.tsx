@@ -1,14 +1,5 @@
-<<<<<<< HEAD
-/**
- * ReusableFileImport component provides file upload functionality for multiple formats.
- * Supports JSON, CSV, XLSX, and AASX files with validation and error handling.
- * Used throughout the application for importing product data and other structured content.
- */
-
-=======
 // Client-side component directive for Next.js App Router
 // Required for components using browser APIs like localStorage and file handling
->>>>>>> main
 "use client";
 
 // React hooks for state management and DOM references
@@ -18,28 +9,6 @@ import { useRef, useState } from "react";
 // Custom button component with accessibility features and consistent styling
 import Button from "./Button";
 
-<<<<<<< HEAD
-// Props interface for ReusableFileImport component
-type Props = {
-  onSuccess?: (redirectPath: string) => void; // Callback with redirect path on successful upload
-  allowedExtensions?: string[]; // Array of allowed file extensions
-  acceptedFormatsLabel?: string; // Label describing accepted formats
-};
-
-/**
- * ReusableFileImport component for handling multiple file format uploads
- * @param onSuccess - Callback function called with redirect path on successful import
- * @param allowedExtensions - Array of allowed file extensions (default: json, csv, xlsx, aasx)
- * @param acceptedFormatsLabel - Descriptive text about supported formats
- * @returns File import interface with upload button, validation, and progress feedback
- */
-export default function ReusableFileImport({
-  onSuccess,
-  allowedExtensions = ["json", "csv", "xlsx", "aasx"], // Default supported formats
-  acceptedFormatsLabel = "Supported formats: JSON, CSV, XLSX, AASX",
-}: Props) {
-  // State management for file upload process
-=======
 // Props interface for reusable file import component
 // Supports multiple file formats and customizable success handling
 type Props = {
@@ -69,7 +38,6 @@ export default function ReusableFileImport({
 }: Props) {
   // Selected file state for tracking user's file choice
   // Null when no file selected, File object when valid file chosen
->>>>>>> main
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   
   // Error state for displaying validation and upload failures
@@ -80,32 +48,18 @@ export default function ReusableFileImport({
   // Enables custom styled upload button while using native file picker
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-<<<<<<< HEAD
-  /**
-   * Handles file selection and validates file extension
-   * @param e - File input change event
-   */
-=======
   // File selection change handler with validation logic
   // Validates file extension against allowed formats list
   // Updates state based on validation results
->>>>>>> main
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       const fileName = file.name;
-<<<<<<< HEAD
-      // Extract file extension from filename
-      const fileExtension = fileName.split(".").pop()?.toLowerCase();
-
-      // Validate file extension against allowed types
-=======
       // Extract file extension for validation
       // Converts to lowercase for case-insensitive comparison
       const fileExtension = fileName.split(".").pop()?.toLowerCase();
 
       // Validate file extension against allowed formats
->>>>>>> main
       if (allowedExtensions.includes(fileExtension || "")) {
         // Valid file: update state and clear any previous errors
         setSelectedFile(file);
@@ -118,65 +72,37 @@ export default function ReusableFileImport({
     }
   };
 
-<<<<<<< HEAD
-  /**
-   * Triggers the hidden file input element
-   */
-=======
   // Upload button click handler for triggering file selection
   // Programmatically opens native file picker dialog
   // Provides better UX than default file input styling
->>>>>>> main
   const handleUploadClick = () => {
     fileInputRef.current?.click();
   };
 
-<<<<<<< HEAD
-  /**
-   * Handles file submission to backend API
-   */
-=======
   // Async submit handler for file upload with format-specific routing
   // Implements multi-tenant authentication and error handling
   // Routes to different endpoints based on file format
->>>>>>> main
   const handleSubmit = async () => {
     // Early return if no file selected
     if (!selectedFile) return;
 
-<<<<<<< HEAD
-    // Prepare form data for file upload
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-
-    // Get required authentication and company information
-=======
     // Prepare FormData for multipart file upload
     const formData = new FormData();
     formData.append("file", selectedFile);
 
     // Retrieve authentication and company context from localStorage
     // Required for multi-tenant API access and security
->>>>>>> main
     const companyId = localStorage.getItem("selected_company_id");
     const token = localStorage.getItem("access_token");
     const fileExtension = selectedFile.name.split(".").pop()?.toLowerCase();
 
-<<<<<<< HEAD
-    // Validate required data
-=======
     // Validate required authentication data
->>>>>>> main
     if (!companyId || !token) {
       setFileError("Missing company or token.");
       return;
     }
 
-<<<<<<< HEAD
-    // Define API endpoints and redirect paths based on file type
-=======
     // Initialize endpoint and redirect path variables
->>>>>>> main
     let endpoint = "";
     let redirectPath = "";
 
@@ -206,11 +132,7 @@ export default function ReusableFileImport({
     }
 
     try {
-<<<<<<< HEAD
-      // Submit file to backend API
-=======
       // Execute POST request with file data and authentication
->>>>>>> main
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
         method: "POST",
         headers: {
@@ -219,32 +141,20 @@ export default function ReusableFileImport({
         body: formData,
       });
 
-<<<<<<< HEAD
-      // Handle file size limit errors
-=======
       // Handle file size limit error (413 Payload Too Large)
->>>>>>> main
       if (res.status === 413) {
         setFileError("File too large. Must be under 25MB.");
         return;
       }
 
-<<<<<<< HEAD
-      // Handle general upload errors
-=======
       // Handle general API errors
->>>>>>> main
       if (!res.ok) {
         const err = await res.json();
         setFileError(err?.detail || "Upload failed.");
         return;
       }
 
-<<<<<<< HEAD
-      // Handle successful uploads with special logic for AASX files
-=======
       // Handle successful upload with format-specific response processing
->>>>>>> main
       if (fileExtension === "aasx") {
         // AASX files return product ID for direct navigation
         const data = await res.json();

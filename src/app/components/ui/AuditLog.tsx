@@ -1,13 +1,4 @@
-<<<<<<< HEAD
-/**
- * AuditLog component displays system audit trails with filtering and pagination.
- * Shows user actions, timestamps, and change details for compliance and debugging.
- * Provides responsive design with desktop table and mobile card views.
- */
-
-=======
 // React core imports for component state management and lifecycle hooks
->>>>>>> main
 import React, { useEffect, useState } from "react";
 // Accessible table wrapper component with WCAG compliance and responsive design
 import AccessibleTable from "./AccessibleTable";
@@ -24,31 +15,6 @@ import { MobileTableCard } from "./MobileTableCard";
 // Consistent button component with theming and accessibility features
 import Button from "./Button";
 
-<<<<<<< HEAD
-// Interface defining props for AuditLog component
-interface AuditLogProps {
-  caption: string; // Accessibility caption describing the audit log
-  logItems: LogItem[]; // Array of audit log entries to display
-}
-
-/**
- * AuditLog component for displaying system audit trails with filtering
- * @param caption - Descriptive text for screen readers about the audit log content
- * @param logItems - Array of audit log entries containing user actions and changes
- * @returns Audit log interface with filtering, pagination, and responsive design
- */
-export default function AuditLog({ caption, logItems }: AuditLogProps) {
-  // State management for component functionality
-  const [expandedId, setExpandedId] = useState<number | null>(null); // Track expanded row for details
-  const [selectedAction, setSelectedAction] = useState<number | null>(null); // Filter by action type
-  const [currentPage, setCurrentPage] = useState(1); // Current pagination page
-  const itemsPerPage = 10; // Number of log entries per page
-
-  /**
-   * Toggle expansion state for log entry details
-   * @param id - Unique identifier of the log entry
-   */
-=======
 // Props interface for audit log component configuration
 // Designed for flexible integration across different audit contexts
 interface AuditLogProps {
@@ -85,18 +51,10 @@ export default function AuditLog({ caption, logItems }: AuditLogProps) {
   // Toggle function for expanding/collapsing audit log entry details
   // Implements accordion-style behavior where only one entry can be expanded
   // Provides smooth user experience for viewing detailed change information
->>>>>>> main
   const toggleExpanded = (id: number) => {
     setExpandedId(prev => (prev === id ? null : id));
   };
 
-<<<<<<< HEAD
-  // Filter log items based on selected action type
-  const filteredLogs =
-    selectedAction !== null ? logItems.filter(log => log.action === selectedAction) : logItems;
-
-  // Calculate pagination boundaries
-=======
   // Filtered logs computation based on selected action filter
   // Applies real-time filtering without server requests for immediate feedback
   // Maintains original data integrity while providing filtered view
@@ -106,19 +64,14 @@ export default function AuditLog({ caption, logItems }: AuditLogProps) {
   // Pagination calculations for efficient data slicing and display
   // Computes current page boundaries and total page count dynamically
   // Ensures proper pagination behavior regardless of filter state
->>>>>>> main
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedLogs = filteredLogs.slice(startIndex, endIndex);
   const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
 
-<<<<<<< HEAD
-  // Reset pagination when filter changes
-=======
   // Effect hook for pagination reset when filter changes
   // Prevents users from being on invalid pages after filtering
   // Ensures consistent navigation experience across filter state changes
->>>>>>> main
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedAction]);

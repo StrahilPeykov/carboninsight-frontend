@@ -23,31 +23,6 @@ import Card from "../components/ui/Card";
 // and accessibility features like proper focus management and keyboard navigation support.
 import Link from "next/link";
 
-<<<<<<< HEAD
-/**
- * Accessibility Statement Page Component
- * 
- * This component renders a comprehensive accessibility statement for CarbonInsight,
- * covering WCAG 2.1 AA compliance, keyboard navigation, screen reader support,
- * and contact information for accessibility feedback.
- * 
- * Features:
- * - WCAG 2.1 AA compliance information
- * - Keyboard shortcuts documentation
- * - Screen reader compatibility details
- * - Accessibility features overview
- * - Contact information for accessibility support
- * - Known limitations and workarounds
- * - Progressive enhancement for authenticated users
- * - Responsive design with proper semantic structure
- */
-export default function AccessibilityStatementPage() {
-  // State to track if component is mounted (prevents hydration issues)
-  const [mounted, setMounted] = useState(false);
-  
-  // Contact information and last updated date for the accessibility statement
-  // These values should be updated when significant accessibility changes are made
-=======
 // Main functional component that renders the comprehensive accessibility statement page for CarbonInsight.
 // This component serves as a detailed documentation page that explains the platform's commitment to
 // digital accessibility, compliance standards, available features, known limitations, and contact
@@ -67,7 +42,6 @@ export default function AccessibilityStatementPage() {
   // Regular updates to this date indicate ongoing commitment to accessibility compliance and help
   // users understand the currency of the accessibility information provided on this page.
   // The date format is human-readable and follows common documentation practices for version control.
->>>>>>> main
   const lastUpdated = "May 2025";
   // Contact email address specifically designated for accessibility-related inquiries, feedback, and support.
   // Having a dedicated accessibility email ensures that accessibility concerns are routed to the appropriate
@@ -77,13 +51,6 @@ export default function AccessibilityStatementPage() {
   // to inclusive design and user support across all ability levels.
   const contactEmail = "accessibility@carboninsight.win.tue.nl";
 
-<<<<<<< HEAD
-  /**
-   * Ensure component is mounted before displaying date-sensitive content
-   * This prevents hydration mismatches between server and client rendering
-   * Critical for maintaining consistent accessibility across SSR and client-side rendering
-   */
-=======
   // React useEffect hook that executes after the component mounts to set the mounted state to true.
   // This effect runs only once (due to the empty dependency array) after the initial render cycle
   // completes, ensuring that any content dependent on client-side rendering is properly handled.
@@ -91,7 +58,6 @@ export default function AccessibilityStatementPage() {
   // that features requiring browser APIs or client-side state are properly initialized. The effect
   // helps maintain accessibility by preventing rendering inconsistencies that could confuse screen
   // readers or other assistive technologies during the hydration process.
->>>>>>> main
   useEffect(() => {
     // Critical state update that marks the component as fully mounted and hydrated on the client side.
     // This boolean flag transition from false to true serves multiple important purposes:
@@ -132,12 +98,7 @@ export default function AccessibilityStatementPage() {
       </div>
 
       <div className="space-y-8">
-<<<<<<< HEAD
-        {/* Accessibility Commitment Section - outlines our dedication to inclusive design */}
-        {/* Uses Card component for consistent styling and semantic structure */}
-=======
         {/* Accessibility Commitment Section */}
->>>>>>> main
         <Card className="mb-8">
           <h2 className="text-2xl font-semibold mb-6">Our Accessibility Commitment</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -151,12 +112,7 @@ export default function AccessibilityStatementPage() {
           </p>
         </Card>
 
-<<<<<<< HEAD
-        {/* Conformance Status Section - explains current compliance level */}
-        {/* Transparency about compliance status helps users understand what to expect */}
-=======
         {/* WCAG Conformance Status Section */}
->>>>>>> main
         <Card className="mb-8">
           <h2 className="text-2xl font-semibold mb-6">Conformance Status</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -164,12 +120,7 @@ export default function AccessibilityStatementPage() {
             conformant means that some parts of the content do not fully conform to the
             accessibility standard.
           </p>
-<<<<<<< HEAD
-          {/* Information box highlighting our ongoing efforts */}
-          {/* Visual distinction helps emphasize our commitment to improvement */}
-=======
 
->>>>>>> main
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-4">
             <p className="text-sm text-blue-800 dark:text-blue-300">
               We are actively working to achieve full WCAG 2.1 AA compliance and address any
@@ -178,12 +129,7 @@ export default function AccessibilityStatementPage() {
           </div>
         </Card>
 
-<<<<<<< HEAD
-        {/* Accessibility Features Section - detailed breakdown of supported features */}
-        {/* Organized into logical subsections for easier scanning and comprehension */}
-=======
         {/* Platform Accessibility Features Section */}
->>>>>>> main
         <Card className="mb-8">
           <h2 className="text-2xl font-semibold mb-6">Accessibility Features</h2>
           <div className="space-y-4">
@@ -226,12 +172,7 @@ export default function AccessibilityStatementPage() {
           </div>
         </Card>
 
-<<<<<<< HEAD
-        {/* Guidelines for Visually Impaired Users - comprehensive support information */}
-        {/* Dedicated section for users who rely on assistive technologies */}
-=======
         {/* Guidelines for Visually Impaired Users Section */}
->>>>>>> main
         <Card className="mb-8">
           <h2 className="text-2xl font-semibold mb-6">
             Guidelines for Users with Visual Impairments
@@ -264,12 +205,7 @@ export default function AccessibilityStatementPage() {
               </p>
             </div>
 
-<<<<<<< HEAD
-            {/* High Contrast Support */}
-            {/* Addresses needs of users with various visual sensitivities */}
-=======
             {/* High contrast support subsection */}
->>>>>>> main
             <div>
               <h3 className="text-lg font-medium mb-2">High Contrast Support</h3>
               <p className="text-gray-600 dark:text-gray-400">
@@ -281,12 +217,7 @@ export default function AccessibilityStatementPage() {
           </div>
         </Card>
 
-<<<<<<< HEAD
-        {/* Keyboard Navigation Section - detailed keyboard interaction guide */}
-        {/* Essential information for users who cannot use a mouse */}
-=======
         {/* Keyboard Navigation Section */}
->>>>>>> main
         <Card className="mb-8">
           <h2 className="text-2xl font-semibold mb-6">Keyboard Navigation</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -357,12 +288,7 @@ export default function AccessibilityStatementPage() {
           </div>
         </Card>
 
-<<<<<<< HEAD
-        {/* Application-Specific Keyboard Shortcuts Section */}
-        {/* Custom shortcuts that enhance productivity for power users */}
-=======
         {/* Custom Keyboard Shortcuts Section */}
->>>>>>> main
         <Card className="mb-8" id="keyboard-shortcuts">
           <h2 className="text-2xl font-semibold mb-6">Keyboard Shortcuts</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -471,12 +397,7 @@ export default function AccessibilityStatementPage() {
           </div>
         </Card>
 
-<<<<<<< HEAD
-        {/* Known Limitations Section - transparency about current accessibility gaps */}
-        {/* Honesty about limitations builds trust and helps users plan their interaction */}
-=======
         {/* Known Accessibility Limitations Section */}
->>>>>>> main
         <Card className="mb-8">
           <h2 className="text-2xl font-semibold mb-6">Known Limitations</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -513,12 +434,7 @@ export default function AccessibilityStatementPage() {
           </div>
         </Card>
 
-<<<<<<< HEAD
-        {/* Feedback and Contact Section - support information */}
-        {/* Provides clear channels for users to report accessibility issues */}
-=======
         {/* User Feedback and Contact Section */}
->>>>>>> main
         <Card className="mb-8">
           <h2 className="text-2xl font-semibold mb-6">Feedback and Contact</h2>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -555,12 +471,7 @@ export default function AccessibilityStatementPage() {
           </div>
         </Card>
 
-<<<<<<< HEAD
-        {/* Technical and Legal Information Section */}
-        {/* Provides transparency about our technical approach and compliance methods */}
-=======
         {/* Technical Specifications Section */}
->>>>>>> main
         <Card>
           <h2 className="text-2xl font-semibold mb-6">Technical Specifications</h2>
           <div className="space-y-2 text-gray-600 dark:text-gray-400">

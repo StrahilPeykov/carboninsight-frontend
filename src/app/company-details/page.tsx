@@ -26,53 +26,25 @@ import { companyApi, CompanyCreateData } from "@/lib/api/companyApi";
 // Provides better error handling and user feedback for API operation failures
 import { ApiError } from "@/lib/api/apiClient";
 
-<<<<<<< HEAD
-/**
- * Company Details Management Page Component
- * 
- * This page allows users to view and edit company information, including:
- * - Business name, VAT number, and registration number
- * - Company deletion with confirmation safeguards
- * - Field validation and error handling
- * - Success notifications and navigation
- * 
- * Features:
- * - Loads existing company data from URL parameter
- * - Form validation with field-specific error messages
- * - Company deletion with confirmation modal
- * - Global event dispatching for UI updates
- * - Session storage for success message persistence
- * - Automatic redirection after operations
- */
-=======
 // Main component for displaying and editing company details
 // Handles company information modification, deletion, and related state management
 // Includes comprehensive error handling, validation feedback, and user confirmation flows
->>>>>>> main
 export default function CompanyDetailsPage() {
   // Next.js router instance for programmatic navigation
   // Used for redirecting users when company ID is missing or after successful operations
   const router = useRouter();
 
-<<<<<<< HEAD
-  // Form data state matching the company structure
-=======
   // Form data state that mirrors the CompanyCreateData interface
   // Manages the current values of all editable company fields
   // Initialized with empty strings to ensure controlled components
->>>>>>> main
   const [formData, setFormData] = useState<CompanyCreateData>({
     name: "",
     vat_number: "",
     business_registration_number: "",
   });
   
-<<<<<<< HEAD
-  // Loading and operation states
-=======
   // Loading state for general operations like data fetching and form submission
   // Controls UI elements like loading indicators and disabled states during async operations
->>>>>>> main
   const [isLoading, setIsLoading] = useState(false);
   
   // General error message state for displaying operation failures to users
@@ -92,15 +64,11 @@ export default function CompanyDetailsPage() {
   // Used for all API operations and determines which company data to load/modify
   const [companyId, setCompanyId] = useState<string | null>(null);
 
-<<<<<<< HEAD
-  // Delete confirmation modal state management
-=======
   // State management for company deletion confirmation flow
   // These states control the multi-step deletion process with user confirmation
   
   // Controls visibility of the deletion confirmation modal
   // Modal requires explicit user confirmation before proceeding with deletion
->>>>>>> main
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   
   // User input for company name confirmation in deletion flow
@@ -111,16 +79,9 @@ export default function CompanyDetailsPage() {
   // Prevents multiple deletion attempts and provides user feedback during processing
   const [isDeleting, setIsDeleting] = useState(false);
 
-<<<<<<< HEAD
-  /**
-   * Extract and validate company ID from localStorage
-   * Redirects to company list if no company is selected
-   */
-=======
   // Effect 1: Initialize component by retrieving selected company ID from localStorage
   // This effect runs on component mount to determine which company to display/edit
   // Redirects to company list if no company is selected, ensuring proper navigation flow
->>>>>>> main
   useEffect(() => {
     // Retrieve the currently selected company ID from browser storage
     // This ID is set when user selects a company from the company list page
@@ -138,16 +99,9 @@ export default function CompanyDetailsPage() {
     setCompanyId(id);
   }, [router]);
 
-<<<<<<< HEAD
-  /**
-   * Fetch company details when company ID is available
-   * Loads existing company information into the form
-   */
-=======
   // Effect 2: Fetch company data when company ID becomes available
   // Loads the current company information and populates the form for editing
   // Includes error handling for failed data retrieval attempts
->>>>>>> main
   useEffect(() => {
     // Guard clause: only proceed if company ID is available
     // Prevents unnecessary API calls when component is still initializing
@@ -172,16 +126,9 @@ export default function CompanyDetailsPage() {
       .finally(() => setIsLoading(false));
   }, [companyId]);
 
-<<<<<<< HEAD
-  /**
-   * Check for persisted success message from session storage
-   * This handles success messages that should persist across page refreshes
-   */
-=======
   // Effect 3: Check for success message persistence across page reloads
   // Restores success messages that were stored in sessionStorage during previous operations
   // This pattern maintains user feedback even if the page is refreshed after an action
->>>>>>> main
   useEffect(() => {
     // Browser environment check to ensure sessionStorage is available
     // Prevents errors during server-side rendering or in non-browser environments
@@ -196,32 +143,18 @@ export default function CompanyDetailsPage() {
     }
   }, []);
 
-<<<<<<< HEAD
-  /**
-   * Handle form input changes
-   * Updates form data state as user types
-   */
-=======
   // Generic form input change handler for all company data fields
   // Implements controlled component pattern for form state management
   // Updates the appropriate field in formData based on input name attribute
->>>>>>> main
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Use functional state update to ensure immutability and proper React re-rendering
     // Spread operator preserves existing form data while updating only the changed field
     setFormData(p => ({ ...p, [e.target.name]: e.target.value }));
   };
 
-<<<<<<< HEAD
-  /**
-   * Handle company information save operation
-   * Validates data, calls API, and provides feedback to user
-   */
-=======
   // Async function to handle form submission and company data updates
   // Manages the complete update flow: validation, API call, success handling, and error management
   // Includes comprehensive state management and user feedback mechanisms
->>>>>>> main
   const handleSave = async (e: React.FormEvent) => {
     // Prevent default form submission to handle with custom JavaScript logic
     // Allows for custom validation, API integration, and user feedback
@@ -237,12 +170,8 @@ export default function CompanyDetailsPage() {
     // Provides visual feedback and ensures data integrity during API operations
     setIsLoading(true);
 
-<<<<<<< HEAD
-    // Validate company ID is available
-=======
     // Validation: ensure company ID is available before proceeding
     // Guards against edge cases where component state might be inconsistent
->>>>>>> main
     if (!companyId) {
       setError("No company ID available");
       setIsLoading(false);
@@ -250,25 +179,14 @@ export default function CompanyDetailsPage() {
     }
 
     try {
-<<<<<<< HEAD
-      // Update company with trimmed data to prevent whitespace issues
-=======
       // Call the API service to update company information
       // Trim whitespace from all fields to ensure clean data storage
->>>>>>> main
       await companyApi.updateCompany(companyId, {
         name: formData.name.trim(),
         vat_number: formData.vat_number.trim(),
         business_registration_number: formData.business_registration_number.trim(),
       });
 
-<<<<<<< HEAD
-      // Show immediate success feedback
-      setSuccessMessage("Company data successfully edited!");
-      setIsLoading(false);
-
-      // Store success state in sessionStorage for persistence across navigation
-=======
       // Provide immediate success feedback to confirm operation completion
       // Gives users confidence that their changes have been saved
       setSuccessMessage("Company data successfully edited!");
@@ -276,7 +194,6 @@ export default function CompanyDetailsPage() {
 
       // Persist success state across potential page reloads or navigation
       // Ensures user feedback is maintained even if they refresh the page
->>>>>>> main
       sessionStorage.setItem("company_edit_success", "true");
 
       // Delayed notification to other components about company data changes
@@ -285,30 +202,18 @@ export default function CompanyDetailsPage() {
       setTimeout(() => {
         if (typeof window !== "undefined") {
           console.log("Company updated - dispatching events");
-<<<<<<< HEAD
-          // Dispatch single event to minimize side effects and notify components
-=======
           // Dispatch custom event with company ID to notify other components
           // Single event dispatch minimizes potential side effects and performance impact
->>>>>>> main
           window.dispatchEvent(new CustomEvent("companyChanged", {
             detail: { companyId }
           }));
         }
-<<<<<<< HEAD
-      }, 1500); // 1.5 second delay for user feedback
-
-      return;
-    } catch (err) {
-      // Handle API errors with field-specific validation messages
-=======
       }, 1500); // 1.5 second delay for user experience
 
       return;
     } catch (err) {
       // Handle structured API errors with field-specific validation messages
       // Provides detailed feedback for validation failures and user input errors
->>>>>>> main
       if (err instanceof ApiError && err.data) {
         // Set field-specific errors for precise user guidance
         // Allows users to understand exactly which fields need correction
@@ -326,16 +231,9 @@ export default function CompanyDetailsPage() {
     }
   };
 
-<<<<<<< HEAD
-  /**
-   * Initiate company deletion process
-   * Shows confirmation modal to prevent accidental deletions
-   */
-=======
   // Function to initiate the company deletion confirmation process
   // Opens the confirmation modal and resets any previous confirmation input
   // Provides a safe, deliberate process for this destructive operation
->>>>>>> main
   const handleDeleteCompany = () => {
     // Clear any previous confirmation input to ensure fresh validation
     // Prevents stale input from accidentally enabling deletion
@@ -346,16 +244,9 @@ export default function CompanyDetailsPage() {
     setShowDeleteConfirm(true);
   };
 
-<<<<<<< HEAD
-  /**
-   * Confirm and execute company deletion
-   * Performs deletion, cleanup, and navigation with proper event handling
-   */
-=======
   // Async function to execute company deletion after user confirmation
   // Handles the complete deletion flow: API call, cleanup, event notification, and navigation
   // Includes comprehensive error handling and user feedback mechanisms
->>>>>>> main
   const confirmDeleteCompany = async () => {
     // Guard clause: ensure company ID is available before proceeding
     // Prevents deletion attempts without valid company context
@@ -380,13 +271,6 @@ export default function CompanyDetailsPage() {
       // Log successful deletion for confirmation and debugging
       console.log("Company deleted successfully");
 
-<<<<<<< HEAD
-      // Clear the selected company from localStorage immediately
-      if (typeof window !== "undefined") {
-        localStorage.removeItem("selected_company_id");
-
-        // Dispatch events to notify navbar and other components with delay
-=======
       // Clean up browser storage immediately after successful deletion
       // Prevents stale company references from causing issues in other components
       if (typeof window !== "undefined") {
@@ -394,7 +278,6 @@ export default function CompanyDetailsPage() {
 
         // Notify other components about company deletion with strategic timing
         // Delayed dispatch ensures proper event processing order
->>>>>>> main
         console.log("Company deleted - dispatching events");
         setTimeout(() => {
           // Dispatch events to update company lists and selection states
@@ -405,12 +288,8 @@ export default function CompanyDetailsPage() {
         }, 50);
       }
 
-<<<<<<< HEAD
-      // Small delay to ensure events are processed before navigation
-=======
       // Navigate back to company list after successful deletion
       // Small delay ensures events are processed before navigation occurs
->>>>>>> main
       setTimeout(() => {
         console.log("Redirecting to list companies");
         router.push("/list-companies");
@@ -432,13 +311,9 @@ export default function CompanyDetailsPage() {
     }
   };
 
-<<<<<<< HEAD
-  // Show loading state while fetching company data
-=======
   // Conditional rendering for loading state during data fetching
   // Shows simple loading indicator while company data is being retrieved
   // Prevents display of empty or inconsistent form data during initialization
->>>>>>> main
   if (isLoading) {
     return (
       <div className="py-12 max-w-7xl mx-auto px-4 flex justify-center">

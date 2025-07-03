@@ -1,37 +1,3 @@
-<<<<<<< HEAD
-/**
- * Card component provides a consistent container with elevation and proper semantic structure.
- * Supports customizable headings, ARIA attributes, and different semantic HTML elements.
- * Used throughout the application for grouping related content with visual separation.
- */
-
-import { ReactNode, createElement, HTMLAttributes } from "react";
-
-// Interface extending div attributes with card-specific props
-interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  children: ReactNode; // Card content
-  title?: string; // Optional card title/heading
-  className?: string; // Additional CSS classes
-  as?: "div" | "section" | "article"; // Semantic HTML element to render
-  headingLevel?: 1 | 2 | 3 | 4 | 5 | 6; // Heading level for title
-  role?: string; // Custom ARIA role
-  ariaLabel?: string; // Accessible label for the card
-  ariaLabelledBy?: string; // ID of element that labels this card
-}
-
-/**
- * Flexible Card component with semantic HTML and accessibility features
- * @param children - Content to display inside the card
- * @param title - Optional title text displayed in card header
- * @param className - Additional CSS classes for customization
- * @param as - HTML element type (div, section, article) for semantic markup
- * @param headingLevel - Heading level (1-6) for the title when provided
- * @param role - Custom ARIA role for accessibility
- * @param ariaLabel - Accessible label describing the card's purpose
- * @param ariaLabelledBy - ID of element that provides the card's label
- * @returns Styled card container with optional header and proper semantics
- */
-=======
 // React imports for flexible component rendering and type safety
 // ReactNode: Allows any valid React content as children
 // createElement: Enables dynamic HTML element creation for semantic flexibility
@@ -57,31 +23,16 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 // Supports multiple semantic elements (div, section, article) for document structure
 // Implements responsive design with consistent styling and dark mode support
 // Follows WCAG guidelines with proper labeling and keyboard navigation compatibility
->>>>>>> main
 export default function Card({
   children,
   title,
   className = "",
-<<<<<<< HEAD
-  as: Component = "div", // Default to div element
-  headingLevel = 3, // Default to h3 for most card titles
-=======
   as: Component = "div",        // Default to generic div, allows override for semantic HTML
   headingLevel = 3,             // Default h3 for typical content hierarchy
->>>>>>> main
   role,
   ariaLabel,
   ariaLabelledBy,
 }: CardProps) {
-<<<<<<< HEAD
-  // Generate unique ID for title to link with aria-labelledby
-  const titleId = title ? `card-title-${title.replace(/\s+/g, "-").toLowerCase()}` : undefined;
-
-  // Base styling for consistent card appearance
-  const baseClasses = `bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden ${className}`;
-
-  // Determine appropriate ARIA attributes for accessibility
-=======
   // Generate unique title ID for ARIA labelledby relationships
   // Creates kebab-case ID from title text for proper element association
   // Essential for screen reader navigation and accessibility compliance
@@ -95,7 +46,6 @@ export default function Card({
   // ARIA attributes configuration for accessibility and semantic relationships
   // Automatically links card title for proper screen reader announcement
   // Supports custom roles and labels for specialized card usage patterns
->>>>>>> main
   const ariaAttributes = {
     role: role,
     "aria-label": ariaLabel,

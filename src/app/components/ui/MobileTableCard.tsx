@@ -1,36 +1,3 @@
-<<<<<<< HEAD
-/**
- * MobileTableCard component displays table data in card format for mobile devices.
- * Provides expandable content, action buttons, and responsive design for better mobile UX.
- * Used as an alternative to data tables on smaller screens where horizontal scrolling is problematic.
- */
-
-import { ReactNode, useState } from "react";
-
-// Interface defining props for the mobile table card component
-type MobileTableCardProps = {
-  title: ReactNode; // Main title/header content for the card
-  fields: { label: string; value: ReactNode }[]; // Array of field data to display
-  onClick?: () => void; // Optional click handler for the entire card
-  actions?: ReactNode; // Optional action buttons (edit, delete, etc.)
-};
-
-/**
- * MobileTableCard component for displaying table row data in card format on mobile
- * @param title - Primary content displayed as the card header
- * @param fields - Array of label-value pairs representing table columns
- * @param onClick - Optional function called when card is clicked (for navigation)
- * @param actions - Optional action buttons displayed at the bottom of the card
- * @returns Card-style representation of table row data optimized for mobile viewing
- */
-export const MobileTableCard = ({ title, fields, onClick, actions }: MobileTableCardProps) => {
-  // State to control content expansion/collapse
-  const [expanded, setExpanded] = useState(false);
-
-  /**
-   * Handles card click events - either executes custom onClick or toggles expansion
-   */
-=======
 // React imports for component functionality and state management
 // ReactNode: Enables flexible content types for title, field values, and actions
 // useState: Manages expansion state for field content visibility
@@ -60,7 +27,6 @@ export const MobileTableCard = ({ title, fields, onClick, actions }: MobileTable
   // If onClick prop provided, executes custom handler for navigation or actions
   // Otherwise toggles expansion state for content visibility control
   // Provides flexible interaction patterns for different use cases
->>>>>>> main
   const handleClick = () => {
     if (onClick) {
       onClick(); // Execute custom click handler if provided

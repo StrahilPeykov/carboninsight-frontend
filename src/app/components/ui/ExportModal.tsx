@@ -1,14 +1,5 @@
-<<<<<<< HEAD
-/**
- * ExportModal component provides a comprehensive interface for exporting product data.
- * Supports multiple export formats (PDF, AASX, CSV, XML, JSON) with format descriptions.
- * Includes accessibility features, keyboard navigation, focus trapping, and progress feedback.
- */
-
-=======
 // Client-side component directive for Next.js App Router
 // Required for components using React hooks and browser APIs
->>>>>>> main
 "use client";
 
 // React core imports for state management, side effects, and DOM references
@@ -38,26 +29,6 @@ import {
 // Product API types for type safety and data structure consistency
 import { Product } from "@/lib/api/productApi";
 
-<<<<<<< HEAD
-// Interface defining props for ExportModal component
-interface ExportModalProps {
-  isOpen: boolean; // Controls modal visibility
-  onClose: () => void; // Callback for closing modal
-  product: Product; // Product data to export
-  companyId: string; // Company ID for API calls
-}
-
-/**
- * ExportModal component for product data export with multiple format options
- * @param isOpen - Boolean controlling modal visibility
- * @param onClose - Function called when modal should be closed
- * @param product - Product object containing data to be exported
- * @param companyId - Company identifier for API authentication
- * @returns Modal dialog with export format selection and progress feedback
- */
-export default function ExportModal({ isOpen, onClose, product, companyId }: ExportModalProps) {
-  // State management for export process
-=======
 // Props interface for export modal component with required context data
 // Supports controlled modal visibility and product export functionality
 // Designed for integration with product management workflows
@@ -76,7 +47,6 @@ interface ExportModalProps {
 export default function ExportModal({ isOpen, onClose, product, companyId }: ExportModalProps) {
   // Export format selection state with default ZIP format for broad compatibility
   // Provides user choice between different export formats and data structures
->>>>>>> main
   const [selectedFormat, setSelectedFormat] = useState<ExportFormat>("zip");
   
   // Export progress state for UI feedback and interaction prevention
@@ -91,27 +61,6 @@ export default function ExportModal({ isOpen, onClose, product, companyId }: Exp
   // Confirms successful exports with format-specific messaging
   const [success, setSuccess] = useState<string | null>(null);
 
-<<<<<<< HEAD
-  // References for focus management and accessibility
-  const modalRef = useRef<HTMLDivElement>(null);
-  const previousActiveElement = useRef<HTMLElement | null>(null);
-
-  // Get available export formats with descriptions
-  const exportFormats = getExportFormats();
-
-  // Focus management and scroll lock when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      // Store currently focused element for restoration
-      previousActiveElement.current = document.activeElement as HTMLElement;
-      // Prevent background scrolling
-      document.body.style.overflow = "hidden";
-
-      // Focus the modal container
-      modalRef.current?.focus();
-
-      // Cleanup function
-=======
   // DOM references for advanced modal accessibility and focus management
   // modalRef: Direct modal container access for focus trapping and keyboard navigation
   // previousActiveElement: Stores focus state for proper restoration after modal closure
@@ -140,48 +89,31 @@ export default function ExportModal({ isOpen, onClose, product, companyId }: Exp
       modalRef.current?.focus();
 
       // Cleanup function for proper state restoration
->>>>>>> main
       return () => {
         // Restore background scrolling capability
         document.body.style.overflow = "";
-<<<<<<< HEAD
-        // Restore focus to previously focused element
-=======
         // Return focus to previously focused element for seamless navigation
         // Critical for accessibility and user experience continuity
->>>>>>> main
         previousActiveElement.current?.focus();
       };
     }
   }, [isOpen]);
 
-<<<<<<< HEAD
-  // Keyboard navigation and focus trapping
-=======
   // Comprehensive keyboard navigation handler for modal accessibility
   // Implements escape key dismissal and focus trapping for WCAG compliance
   // Prevents focus from leaving modal bounds during keyboard navigation
->>>>>>> main
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-<<<<<<< HEAD
-      // Close modal on Escape key (unless exporting)
-=======
       // Escape key handling for intuitive modal dismissal
       // Disabled during export to prevent accidental cancellation of ongoing operations
->>>>>>> main
       if (e.key === "Escape" && !isExporting) {
         handleClose();
       }
 
-<<<<<<< HEAD
-      // Implement focus trapping for accessibility
-=======
       // Focus trapping implementation for accessibility compliance
       // Ensures keyboard users cannot navigate outside modal boundaries
->>>>>>> main
       if (e.key === "Tab") {
         // Query all focusable elements within modal for navigation control
         // Comprehensive selector covers all interactive elements for complete accessibility
@@ -193,13 +125,9 @@ export default function ExportModal({ isOpen, onClose, product, companyId }: Exp
           const firstElement = focusableElements[0] as HTMLElement;
           const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
 
-<<<<<<< HEAD
-          // Trap focus within modal
-=======
           // Reverse tab navigation (Shift+Tab) from first element cycles to last
           // Forward tab navigation from last element cycles to first
           // Creates seamless navigation loop within modal boundaries
->>>>>>> main
           if (e.shiftKey && document.activeElement === firstElement) {
             e.preventDefault();
             lastElement.focus();
@@ -217,15 +145,9 @@ export default function ExportModal({ isOpen, onClose, product, companyId }: Exp
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, isExporting]);
 
-<<<<<<< HEAD
-  /**
-   * Handles the export process based on selected format
-   */
-=======
   // Asynchronous export handler with comprehensive error handling and user feedback
   // Supports multiple export formats with format-specific processing logic
   // Implements proper loading states and accessibility announcements
->>>>>>> main
   const handleExport = async () => {
     // Set loading state to prevent multiple simultaneous exports
     setIsExporting(true);
@@ -234,23 +156,15 @@ export default function ExportModal({ isOpen, onClose, product, companyId }: Exp
     setSuccess(null);
 
     try {
-<<<<<<< HEAD
-      // Handle PDF export differently from other formats
-=======
       // Format-specific export logic with different backend endpoints
       // PDF exports use specialized report generation, others use generic export
->>>>>>> main
       if (selectedFormat === "pdf") {
         await exportProductPDFReport(companyId, product);
       } else {
         await exportProduct(companyId, product.id, selectedFormat, product.name);
       }
 
-<<<<<<< HEAD
-      // Show success message
-=======
       // Set success message with specific product and format information
->>>>>>> main
       setSuccess(`Successfully exported ${product.name} as ${selectedFormat.toUpperCase()}`);
 
       // Create screen reader announcement for export success
@@ -263,12 +177,8 @@ export default function ExportModal({ isOpen, onClose, product, companyId }: Exp
       announcement.textContent = `Export successful. ${product.name} exported as ${selectedFormat.toUpperCase()}`;
       document.body.appendChild(announcement);
 
-<<<<<<< HEAD
-      // Auto-close modal after brief success display
-=======
       // Automatic modal closure with cleanup after success feedback display
       // Provides users time to read success message before dismissal
->>>>>>> main
       setTimeout(() => {
         document.body.removeChild(announcement);
         onClose();
@@ -284,15 +194,9 @@ export default function ExportModal({ isOpen, onClose, product, companyId }: Exp
     }
   };
 
-<<<<<<< HEAD
-  /**
-   * Handles modal close with export state validation
-   */
-=======
   // Modal closure handler with export state validation
   // Prevents accidental closure during active export operations
   // Ensures clean state reset for subsequent modal usage
->>>>>>> main
   const handleClose = () => {
     if (!isExporting) {
       // Clear all feedback states for clean next usage
@@ -303,12 +207,8 @@ export default function ExportModal({ isOpen, onClose, product, companyId }: Exp
     }
   };
 
-<<<<<<< HEAD
-  // Don't render anything if modal is closed
-=======
   // Early return for closed modal state - prevents unnecessary rendering
   // Optimizes performance by avoiding portal creation when modal not needed
->>>>>>> main
   if (!isOpen) return null;
 
   return ReactDOM.createPortal(

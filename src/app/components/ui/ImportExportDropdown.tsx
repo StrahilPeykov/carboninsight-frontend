@@ -1,14 +1,5 @@
-<<<<<<< HEAD
-/**
- * ImportExportDropdown component provides import/export functionality for emission data.
- * Supports CSV and XLSX formats with template downloads and data import validation.
- * Includes modal feedback, file validation, and proper error handling for user guidance.
- */
-
-=======
 // Client-side component directive for Next.js App Router
 // Required for components using browser APIs like localStorage and file handling
->>>>>>> main
 "use client";
 
 // React hooks for state management and DOM references
@@ -19,46 +10,6 @@ import {useState, useRef} from "react";
 // Provides visual cue for expandable menu functionality
 import {ChevronDown} from "lucide-react";
 
-<<<<<<< HEAD
-// Interface defining props for ImportExportDropdown component
-interface Props {
-    companyId: number; // Company identifier for API calls
-    productId: number; // Product identifier for API calls
-    section: "production" | "user" | "transport"; // Emission section type
-    onImportComplete?: () => void; // Callback for successful import completion
-    showTemplateModal?: boolean; // External state for template validation modal
-    setShowTemplateModal?: React.Dispatch<React.SetStateAction<boolean>>; // State setter for template modal
-}
-
-/**
- * ImportExportDropdown component for emission data management
- * @param companyId - Company ID for API authentication and data scope
- * @param productId - Product ID for specific product emission data
- * @param section - Emission section type (production, user, or transport)
- * @param onImportComplete - Callback executed when import operation succeeds
- * @param showTemplateModal - Boolean controlling template error modal visibility
- * @param setShowTemplateModal - Function to control template modal state
- * @returns Dropdown interface with import/export options and validation feedback
- */
-const ImportExportDropdown = ({companyId, productId, section, onImportComplete, showTemplateModal, setShowTemplateModal}: Props) => {
-    // State management for dropdown and modal functionality
-    const [open, setOpen] = useState(false); // Controls dropdown menu visibility
-    const [showSuccessModal, setShowSuccessModal] = useState(false); // Controls success feedback modal
-    const fileInputRef = useRef<HTMLInputElement | null>(null); // Reference to hidden file input
-
-    // Map section names to API endpoint paths
-    const sectionPath = {
-        production: "production_energy",
-        user: "user_energy", 
-        transport: "transport",
-    }[section];
-
-    /**
-     * Handles file download requests for templates and data exports
-     * @param type - File format type (csv or xlsx)
-     * @param template - Whether to download template or actual data
-     */
-=======
 // Props interface for import/export dropdown component
 // Supports multi-tenant product emissions data management
 // Designed for section-specific data import/export workflows
@@ -101,7 +52,6 @@ const ImportExportDropdown = ({companyId, productId, section, onImportComplete, 
     // Asynchronous download handler for both templates and data files
     // Supports multiple file formats (CSV, XLSX) with template flag option
     // Implements secure API communication with bearer token authentication
->>>>>>> main
     const handleDownload = async (
         type: "csv" | "xlsx",        // File format selection for download
         template = false             // Flag to determine template vs data download
@@ -109,9 +59,6 @@ const ImportExportDropdown = ({companyId, productId, section, onImportComplete, 
         // Retrieve authentication token from localStorage for API access
         // Essential for secure multi-tenant data access control
         const token = localStorage.getItem("access_token");
-<<<<<<< HEAD
-        const query = template ? "?template=true" : ""; // Add template parameter if needed
-=======
         
         // Construct query parameter for template requests
         // Backend uses this flag to return empty template structure vs actual data
@@ -119,7 +66,6 @@ const ImportExportDropdown = ({companyId, productId, section, onImportComplete, 
         
         // Build complete API endpoint URL with all required parameters
         // Follows RESTful pattern: /companies/{id}/products/{id}/emissions/{section}/export/{format}
->>>>>>> main
         const url = `${process.env.NEXT_PUBLIC_API_URL}/companies/${companyId}/products/${productId}/emissions/${sectionPath}/export/${type}/${query}`;
 
         // Execute API request with authorization header
@@ -128,23 +74,15 @@ const ImportExportDropdown = ({companyId, productId, section, onImportComplete, 
             headers: {Authorization: `Bearer ${token}`},
         });
 
-<<<<<<< HEAD
-        // Handle download failure
-=======
         // Handle API error responses with user notification
         // Provides immediate feedback for failed download attempts
->>>>>>> main
         if (!response.ok) {
             alert("Download failed.");
             return;
         }
 
-<<<<<<< HEAD
-        // Create and trigger download of the file
-=======
         // Convert response to blob for file download handling
         // Blob format enables browser file save functionality
->>>>>>> main
         const blob = await response.blob();
         
         // Create temporary anchor element for programmatic download
@@ -158,14 +96,6 @@ const ImportExportDropdown = ({companyId, productId, section, onImportComplete, 
         
         // Trigger download by programmatically clicking anchor element
         a.click();
-<<<<<<< HEAD
-        URL.revokeObjectURL(a.href); // Clean up object URL
-    };
-
-    /**
-     * Triggers the hidden file input for import functionality
-     */
-=======
         
         // Clean up object URL to prevent memory leaks
         // Essential for proper resource management in browser
@@ -175,45 +105,29 @@ const ImportExportDropdown = ({companyId, productId, section, onImportComplete, 
     // Import trigger handler for custom file selection button
     // Provides styled import button while using native file picker functionality
     // Improves UX by hiding default file input styling
->>>>>>> main
     const handleImportClick = () => {
         fileInputRef.current?.click();
     };
 
-<<<<<<< HEAD
-    /**
-     * Handles file selection and upload process with validation
-     * @param e - File input change event containing selected file
-     */
-=======
     // Comprehensive file import handler with validation and error handling
     // Processes selected files, validates content, and uploads to backend API
     // Implements template file prevention and success/error feedback
->>>>>>> main
     const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
         // Extract selected file from input event
         // Handles case where no file is selected gracefully
         const file = e.target.files?.[0];
         if (!file) return;
 
-<<<<<<< HEAD
-        // Prevent uploading template files (validation by filename)
-=======
         // Template file validation to prevent accidental template uploads
         // Uses case-insensitive regex to detect "template" in filename
         // Triggers modal warning instead of processing invalid files
->>>>>>> main
         if (/template/i.test(file.name)) {
             setShowTemplateModal?.(true);
             return;
         }
 
-<<<<<<< HEAD
-        // Prepare form data for file upload
-=======
         // Create FormData object for multipart file upload
         // Required format for file uploads to backend API
->>>>>>> main
         const formData = new FormData();
         formData.append("file", file);
 
@@ -230,12 +144,8 @@ const ImportExportDropdown = ({companyId, productId, section, onImportComplete, 
         const endpoint = `/companies/${companyId}/products/${productId}/emissions/${sectionPath}/import/tabular/`;
 
         try {
-<<<<<<< HEAD
-            // Submit file to backend API
-=======
             // Execute POST request with file data and authentication
             // Uses FormData for proper multipart encoding
->>>>>>> main
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
                 method: "POST",
                 headers: {Authorization: `Bearer ${token}`},
@@ -251,15 +161,6 @@ const ImportExportDropdown = ({companyId, productId, section, onImportComplete, 
                 return;
             }
 
-<<<<<<< HEAD
-            // Handle successful upload
-            const result = await response.json();
-            console.log("Upload success:", result);
-            if (onImportComplete) onImportComplete(); // Trigger callback
-            setShowSuccessModal(true); // Show success feedback
-            
-            // Temporarily disable file input to prevent multiple uploads
-=======
             // Process successful upload response
             // Triggers completion callback and success modal display
             const result = await response.json();
@@ -274,7 +175,6 @@ const ImportExportDropdown = ({companyId, productId, section, onImportComplete, 
             
             // Temporarily disable file input to prevent duplicate uploads
             // Prevents user confusion during processing
->>>>>>> main
             if (fileInputRef.current) {
                 fileInputRef.current.disabled = true;
             }
@@ -286,12 +186,8 @@ const ImportExportDropdown = ({companyId, productId, section, onImportComplete, 
             alert("Unexpected error during upload.");
         }
         
-<<<<<<< HEAD
-        // Reset file input value to allow re-selection of same file
-=======
         // Clear file input value to allow re-upload of same file if needed
         // Ensures onChange event fires even for identical file selections
->>>>>>> main
         if (fileInputRef.current) {
             fileInputRef.current.value = "";
         }

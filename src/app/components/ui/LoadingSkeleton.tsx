@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /**
  * LoadingSkeleton component provides visual feedback during data loading states.
  * Displays an animated spinner with accessible text for screen readers.
@@ -8,6 +9,12 @@
  * Simple loading skeleton component with accessibility features
  * @returns Centered loading indicator with spinner animation and screen reader text
  */
+=======
+// Loading skeleton component with accessible spinner and proper ARIA attributes
+// Provides visual feedback during async operations with screen reader support
+// Features responsive design with consistent styling and animation patterns
+
+>>>>>>> main
 export default function LoadingSkeleton() {
   return (
     // Container with proper ARIA attributes for loading states

@@ -1,3 +1,8 @@
+/**
+ * Authentication utilities for JWT token management
+ * Provides login, logout, token validation, and refresh functionality
+ */
+
 interface JwtPayload {
   exp: number;
   user_id: number;
@@ -5,6 +10,12 @@ interface JwtPayload {
 }
 
 export const auth = {
+  /**
+   * Authenticate user with username and password
+   * @param username - User's login name
+   * @param password - User's password
+   * @returns Promise with authentication tokens
+   */
   login: async (username: string, password: string) => {
     const response = await fetch("http://localhost:8000/api/login/", {
       method: "POST",
@@ -18,25 +29,35 @@ export const auth = {
       throw new Error("Login failed");
     }
 
+    // Store tokens in localStorage for persistence
     const data = await response.json();
     localStorage.setItem("accessToken", data.access);
     localStorage.setItem("refreshToken", data.refresh);
     return data;
   },
 
+  /**
+   * Clear all authentication tokens and user session data
+   * Removes tokens and assessment state from localStorage
+   */
   logout: () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("refreshToken");
     localStorage.removeItem("currentAssessmentId");
   },
 
+  /**
+   * Check if user has valid authentication token
+   * Validates token existence and expiration
+   * @returns Boolean indicating authentication status
+   */
   isAuthenticated: () => {
     const token = localStorage.getItem("accessToken");
     if (!token) return false;
 
     try {
-      // Simple expiration check without using jwt-decode
-      // In a production app, use proper JWT decoding
+      // Decode JWT payload to check expiration
+      // Manual base64 decoding without external dependencies
       const base64Url = token.split(".")[1];
       const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
       const jsonPayload = decodeURIComponent(
@@ -49,12 +70,20 @@ export const auth = {
       );
 
       const decoded = JSON.parse(jsonPayload) as JwtPayload;
+      // Check if token is still valid (not expired)
       return decoded.exp > Date.now() / 1000;
     } catch {
+      // If token parsing fails, assume invalid
       return false;
     }
   },
 
+  /**
+   * Refresh expired access token using refresh token
+   * Attempts to get new access token when current one expires
+   * @returns Promise with new access token
+   * @throws Error if refresh token is invalid or expired
+   */
   refreshToken: async () => {
     const refreshToken = localStorage.getItem("refreshToken");
     if (!refreshToken) throw new Error("No refresh token");
@@ -71,6 +100,7 @@ export const auth = {
       throw new Error("Token refresh failed");
     }
 
+    // Update stored access token with new one
     const data = await response.json();
     localStorage.setItem("accessToken", data.access);
     return data;

@@ -6,11 +6,26 @@
 
 "use client";
 
+// React core imports for component functionality, state, and DOM operations
+// ReactNode: Enables flexible content types for modal body content
+// useEffect: Manages modal lifecycle, focus, and accessibility features
+// useState: Handles confirmation input state for type-to-confirm functionality
+// useRef: Provides DOM references for focus management and accessibility
 import { ReactNode, useEffect, useState, useRef } from "react";
+// ReactDOM portal functionality for rendering modal outside component tree
+// Essential for proper z-index layering and accessibility isolation from main content
 import ReactDOM from "react-dom";
+// Custom button component with accessibility features and consistent styling
+// Used for modal actions with proper focus management and ARIA attributes
 import Button from "./Button";
 
+<<<<<<< HEAD
 // Interface defining props for PopupModal component
+=======
+// Props interface for popup modal component with confirmation and accessibility features
+// Supports optional type-to-confirm functionality for destructive actions
+// Designed for flexible content display with customizable action buttons
+>>>>>>> main
 interface PopupModalProps {
   title: string; // Modal title displayed in header
   confirmationRequiredText?: string; // Text user must type to enable confirmation
@@ -34,18 +49,26 @@ interface PopupModalProps {
  */
 export default function PopupModal({
   title,
-  confirmationRequiredText = "",
-  confirmLabel = "Confirm",
+  confirmationRequiredText = "",       // Default to empty string for optional confirmation
+  confirmLabel = "Confirm",            // Default confirm button label
   onConfirm,
   onClose,
-  showCancel = true,
+  showCancel = true,                   // Default to showing cancel button for user safety
   children,
 }: PopupModalProps) {
+<<<<<<< HEAD
   // References for focus management and accessibility
+=======
+  // DOM references for advanced modal accessibility and focus management
+  // modalRef: Direct modal container access for focus trapping and keyboard navigation
+  // previousActiveElement: Stores focus state for proper restoration after modal closure
+  // titleId: Unique identifier for ARIA labelledby association with modal title
+>>>>>>> main
   const modalRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
   const titleId = useRef(`modal-title-${Math.random().toString(36).substr(2, 9)}`);
 
+<<<<<<< HEAD
   // State for type-to-confirm functionality
   const [inputValue, setInputValue] = useState("");
   
@@ -62,15 +85,51 @@ export default function PopupModal({
     document.body.style.overflow = "hidden";
 
     // Hide main content from screen readers while modal is open
+=======
+  // State management for type-to-confirm functionality
+  // Tracks user input for validation against required confirmation text
+  // Enables/disables confirm button based on exact text matching
+  const [inputValue, setInputValue] = useState("");
+  
+  // Confirmation validation logic for type-to-confirm feature
+  // Returns true if no confirmation required OR if input exactly matches required text
+  // Provides safety mechanism for destructive actions by requiring explicit typing
+  const isMatch = confirmationRequiredText ? inputValue === confirmationRequiredText : true;
+
+  // Comprehensive focus management and accessibility setup effect
+  // Implements proper modal behavior with focus restoration and background interaction prevention
+  // Follows WCAG guidelines for modal dialog accessibility patterns
+  useEffect(() => {
+    // Store currently focused element for restoration after modal closure
+    // Essential for maintaining user's navigation context and screen reader position
+    previousActiveElement.current = document.activeElement as HTMLElement;
+
+    // Prevent background scrolling while modal is active
+    // Stores original overflow value for proper restoration
+    // Improves user experience by maintaining modal focus and preventing confusion
+    const origOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    // Hide main content from screen readers while modal is active
+    // Prevents screen reader confusion by isolating modal content
+    // Essential for proper accessibility and focus management
+>>>>>>> main
     const mainContent = document.getElementById("main-content");
     if (mainContent) {
       mainContent.setAttribute("aria-hidden", "true");
     }
 
+<<<<<<< HEAD
     // Focus the modal container for keyboard navigation
+=======
+    // Set initial focus to the modal container for immediate accessibility
+    // Ensures screen readers and keyboard users are aware of modal activation
+>>>>>>> main
     modalRef.current?.focus();
 
-    // Announce modal opening to screen readers
+    // Create screen reader announcement for modal opening
+    // Uses ARIA live region for immediate accessibility feedback
+    // Temporary DOM element ensures announcement without visual interference
     const announcement = document.createElement("div");
     announcement.setAttribute("role", "status");
     announcement.setAttribute("aria-live", "polite");
@@ -78,36 +137,62 @@ export default function PopupModal({
     announcement.textContent = `${title} dialog opened`;
     document.body.appendChild(announcement);
 
+<<<<<<< HEAD
     // Cleanup function
+=======
+    // Cleanup function for proper state restoration when modal closes
+>>>>>>> main
     return () => {
-      // Restore body scroll
+      // Restore background scrolling capability
       document.body.style.overflow = origOverflow;
 
-      // Remove aria-hidden from main content
+      // Remove aria-hidden from main content to restore screen reader access
       if (mainContent) {
         mainContent.removeAttribute("aria-hidden");
       }
 
+<<<<<<< HEAD
       // Remove announcement element
+=======
+      // Remove announcement element to prevent DOM pollution
+>>>>>>> main
       if (announcement.parentNode) {
         document.body.removeChild(announcement);
       }
 
-      // Return focus to previously focused element
+      // Return focus to previously focused element for seamless navigation
+      // Critical for accessibility and user experience continuity
       previousActiveElement.current?.focus();
     };
   }, [title]);
 
+<<<<<<< HEAD
   // Keyboard interaction handling
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Close modal on Escape key
+=======
+  // Comprehensive keyboard navigation handler for modal accessibility
+  // Implements escape key dismissal and focus trapping for WCAG compliance
+  // Prevents focus from leaving modal bounds during keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Escape key handling for intuitive modal dismissal
+      // Standard modal behavior expected by users across applications
+>>>>>>> main
       if (e.key === "Escape") {
         onClose();
       }
 
+<<<<<<< HEAD
       // Implement focus trap for accessibility compliance
+=======
+      // Focus trapping implementation for accessibility compliance
+      // Ensures keyboard users cannot navigate outside modal boundaries
+>>>>>>> main
       if (e.key === "Tab") {
+        // Query all focusable elements within modal for navigation control
+        // Comprehensive selector covers all interactive elements for complete accessibility
         const focusableElements = modalRef.current?.querySelectorAll(
           'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
         );
@@ -116,7 +201,13 @@ export default function PopupModal({
           const firstElement = focusableElements[0] as HTMLElement;
           const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
 
+<<<<<<< HEAD
           // Handle shift+tab on first element
+=======
+          // Reverse tab navigation (Shift+Tab) from first element cycles to last
+          // Forward tab navigation from last element cycles to first
+          // Creates seamless navigation loop within modal boundaries
+>>>>>>> main
           if (e.shiftKey && document.activeElement === firstElement) {
             e.preventDefault();
             lastElement.focus();
@@ -130,7 +221,9 @@ export default function PopupModal({
       }
     };
 
+    // Attach keyboard event listener for modal-specific navigation
     document.addEventListener("keydown", handleKeyDown);
+    // Cleanup listener to prevent memory leaks and conflicting behavior
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [onClose]);
 

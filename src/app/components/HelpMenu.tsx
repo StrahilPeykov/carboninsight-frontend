@@ -1,39 +1,61 @@
+// Client-side component directive - required for useState, useEffect, and DOM interactions
 "use client";
 
+// React hooks for component state management and lifecycle
 import { useState, useEffect } from "react";
+// Lucide React icons for visual elements in the help menu interface
 import { HelpCircle, CheckCircle, Play, Sparkles } from "lucide-react";
+// Custom tour provider hook for managing interactive guided tours
 import { useTour } from "./TourProvider";
+// Next.js navigation hook to determine current page/route context
 import { usePathname } from "next/navigation";
 
+// HelpMenu component - provides an accessible dropdown interface for interactive guided tours
+// Manages tour availability based on user context (company selection, current page)
+// Integrates with TourProvider to coordinate tour state across the application
 export default function HelpMenu() {
+  // State for controlling dropdown menu visibility - manages open/closed state
   const [isOpen, setIsOpen] = useState(false);
+  // State tracking whether user has selected a company - affects tour availability
   const [hasCompany, setHasCompany] = useState(false);
+  // Current pathname for route-specific tour availability logic
   const pathname = usePathname();
+  // Tour management functions from TourProvider context - handles tour lifecycle
   const { startTour, resetTour, isTourCompleted, isAnyTourActive } = useTour();
 
-  // Check if user has a company selected
+  // Effect to check user's company selection status from localStorage
+  // Runs once on mount to determine tour availability based on user context
+  // Uses window check for SSR compatibility in Next.js environment
   useEffect(() => {
     const companyId =
       typeof window !== "undefined" ? localStorage.getItem("selected_company_id") : null;
+    // Convert truthy check to boolean for hasCompany state
     setHasCompany(!!companyId);
   }, []);
 
+  // Tour configuration array - defines available guided tours with metadata
+  // Each tour has conditional availability based on user state and current route
+  // Supports completion tracking and restart capabilities for user experience
   const tours = [
     {
+      // Primary onboarding tour - always available for new users
       id: "main-onboarding",
       name: "Getting Started Tour",
       description: "Complete walkthrough: create your first company and learn the basics",
-      available: true,
-      canRestart: true,
+      available: true, // Always available as entry point for new users
+      canRestart: true, // Allows users to replay the tour if needed
     },
     {
+      // Product-focused tour - requires company context or specific route
       id: "product-list-tour",
       name: "Product Management Tour",
       description: "Learn to add products, calculate carbon footprints, and export data",
+      // Available when user has company OR is on product-list page (for demo purposes)
       available: hasCompany || pathname === "/product-list",
       canRestart: hasCompany || pathname === "/product-list",
     },
     {
+      // Company management tour - available from any route for flexibility
       id: "company-tour",
       name: "Company Management Tour",
       description: "Manage multiple companies, users, and settings",
@@ -42,21 +64,30 @@ export default function HelpMenu() {
     },
   ];
 
+  // Handler for initiating a specific tour - manages cleanup and tour start sequence
+  // Clears any conflicting session storage to ensure clean tour experience
+  // Coordinates with TourProvider to reset state before starting new tour
   const handleStartTour = (tourId: string) => {
-    // Clear any session storage that might interfere
+    // Clear session storage flags that might prevent tour from showing properly
+    // These flags track whether users have already seen specific tours
     sessionStorage.removeItem("hasSeenProductListTour");
     sessionStorage.removeItem("hasSeenCompanyListTour");
 
-    // Reset and start the tour
+    // Reset any existing tour state to ensure clean start
     resetTour(tourId);
+    // Initiate the requested tour through TourProvider
     startTour(tourId);
+    // Close the help menu to focus on tour experience
     setIsOpen(false);
   };
 
+  // Render help menu with dropdown interface and tour management
   return (
+    // Relative positioning container for dropdown menu positioning
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
+        // Responsive styling with dark mode support and smooth transitions
         className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
         aria-label="Help menu"
       >
@@ -85,19 +116,26 @@ export default function HelpMenu() {
 
             <div className="space-y-2">
               {tours.map(tour => {
+                // Calculate tour state for conditional rendering and interactions
                 const isCompleted = isTourCompleted(tour.id);
                 const isAvailable = tour.available;
                 const canStart = tour.canRestart || !isCompleted;
 
                 return (
+                  // Individual tour button with comprehensive state management
+                  // Handles disabled states, hover effects, and accessibility
                   <button
                     key={tour.id}
                     onClick={() => {
+                      // Conditional tour start with availability and state checks
                       if (isAvailable && canStart) {
                         handleStartTour(tour.id);
                       }
                     }}
+                    // Disabled when tour unavailable, completed (non-restartable), or another tour active
                     disabled={!isAvailable || !canStart || isAnyTourActive}
+                    // Dynamic styling based on tour state and availability
+                    // Provides clear visual feedback for interactive vs disabled states
                     className={`w-full text-left px-3 py-2 text-sm rounded transition-colors ${
                       isAvailable && canStart && !isAnyTourActive
                         ? "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 cursor-pointer"

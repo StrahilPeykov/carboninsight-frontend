@@ -1,9 +1,31 @@
+// Next.js optimized Link component for client-side navigation
+// Provides prefetching, code splitting, and performance optimizations
+// Essential for maintaining SPA behavior while preserving SEO benefits
 import Link from "next/link";
 
+// Main footer component that appears at the bottom of every page in the application
+// Provides essential site navigation, legal information, contact details, and funding acknowledgments
+// Designed with accessibility, responsive design, and dark mode support in mind
+// Follows WCAG guidelines for proper semantic structure and keyboard navigation
 export default function Footer() {
+  // Dynamically calculate the current year for copyright notice
+  // Ensures copyright year is always current without manual updates
+  // Uses JavaScript Date object to get the current year at runtime
+  // This approach maintains accuracy across year transitions automatically
   const currentYear = new Date().getFullYear();
 
   return (
+    // Main footer element with semantic HTML5 footer tag for accessibility
+    // Styling includes responsive background colors for light/dark mode support
+    // mt-auto pushes footer to bottom of page when content is short (sticky footer pattern)
+    // Border-top provides visual separation from main content area
+    // aria-label provides clear identification for screen readers and assistive technologies
+    // The footer uses a landmark role implicitly through the HTML5 footer element
+    // This enables screen reader users to quickly navigate to site information and legal links
+    // Background colors (bg-white/dark:bg-gray-900) ensure proper contrast in both themes
+    // The mt-auto utility creates a sticky footer effect using CSS flexbox on the parent layout
+    // Border styling uses theme-aware colors that adapt to light/dark mode preferences
+    // Focus management is handled by child elements with proper keyboard navigation support
     <footer
       className="bg-white dark:bg-gray-900 mt-auto border-t border-gray-200 dark:border-gray-700"
       aria-label="Site footer"

@@ -1,17 +1,30 @@
+<<<<<<< HEAD
 /**
  * AuditLog component displays system audit trails with filtering and pagination.
  * Shows user actions, timestamps, and change details for compliance and debugging.
  * Provides responsive design with desktop table and mobile card views.
  */
 
+=======
+// React core imports for component state management and lifecycle hooks
+>>>>>>> main
 import React, { useEffect, useState } from "react";
+// Accessible table wrapper component with WCAG compliance and responsive design
 import AccessibleTable from "./AccessibleTable";
+// Card container component for consistent layout and visual grouping
 import Card from "./Card";
+// Audit log API types and action definitions for data structure and filtering
+// AuditLogActionDefinition: Maps action IDs to human-readable descriptions
+// LogItem: TypeScript interface defining audit log entry structure
 import { AuditLogActionDefinition, LogItem } from "@/lib/api/auditLogApi";
+// Table row component with enhanced styling and interaction capabilities
 import { TableRow } from "./tableRow";
+// Mobile-optimized card component for responsive audit log display on small screens
 import { MobileTableCard } from "./MobileTableCard";
+// Consistent button component with theming and accessibility features
 import Button from "./Button";
 
+<<<<<<< HEAD
 // Interface defining props for AuditLog component
 interface AuditLogProps {
   caption: string; // Accessibility caption describing the audit log
@@ -35,21 +48,77 @@ export default function AuditLog({ caption, logItems }: AuditLogProps) {
    * Toggle expansion state for log entry details
    * @param id - Unique identifier of the log entry
    */
+=======
+// Props interface for audit log component configuration
+// Designed for flexible integration across different audit contexts
+interface AuditLogProps {
+  caption: string;    // Accessible table caption for screen readers and context
+  logItems: LogItem[]; // Array of audit log entries to display and filter
+}
+
+// Comprehensive audit log component with filtering, pagination, and responsive design
+// Displays user actions, timestamps, and change details for security and compliance
+// Implements dual-view pattern: desktop table and mobile cards for optimal UX
+// Features advanced filtering by action type and client-side pagination for performance
+// Follows WCAG accessibility guidelines with proper ARIA labels and semantic markup
+export default function AuditLog({ caption, logItems }: AuditLogProps) {
+  // Expandable row state for detailed change information viewing
+  // Tracks which audit log entry is currently expanded to show full details
+  // Uses null to indicate no row is expanded, improving memory efficiency
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  
+  // Action filter state for audit log entry filtering by action type
+  // null represents "show all actions", numeric values filter by specific action ID
+  // Integrates with AuditLogActionDefinition for user-friendly filter options
+  const [selectedAction, setSelectedAction] = useState<number | null>(null);
+  
+  // Pagination state management for large audit log datasets
+  // Starts at page 1 and resets when filters change for consistent UX
+  // Works with itemsPerPage constant to calculate display boundaries
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  // Items per page configuration for pagination performance optimization
+  // Fixed at 10 to balance data visibility with loading performance
+  // Reduces DOM complexity and improves rendering speed on large datasets
+  const itemsPerPage = 10; // Number of rows per page
+
+  // Toggle function for expanding/collapsing audit log entry details
+  // Implements accordion-style behavior where only one entry can be expanded
+  // Provides smooth user experience for viewing detailed change information
+>>>>>>> main
   const toggleExpanded = (id: number) => {
     setExpandedId(prev => (prev === id ? null : id));
   };
 
+<<<<<<< HEAD
   // Filter log items based on selected action type
   const filteredLogs =
     selectedAction !== null ? logItems.filter(log => log.action === selectedAction) : logItems;
 
   // Calculate pagination boundaries
+=======
+  // Filtered logs computation based on selected action filter
+  // Applies real-time filtering without server requests for immediate feedback
+  // Maintains original data integrity while providing filtered view
+  const filteredLogs =
+    selectedAction !== null ? logItems.filter(log => log.action === selectedAction) : logItems;
+
+  // Pagination calculations for efficient data slicing and display
+  // Computes current page boundaries and total page count dynamically
+  // Ensures proper pagination behavior regardless of filter state
+>>>>>>> main
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedLogs = filteredLogs.slice(startIndex, endIndex);
   const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
 
+<<<<<<< HEAD
   // Reset pagination when filter changes
+=======
+  // Effect hook for pagination reset when filter changes
+  // Prevents users from being on invalid pages after filtering
+  // Ensures consistent navigation experience across filter state changes
+>>>>>>> main
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedAction]);

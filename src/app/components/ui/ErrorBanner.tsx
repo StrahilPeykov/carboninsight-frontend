@@ -1,12 +1,21 @@
+<<<<<<< HEAD
 /**
  * ErrorBanner component displays error messages with proper accessibility features.
  * Announces errors to screen readers, supports auto-focus for critical errors,
  * and provides dismissible UI for better user experience.
  */
 
+=======
+// React hooks for DOM references and side effect management
+// useEffect: Handles accessibility features and screen reader announcements
+// useRef: Provides direct DOM access for focus management and interaction
+>>>>>>> main
 import { useEffect, useRef } from "react";
+// Lucide React alert triangle icon for visual error indication
+// Provides consistent iconography for error states across the application
 import { AlertTriangle } from "lucide-react";
 
+<<<<<<< HEAD
 // Interface defining props for ErrorBanner component
 interface ErrorBannerProps {
   error: string; // Error message text to display
@@ -21,16 +30,43 @@ interface ErrorBannerProps {
  * @param autoFocus - If true, automatically focuses the banner for critical errors
  * @returns Error banner with proper ARIA attributes and dismissible functionality
  */
+=======
+// Props interface for error banner component with accessibility and interaction options
+// Designed for displaying critical error messages with proper ARIA support
+// Supports optional dismissal and focus management for enhanced user experience
+interface ErrorBannerProps {
+  error: string;              // Error message text to display to users
+  onClose?: () => void;       // Optional callback for dismissing the error banner
+  autoFocus?: boolean;        // Whether to automatically focus the banner for critical errors
+}
+
+// Accessible error banner component with comprehensive WCAG 2.1 compliance
+// Implements multiple accessibility features including screen reader announcements
+// Supports automatic focus management for critical error scenarios
+// Provides visual and programmatic error indication with proper ARIA attributes
+// Features optional dismissal functionality and responsive design with dark mode support
+>>>>>>> main
 export default function ErrorBanner({ error, onClose, autoFocus = false }: ErrorBannerProps) {
+  // DOM reference for direct banner manipulation and focus management
+  // Essential for implementing automatic focus on critical errors
+  // Allows programmatic control of banner visibility and interaction
   const bannerRef = useRef<HTMLDivElement>(null);
 
+<<<<<<< HEAD
   // Auto-focus banner for critical errors to ensure visibility
+=======
+  // Automatic focus effect for critical error scenarios
+  // Immediately draws user attention to important error messages
+  // Follows WCAG guidelines for focus management in error situations
+  // Only triggers when autoFocus is enabled to prevent disruptive behavior
+>>>>>>> main
   useEffect(() => {
     if (autoFocus && bannerRef.current) {
       bannerRef.current.focus();
     }
   }, [autoFocus]);
 
+<<<<<<< HEAD
   // Announce error to screen readers using live region
   useEffect(() => {
     // Create temporary announcement element for screen readers
@@ -42,6 +78,26 @@ export default function ErrorBanner({ error, onClose, autoFocus = false }: Error
     document.body.appendChild(announcement);
 
     // Clean up announcement element after brief delay
+=======
+  // Screen reader announcement system for immediate error communication
+  // Creates temporary DOM element with assertive ARIA live region
+  // Ensures error messages are announced immediately to assistive technologies
+  // Implements proper cleanup to prevent memory leaks and DOM pollution
+  useEffect(() => {
+    // Create invisible announcement element for screen readers
+    // Uses role="alert" for immediate, high-priority announcements
+    // aria-live="assertive" interrupts current screen reader activity
+    const announcement = document.createElement("div");
+    announcement.setAttribute("role", "alert");
+    announcement.setAttribute("aria-live", "assertive");
+    announcement.className = "sr-only";  // Screen reader only, visually hidden
+    announcement.textContent = `Error: ${error}`;
+    document.body.appendChild(announcement);
+
+    // Cleanup function to remove announcement element when component unmounts
+    // Prevents accumulation of hidden DOM elements and potential memory leaks
+    // Ensures clean DOM state when error banner is removed or updated
+>>>>>>> main
     return () => {
       if (announcement.parentNode) {
         document.body.removeChild(announcement);
@@ -50,6 +106,11 @@ export default function ErrorBanner({ error, onClose, autoFocus = false }: Error
   }, [error]);
 
   return (
+    // Main error banner container with comprehensive accessibility attributes
+    // role="alert" identifies this as an important message requiring immediate attention
+    // aria-live="assertive" ensures screen readers announce content changes immediately
+    // tabIndex conditional allows focus when autoFocus is enabled for critical errors
+    // Responsive design with red color scheme and dark mode compatibility
     <div
       ref={bannerRef}
       className="bg-red-100 text-red-700 border border-red-300 rounded-md p-4 flex items-start gap-3 dark:bg-red-900/20 dark:border-red-800 dark:text-red-300"

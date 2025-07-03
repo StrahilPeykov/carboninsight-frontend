@@ -1,30 +1,61 @@
-// Define proper interfaces for tour steps
+// Tour system type definitions and configuration
+// Defines the structure for interactive guided tours across the application
+// Supports both static informational steps and interactive action-based steps
+
+// Base interface containing common properties for all tour step types
+// Provides foundation for both static and interactive tour step variants
 interface BaseTourStep {
-  page: string;
-  target: string;
-  title: string;
-  content: string;
-  placement: "top" | "bottom" | "left" | "right" | "center";
-  spotlightPadding?: number;
-  allowSkip?: boolean;
-  allowClickOutside?: boolean;
+  // Route pattern where this step should appear ("*" for any page)
+  page: string; 
+  // CSS selector for the element to highlight during this step
+  target: string; 
+  // Main heading displayed in the tour tooltip
+  title: string; 
+  // Detailed explanation or instruction text for the user
+  content: string; 
+  // Tooltip positioning relative to target element
+  placement: "top" | "bottom" | "left" | "right" | "center"; 
+  // Additional padding around highlighted element for visual emphasis
+  spotlightPadding?: number; 
+  // Whether users can skip this specific step (defaults to true)
+  allowSkip?: boolean; 
+  // Whether clicking outside tour area dismisses the tour (defaults to true)
+  allowClickOutside?: boolean; 
 }
 
+// Interactive tour step that requires user action before progressing
+// Used for guided workflows where user must complete specific actions
+// Ensures critical onboarding steps are completed before moving forward
 interface InteractiveTourStep extends BaseTourStep {
+  // Pauses tour progression until expectedAction is completed
   waitForAction: true;
-  expectedAction: string;
+  // Specific action identifier that the tour system waits for
+  expectedAction: string; 
 }
 
+// Static informational tour step that displays content without requiring action
+// Used for explanatory content where user can navigate freely
+// Allows users to read and understand features at their own pace
 interface StaticTourStep extends BaseTourStep {
-  waitForAction?: false;
-  expectedAction?: never;
+  // Optional flag indicating no action required (default behavior)
+  waitForAction?: false; 
+  // TypeScript ensures expectedAction cannot be set for static steps
+  expectedAction?: never; 
 }
 
+// Union type providing comprehensive type safety for tour step definitions
+// Discriminated union based on waitForAction property ensures proper typing
+// Prevents invalid combinations of interactive and static step properties
 export type TourStep = InteractiveTourStep | StaticTourStep;
 
-// Define tour steps that can span multiple pages
+// Tour definitions organized by unique identifier strings
+// Each tour consists of ordered steps that guide users through specific workflows and features
+// Tours can span multiple pages using route patterns and support both linear and conditional progression
+// The system handles cross-page navigation, state persistence, and user interaction tracking
+// Key features: interactive steps with action requirements, flexible positioning, accessibility support
 export const TOURS: Record<string, TourStep[]> = {
   "main-onboarding": [
+    // Initial onboarding tour - always available for new users
     {
       page: "*",
       target: ".company-selector-button",
@@ -37,6 +68,7 @@ export const TOURS: Record<string, TourStep[]> = {
       allowSkip: true,
       allowClickOutside: false,
     },
+    // Company creation step - guides user to create their first company
     {
       page: "*",
       target: '[data-tour-target="create-company"]',
@@ -49,6 +81,7 @@ export const TOURS: Record<string, TourStep[]> = {
       allowSkip: true,
       allowClickOutside: false,
     },
+    // Company creation form - guides user through filling out company details
     {
       page: "/create-company",
       target: 'input[name="name"]',
@@ -60,6 +93,7 @@ export const TOURS: Record<string, TourStep[]> = {
       allowSkip: true,
       allowClickOutside: false,
     },
+    // Company creation form - guides user through entering company details
     {
       page: "/create-company",
       target: 'input[name="vat_number"]',
@@ -71,6 +105,7 @@ export const TOURS: Record<string, TourStep[]> = {
       allowSkip: true,
       allowClickOutside: false,
     },
+    // Company creation form - guides user through entering company details
     {
       page: "/create-company",
       target: 'input[name="business_registration_number"]',
@@ -82,6 +117,7 @@ export const TOURS: Record<string, TourStep[]> = {
       allowSkip: true,
       allowClickOutside: false,
     },
+    // Company creation form - guides user through entering company details
     {
       page: "/create-company",
       target: 'button[type="submit"]',
@@ -95,6 +131,7 @@ export const TOURS: Record<string, TourStep[]> = {
     },
   ],
   "product-list-tour": [
+    // Product management tour - guides user through product management features
     {
       page: "*",
       target: '[data-tour-target="products-nav"]',
@@ -107,6 +144,7 @@ export const TOURS: Record<string, TourStep[]> = {
       allowClickOutside: false,
       allowSkip: true,
     },
+    // Product list page - introduces the product management interface
     {
       page: "/product-list",
       target: ".mb-6, .max-w-7xl",
@@ -117,6 +155,7 @@ export const TOURS: Record<string, TourStep[]> = {
       allowClickOutside: false,
       allowSkip: true,
     },
+    // Product creation step - guides user to add their first product
     {
       page: "/product-list",
       target: 'input[placeholder*="Search"], input[placeholder*="search"]',
@@ -128,6 +167,7 @@ export const TOURS: Record<string, TourStep[]> = {
       allowClickOutside: false,
       allowSkip: true,
     },
+    // Product list page - explains the product table and its features
     {
       page: "/product-list",
       target: ".max-w-7xl",
@@ -138,6 +178,7 @@ export const TOURS: Record<string, TourStep[]> = {
       allowClickOutside: false,
       allowSkip: true,
     },
+    // Product management completion - final step of the tour
     {
       page: "/product-list",
       target: ".max-w-7xl",
@@ -150,6 +191,7 @@ export const TOURS: Record<string, TourStep[]> = {
     },
   ],
   "company-tour": [
+    // Company management tour - guides user through managing multiple companies
     {
       page: "*",
       target: '[data-tour-target="dashboard-nav"]',
@@ -162,6 +204,7 @@ export const TOURS: Record<string, TourStep[]> = {
       allowClickOutside: false,
       allowSkip: true,
     },
+    // Dashboard navigation - directs user to the company management hub
     {
       page: "/dashboard",
       target: '[data-tour-target="companies-link"]',
@@ -174,6 +217,7 @@ export const TOURS: Record<string, TourStep[]> = {
       allowClickOutside: false,
       allowSkip: true,
     },
+    // Company management hub - introduces the company management interface
     {
       page: "/list-companies",
       target: "h1",
@@ -184,6 +228,7 @@ export const TOURS: Record<string, TourStep[]> = {
       allowClickOutside: false,
       allowSkip: true,
     },
+    // Company creation step - guides user to create additional companies
     {
       page: "/list-companies",
       target: '[href="/create-company"]',
@@ -194,6 +239,7 @@ export const TOURS: Record<string, TourStep[]> = {
       allowClickOutside: false,
       allowSkip: true,
     },
+    // Company cards and quick actions - explains the company overview
     {
       page: "/list-companies",
       target: ".grid > div:first-child",

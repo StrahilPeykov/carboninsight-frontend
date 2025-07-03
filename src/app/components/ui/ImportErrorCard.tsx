@@ -1,15 +1,27 @@
+<<<<<<< HEAD
 /**
  * ImportErrorCard component displays detailed error information for failed import operations.
  * Shows row-specific errors, field-level validation issues, and human-readable error translations.
  * Used during CSV/XLSX import processes to help users identify and fix data problems.
  */
 
+=======
+// Client-side component directive for Next.js App Router
+// Required for components that use browser-specific APIs or React hooks
+>>>>>>> main
 "use client";
 
+// React core import for component functionality
+// Used for creating functional component with JSX syntax
 import React from "react";
+// Custom card component providing consistent layout and styling
+// Wraps error content with semantic HTML and accessibility features
 import Card from "./Card";
+// Utility function for translating backend error messages to user-friendly text
+// Converts technical API error codes and messages into readable explanations
 import { translateImportError } from "@/utils/translateImportError";
 
+<<<<<<< HEAD
 // Type definition for individual error items
 type ErrorItem = {
   attr: string; // Field or attribute name where error occurred
@@ -33,6 +45,37 @@ export default function ImportErrorCard({ row, errors }: Props) {
   const summary = errors.find(e => e.attr.endsWith(".error"))?.detail;
   
   // Get field-specific errors (excluding general error)
+=======
+// Type definition for individual error items from backend validation
+// Represents field-specific errors with attribute path and error description
+// Used for parsing and displaying structured error information from API responses
+type ErrorItem = {
+  attr: string;    // Dot-notation path to the field that caused the error (e.g., "1.row.name")
+  detail: string;  // Human-readable error message or error code from backend validation
+};
+
+// Props interface for ImportErrorCard component
+// Designed for displaying row-specific import validation errors
+// Supports multiple error types and field-level error reporting
+type Props = {
+  row: string;          // Row identifier or number from the imported data file
+  errors: ErrorItem[];  // Array of validation errors for this specific row
+};
+
+// Import error card component for displaying row-specific validation failures
+// Provides user-friendly error reporting for data import processes
+// Separates general row errors from specific field validation issues
+// Uses semantic styling to clearly indicate error severity and context
+export default function ImportErrorCard({ row, errors }: Props) {
+  // Extract general row-level error summary from error collection
+  // Looks for errors with ".error" suffix which typically represent overall row issues
+  // Provides high-level context for what went wrong with the entire row
+  const summary = errors.find(e => e.attr.endsWith(".error"))?.detail;
+  
+  // Filter field-specific errors by excluding general row errors
+  // Creates array of individual field validation failures for detailed reporting
+  // Enables granular error display for each problematic field in the row
+>>>>>>> main
   const fieldErrors = errors.filter(e => !e.attr.endsWith(".error"));
 
   return (

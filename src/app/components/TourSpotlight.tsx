@@ -1,33 +1,57 @@
+// React import for component definition and event handling
 import React from "react";
 
+// Props interface for TourSpotlight component
+// Defines the configuration options for spotlight overlay and user interaction handling
 interface TourSpotlightProps {
-  targetRect: DOMRect | null;
-  placement?: "top" | "bottom" | "left" | "right" | "center";
-  spotlightPadding?: number;
+  // Bounding rectangle of element to highlight (null for center placement)
+  targetRect: DOMRect | null; 
+  // Tooltip positioning relative to target
+  placement?: "top" | "bottom" | "left" | "right" | "center"; 
+  // Additional padding around highlighted element for visual emphasis
+  spotlightPadding?: number; 
+  // Whether clicking outside spotlight area should dismiss tour
   allowClickOutside?: boolean;
-  canSkip: boolean;
-  onSkip: () => void;
+  // Whether user is allowed to skip current tour step 
+  canSkip: boolean; 
+  // Callback function executed when user skips tour
+  onSkip: () => void; 
 }
 
+// TourSpotlight component creates visual overlay with highlighted target area
+// Implements spotlight effect using SVG masking and click-blocking regions
+// Manages user interaction outside of highlighted areas for tour control
 export default function TourSpotlight({
   targetRect,
   placement,
-  spotlightPadding = 8,
-  allowClickOutside = true,
+  // Default padding provides comfortable visual spacing
+  spotlightPadding = 8, 
+  // Default allows flexible user interaction
+  allowClickOutside = true, 
   canSkip,
   onSkip,
 }: TourSpotlightProps) {
+  
+  // Function to create click-blocking areas around the spotlight
+  // Prevents user interaction with page elements outside highlighted area
+  // Returns different configurations based on placement type and target existence
   const getBlockingAreas = () => {
+    // Handle center placement or missing target - create full-screen transparent blocker
+    // Center placement doesn't highlight specific elements, so entire screen is clickable
     if (!targetRect || placement === "center") {
       return (
         <div
           className="fixed inset-0 bg-transparent"
           style={{
+            // Enables click detection across entire screen
             pointerEvents: "auto",
-            zIndex: 9997,
+            // High z-index ensures blocker appears above page content 
+            zIndex: 9997, 
           }}
           onClick={e => {
-            e.stopPropagation();
+            // Prevents event bubbling to avoid conflicts
+            e.stopPropagation(); 
+            // Allow tour dismissal if both conditions are met
             if (allowClickOutside && canSkip) {
               onSkip();
             }
@@ -36,15 +60,25 @@ export default function TourSpotlight({
       );
     }
 
+    // Calculate spotlight area with padding for precise click blocking
+    // Creates boundaries that define the non-interactive region around target
     const spotlight = {
-      top: targetRect.top - spotlightPadding,
-      left: targetRect.left - spotlightPadding,
-      right: targetRect.right + spotlightPadding,
-      bottom: targetRect.bottom + spotlightPadding,
+      // Top boundary with padding
+      top: targetRect.top - spotlightPadding, 
+      // Left boundary with padding
+      left: targetRect.left - spotlightPadding, 
+      // Right boundary with padding
+      right: targetRect.right + spotlightPadding, 
+      // Bottom boundary with padding
+      bottom: targetRect.bottom + spotlightPadding, 
     };
 
+    // Shared click handler for all blocking areas
+    // Provides consistent behavior across different blocker regions
     const handleBlockerClick = (e: React.MouseEvent) => {
-      e.stopPropagation();
+      // Prevents event bubbling conflicts
+      e.stopPropagation(); 
+      // Check permissions before allowing tour dismissal
       if (allowClickOutside && canSkip) {
         onSkip();
       }

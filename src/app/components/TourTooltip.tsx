@@ -1,38 +1,74 @@
+// React import for component definition and ref handling
 import React from "react";
+// Lucide React icons for navigation controls and visual elements
 import { ChevronRight, ChevronLeft, X, Sparkles } from "lucide-react";
 
+// Comprehensive props interface for TourTooltip component
+// Supports both local and global tour coordination with extensive customization options
 interface TourTooltipProps {
-  title: string;
-  content: string;
-  displayStepNumber: number;
-  totalStepCount: number;
-  globalCurrentStep: number;
-  canSkip: boolean;
-  isWaitingForAction: boolean;
-  localStep: number;
-  stepsLength: number;
-  onNext: () => void;
-  onPrevious: () => void;
-  onSkip: () => void;
-  getTooltipPosition: () => any;
-  tooltipRef: React.RefObject<HTMLDivElement | null>;
+  // Main heading text displayed in tooltip header
+  title: string; 
+  // Detailed explanation or instruction text for current step
+  content: string; 
+  // Human-readable step number (1-based) shown to user
+  displayStepNumber: number; 
+  // Total number of steps in complete tour sequence
+  totalStepCount: number; 
+  // Zero-based global step index for multi-component tours
+  globalCurrentStep: number; 
+  // Whether user is allowed to skip/dismiss current tour step
+  canSkip: boolean; 
+  // Indicates if step requires user action before progression
+  isWaitingForAction: boolean; 
+  // Zero-based local step index within current tour component
+  localStep: number; 
+  // Total number of steps in current local tour component
+  stepsLength: number; 
+  // Callback function for advancing to next step
+  onNext: () => void; 
+  // Callback function for returning to previous step
+  onPrevious: () => void; 
+  // Callback function for skipping/dismissing tour
+  onSkip: () => void; 
+  // Function that returns positioning styles for tooltip placement
+  getTooltipPosition: () => any; 
+  // React ref for tooltip DOM element access
+  tooltipRef: React.RefObject<HTMLDivElement | null>; 
 }
 
+// TourTooltip component renders interactive tooltip with navigation controls
+// Provides comprehensive tour step information and user interaction options
+// Supports both standalone operation and coordination with multi-component tour systems
+// Features accessibility support, progress visualization, and responsive design
 export default function TourTooltip({
-  title,
-  content,
-  displayStepNumber,
-  totalStepCount,
-  globalCurrentStep,
-  canSkip,
-  isWaitingForAction,
-  localStep,
-  stepsLength,
-  onNext,
-  onPrevious,
-  onSkip,
-  getTooltipPosition,
-  tooltipRef,
+  // Step title for clear identification
+  title, 
+  // Step content for detailed guidance
+  content, 
+  // User-facing step number for progress context
+  displayStepNumber, 
+  // Total steps for progress calculation
+  totalStepCount, 
+  // Global position for cross-component coordination
+  globalCurrentStep, 
+  // Skip permission for user control
+  canSkip, 
+  // Action requirement flag for conditional UI
+  isWaitingForAction, 
+  // Local position within current component
+  localStep, 
+  // Local step count for navigation boundaries
+  stepsLength, 
+  // Next step handler for progression
+  onNext, 
+  // Previous step handler for review
+  onPrevious, 
+  // Skip handler for tour dismissal
+  onSkip, 
+  // Positioning function for dynamic placement
+  getTooltipPosition, 
+  // DOM reference for positioning calculations and focus management
+  tooltipRef, 
 }: TourTooltipProps) {
   return (
     <div

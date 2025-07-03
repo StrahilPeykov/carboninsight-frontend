@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /**
  * EmptyState component displays user-friendly messages when data is unavailable.
  * Provides visual feedback with optional icons, descriptions, and call-to-action buttons.
@@ -28,6 +29,36 @@ interface EmptyStateProps {
 export default function EmptyState({ message, icon, action, description }: EmptyStateProps) {
   return (
     // Container with proper ARIA attributes for screen readers
+=======
+// React ReactNode import for flexible icon and content handling
+// Allows any valid React element to be passed as icon prop for maximum flexibility
+import { ReactNode } from "react";
+
+// Props interface for empty state component with optional action and visual elements
+// Designed for displaying meaningful feedback when content is unavailable or loading
+// Supports accessibility with proper ARIA attributes and semantic structure
+interface EmptyStateProps {
+  message: string;              // Primary message displayed as heading for user context
+  icon?: ReactNode;             // Optional icon element for visual enhancement and context
+  action?: {                    // Optional call-to-action with callback functionality
+    label: string;              // Button text for the action
+    onClick: () => void;        // Click handler for user interaction
+  };
+  description?: string;         // Optional secondary description for additional context
+}
+
+// Empty state component for displaying helpful messages when content is unavailable
+// Implements accessibility best practices with proper ARIA attributes and semantic HTML
+// Provides consistent styling and layout for empty content scenarios across the application
+// Supports optional icons, descriptions, and call-to-action buttons for enhanced UX
+// Follows responsive design principles with proper spacing and typography hierarchy
+export default function EmptyState({ message, icon, action, description }: EmptyStateProps) {
+  return (
+    // Main container with centered layout and accessibility attributes
+    // role="status" announces content changes to screen readers
+    // aria-live="polite" ensures updates are announced without interrupting user flow
+    // Generous padding provides comfortable whitespace for reading and visual balance
+>>>>>>> main
     <div className="text-center py-12 px-4" role="status" aria-live="polite">
       {/* Optional icon section */}
       {icon && (

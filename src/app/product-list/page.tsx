@@ -2,54 +2,53 @@
 
 import { useProductListHandlers } from "@/hooks/useProductListHandler";
 import Card from "../components/ui/Card";
-import Button from "../components/ui/Button";
-import {useEffect, useState} from "react";
-import {useRouter} from "next/navigation";
-import {useAuth} from "../context/AuthContext";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "../context/AuthContext";
 import LoadingSkeleton from "../components/ui/LoadingSkeleton";
 import ExportModal from "../components/ui/ExportModal";
-import {Product} from "@/lib/api/productApi";
-import {useRef} from "react";
-import {ChevronDown} from "lucide-react";
+import { Product } from "@/lib/api/productApi";
+import { useRef } from "react";
 import ImportErrorCard from "../components/ui/ImportErrorCard";
 import * as Helpers from "./helpers";
 import AIAdviceModal from "./components/AIAdviceModal";
 import DeleteProductModal from "./components/DeleteProductModal";
 import ProductTable from "./components/ProductTable";
+import SearchAndImportSection from './components/SearchAndImportSection';
 
 // Set page title
 if (typeof document !== "undefined") {
     document.title = "Products - CarbonInsight";
 }
 
-/**
- * ProductListPage - Main product management interface
- *
- * This component provides a comprehensive UI for managing product data in the CarbonInsight platform.
- * It handles product listing, searching, creation, editing, deletion, import/export operations,
- * and AI-assisted product optimization.
- *
- * Features:
- * - Product listing with pagination and search functionality
- * - Creation of new products with redirect to product form
- * - Editing of existing product details
- * - Deletion of products with confirmation workflow
- * - Import of product data from multiple formats (AASX, JSON, XML, CSV, XLSX)
- * - Export of product data to various formats
- * - AI-powered analysis and recommendations for products
- *
- * Authentication:
- * - Requires user to be authenticated via AuthContext
- * - Redirects to login if authentication fails
- * - Requires company selection (stored in localStorage)
- *
- * State management:
- * - Manages complex UI states for modals, loading states, and error handling
- * - Implements debounced search to optimize API calls
- * - Handles pagination locally to improve performance
- *
- * @returns {JSX.Element} The rendered product list page with all interactive components
- */
+//
+// ProductListPage - Main product management interface
+//
+// This page provides a comprehensive UI for managing product data in the CarbonInsight platform.
+// It handles product listing, searching, creation, editing, deletion, import/export operations,
+// and AI-assisted product optimization.
+//
+// Features:
+// - Product listing with pagination and search functionality
+// - Creation of new products with redirect to product form
+// - Editing of existing product details
+// - Deletion of products with confirmation workflow
+// - Import of product data from multiple formats (AASX, JSON, XML, CSV, XLSX)
+// - Export of product data to various formats
+// - AI-powered analysis and recommendations for products
+//
+// Authentication:
+// - Requires user to be authenticated via AuthContext
+// - Redirects to login if authentication fails
+// - Requires company selection (stored in localStorage)
+//
+// State management:
+// - Manages complex UI states for modals, loading states, and error handling
+// - Implements debounced search to optimize API calls
+// - Handles pagination locally to improve performance
+//
+// @returns {JSX.Element} The rendered product list page with all interactive components
+//
 export default function ProductListPage() {
 
     // ── Local state declarations ─────────────────────────────────────────────
@@ -111,13 +110,7 @@ export default function ProductListPage() {
     const [mounted, setMounted] = useState(false);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-    // Export modal and product selection
-    // showExportModal, selectedProductForExport already declared above
-
-    // Import dropdown and file input refs
-    // importNotice already declared above
-    const aasxInputRef = useRef<HTMLInputElement>(null);
-    const csvInputRef = useRef<HTMLInputElement>(null);
+    // File input refs
     const [showImportDropdown, setShowImportDropdown] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -228,11 +221,6 @@ export default function ProductListPage() {
         return () => clearTimeout(t);
     }, [searchQuery, companyId, mounted]);
 
-
-
-
-
-
     // ── Local pagination (client-side slicing of products array) ────────────
     // Pagination & slicing
     const paginatedProducts = products.slice(
@@ -245,7 +233,7 @@ export default function ProductListPage() {
     if (isLoading || !mounted) {
         return (
             <div className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <LoadingSkeleton/>
+                <LoadingSkeleton />
             </div>
         );
     }
@@ -274,96 +262,12 @@ export default function ProductListPage() {
             </div>
 
             {/* Search + Add Product */}
-            <div className="mb-4 flex items-center gap-2 relative" ref={dropdownRef}>
-                <div className="flex-grow min-h-[44px] max-h-[44px] h-[44px]">
-                    {" "}
-                    {/* This is the same height as the button class */}
-                    <label htmlFor="product-search" className="sr-only">
-                        Search products by name, SKU, or manufacturer
-                    </label>
-                    <input
-                        id="product-search"
-                        type="text"
-                        placeholder="Search by product, SKU or manufacturer name... (At least 4 characters)"
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                        aria-describedby="search-help"
-                        className="w-full h-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <span id="search-help" className="sr-only">
-            Enter at least 4 characters to search
-          </span>
-                </div>
-                {/* Add Product Button */}
-                <Button onClick={() => router.push(`/product-list/product`)} className="text-md truncate">
-                    Add Product
-                </Button>
-                {/* Upload Dropdown */}
-                <Button
-                    onClick={() => setShowImportDropdown(prev => !prev)}
-                    className="text-md"
-                    aria-haspopup="true"
-                    aria-expanded={showImportDropdown}
-                    aria-label="Import product data"
-                >
-                    <ChevronDown className="w-4 h-4"/>
-                </Button>
-
-                <input
-                    type="file"
-                    ref={aasxInputRef}
-                    accept=".aasx,.json,.xml"
-                    className="hidden"
-                    onChange={e => handleInputChange(e, "aasx")}
-                />
-
-                <input
-                    type="file"
-                    ref={csvInputRef}
-                    accept=".csv,.xlsx"
-                    className="hidden"
-                    onChange={e => handleInputChange(e, "csv")}
-                />
-                {/* Dropdown Menu */}
-                {showImportDropdown && (
-                    <Card className="absolute right-0 top-full z-10 mt-2 w-64 bg-white rounded-md shadow-lg">
-                        <div className="space-y-2">
-                            <button
-                                onClick={() => aasxInputRef.current?.click()}
-                                className="text-left w-full hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                            >
-                                Import from AAS AASX/JSON/XML
-                                <span className="block text-gray-400 text-xs mt-1">Max file size: 25MB</span>
-                            </button>
-                            <button
-                                onClick={() => csvInputRef.current?.click()}
-                                className="text-left w-full hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                            >
-                                Import from CSV/XLSX
-                                <span className="block text-gray-400 text-xs mt-1">Max file size: 25MB</span>
-                            </button>
-                            <button
-                                onClick={() => Helpers.handleTemplateDownload("csv", {setError})}
-                                className="text-left w-full hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                            >
-                                Download CSV Template
-                                <span className="block text-gray-400 text-xs mt-1">
-                  Get started with a blank template
-                </span>
-                            </button>
-                            <button
-                                onClick={() => Helpers.handleTemplateDownload("xlsx", {setError})}
-                                className="text-left w-full hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                            >
-                                Download XLSX Template
-                                <span className="block text-gray-400 text-xs mt-1">
-                  Get started with a blank template
-                </span>
-                            </button>
-                        </div>
-                    </Card>
-                )}
-            </div>
+            <SearchAndImportSection
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              handleInputChange={handleInputChange}
+              setError={setError}
+            />
 
             {/* Global feedback messages (success, error, notices) */}
             {/* Success message */}
@@ -420,7 +324,7 @@ export default function ProductListPage() {
                         // Convert the grouped errors object to an array of [row, errors] pairs
                     ).map(([row, errors]) => (
                         // Render an ImportErrorCard component for each row with its errors
-                        <ImportErrorCard key={row} row={row} errors={errors}/>
+                        <ImportErrorCard key={row} row={row} errors={errors} />
                     ))}
                 </div>
             )}
@@ -441,7 +345,7 @@ export default function ProductListPage() {
                     onAIButtonClick={handleAIButtonClick}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
-                    onPageChange={page => setCurrentPage(page)}
+                    onPageChange={setCurrentPage}
                     onRowsPerPageChange={rows => {
                         setRowsPerPage(rows);
                         setCurrentPage(1);

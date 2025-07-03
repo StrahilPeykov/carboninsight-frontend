@@ -1,15 +1,34 @@
+<<<<<<< HEAD
 /**
  * OurTable component provides a responsive data table with pagination and mobile card view.
  * Automatically switches between desktop table and mobile cards based on screen size.
  * Supports custom column rendering, actions, and proper accessibility features.
  */
 
+=======
+// React core imports for component functionality and type definitions
+// React: Required for JSX and component creation
+// ReactNode: Enables flexible content types for custom cell rendering
+// useState: Manages pagination state for table navigation
+>>>>>>> main
 import React, { ReactNode, useState } from "react";
+// Custom button component with accessibility features and consistent styling
+// Used for pagination controls with proper disabled states and interactions
 import Button from "./Button";
+// Mobile-optimized card component for responsive table display on small screens
+// Provides touch-friendly alternative to traditional table layout
 import { MobileTableCard } from "./MobileTableCard";
+// Custom table row component with enhanced styling and interaction capabilities
+// Provides consistent row appearance and hover states across table implementations
 import { TableRow } from "./tableRow";
 
+<<<<<<< HEAD
 // Interface defining column configuration for the table
+=======
+// Generic column interface for flexible table configuration
+// Supports type-safe column definitions with custom rendering capabilities
+// Enables both property-based and computed column content
+>>>>>>> main
 export interface Column<T> {
   key: keyof T | string; // Property key from data object or "actions" for action buttons
   label: string; // Column header text
@@ -26,6 +45,7 @@ interface OurTableProps<T> {
   columns: Column<T>[]; // Column configuration array
 }
 
+<<<<<<< HEAD
 /**
  * Responsive table component with automatic mobile card fallback
  * @param title - Optional title displayed above the table
@@ -36,6 +56,13 @@ interface OurTableProps<T> {
  * @param columns - Array of column configurations defining display and behavior
  * @returns Responsive table with pagination that adapts to mobile screens
  */
+=======
+// Generic responsive table component with built-in pagination and dual-layout support
+// Automatically switches between desktop table and mobile cards based on screen size
+// Implements accessibility best practices with proper ARIA labels and semantic HTML
+// Features type-safe column configuration and flexible content rendering
+// Supports custom cell rendering for complex data types and interactive elements
+>>>>>>> main
 export function OurTable<T>({
   title,
   description,
@@ -44,6 +71,7 @@ export function OurTable<T>({
   items,
   columns,
 }: OurTableProps<T>) {
+<<<<<<< HEAD
   // Pagination state management
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10; // Number of items displayed per page
@@ -60,6 +88,30 @@ export function OurTable<T>({
    * @param key - Property key to verify
    * @returns Boolean indicating if key exists on object
    */
+=======
+  // Current page state for pagination functionality
+  // Starts at page 1 and controls which subset of data is displayed
+  // Enables navigation through large datasets without performance impact
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  // Items per page configuration for pagination performance optimization
+  // Fixed at 10 items to balance data visibility with loading performance
+  // Prevents DOM complexity issues with large datasets
+  const itemsPerPage = 10;
+
+  // Pagination calculations for efficient data slicing and navigation
+  // Computes current page boundaries and total page count dynamically
+  // Ensures proper pagination behavior regardless of data size
+  const startIndex = (currentPage - 1) * itemsPerPage;   // Starting index for current page slice
+  const endIndex = startIndex + itemsPerPage;           // Ending index for current page slice
+  const paginatedItems = items.slice(startIndex, endIndex); // Current page data subset
+  const totalPages = Math.ceil(items.length / itemsPerPage); // Total pages needed for all data
+
+  // Type guard function for safe property access on generic data objects
+  // Ensures type safety when accessing dynamic properties from unknown object types
+  // Prevents runtime errors from undefined property access
+  // Returns true if the key exists as a property on the item object
+>>>>>>> main
   function isKnownKey<T>(item: T, key: string): key is Extract<keyof T, string> {
     return Object.prototype.hasOwnProperty.call(item, key);
   }

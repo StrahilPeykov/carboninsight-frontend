@@ -1,29 +1,73 @@
+// Next.js optimized Link component for client-side navigation
 import Link from "next/link";
+// Lucide React icons for mobile navigation interface
+// LayoutDashboardIcon: Dashboard navigation
+// Boxes: Product list navigation
+// SettingsIcon: Account settings and company settings
+// HelpCircle: Support and help section
+// Plus: Create new company action
+// Users: User management functionality
+// Share2: Data sharing configuration
 import { LayoutDashboardIcon, Boxes, SettingsIcon, HelpCircle, Plus, Users, Share2 } from "lucide-react";
+// Theme selection component for light/dark mode switching in mobile view
 import ThemeSelector from "../ui/ThemeSelector";
 
+// Company data structure for mobile company selector
+// Simplified interface matching desktop version for consistency
 interface Company {
-  id: string;
-  name: string;
+  id: string;      // Unique company identifier for selection and API calls
+  name: string;    // Display name for company dropdown options
 }
 
+// Mobile navigation menu props interface
+// Handles mobile-specific navigation patterns and touch interactions
+// Designed for collapsible full-screen overlay navigation on small devices
 interface MobileMenuProps {
+  // Menu state and visibility control
+  // Controls whether mobile menu overlay is visible
   isOpen: boolean;
+  // Determines authenticated vs. public navigation options    
   isAuthenticated: boolean;
-  mounted: boolean;
+  // Prevents hydration mismatch during SSR/client transition  
+  mounted: boolean;             
+  
+  // Company context for multi-tenant mobile experience
+  // Currently selected company, null when no selection
   companyId: string | null;
-  allCompanies: Company[];
-  isActive: (path: string) => boolean;
-  onClose: () => void;
+  // Available companies for mobile dropdown selector    
+  allCompanies: Company[];      
+  
+  // Navigation and state management utilities
+  // Route matching for active navigation styling
+  isActive: (path: string) => boolean;  
+  
+  // Mobile menu interaction handlers
+  // Closes mobile menu overlay (called after navigation)
+  onClose: () => void;                  
+  
+  // Company management actions optimized for mobile interaction
+  // Handles company switching via dropdown
   onCompanySelect: (companyId: string) => void;
+  // Navigates to company creation flow
   onCreateCompany: () => void;
+  // Opens company configuration                
   onCompanySettings: () => void;
+  // User management for current company                 
   onManageUsers: () => void;
-  onDataSharing: () => void;
+  // Data sharing configuration         
+  onDataSharing: () => void;                     
+  
+  // Authentication and navigation
+  // User logout with cleanup
   onLogout: () => void;
-  onNavigation: (path: string, tourAction?: string) => void;
+  // Custom navigation with tour support                         
+  onNavigation: (path: string, tourAction?: string) => void;  
 }
 
+// Mobile navigation component for responsive design
+// Renders as full-width overlay menu that slides down from navbar on mobile devices
+// Handles touch-friendly interactions and vertical scrolling navigation pattern
+// Hidden on desktop (md breakpoint and above) where NavbarDesktop takes precedence
 export default function NavbarMobile({
   isOpen,
   isAuthenticated,
@@ -40,20 +84,28 @@ export default function NavbarMobile({
   onLogout,
   onNavigation,
 }: MobileMenuProps) {
+  // Early return for performance optimization when menu is closed
+  // Prevents unnecessary DOM rendering and improves mobile performance
+  // Component completely unmounts when not needed, reducing memory usage
   if (!isOpen) return null;
 
+  // Mobile menu overlay container
+  // Hidden on desktop (md:hidden) and uses full width for mobile-first design
+  // Includes proper theming support and border separation from main navbar
   return (
     <div className="md:hidden bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+      {/* Main navigation container with mobile-optimized spacing */}
       <div className="pt-2 pb-3 space-y-1">
         {isAuthenticated && mounted ? (
           <>
-            {/* Main Navigation - Only show when company is selected */}
             {companyId && (
               <>
                 <button
                   onClick={() => {
-                    onNavigation("/dashboard", "navigate-to-dashboard");
-                    onClose();
+                    // Navigate with tour support
+                    onNavigation("/dashboard", "navigate-to-dashboard"); 
+                    // Close menu after navigation
+                    onClose();                                           
                   }}
                   className={`flex items-center px-3 py-2 rounded-md text-base font-medium min-h-[44px] w-full text-left
                     ${isActive("/dashboard") ? "bg-red text-white" : "text-gray-700 hover:text-gray-900 hover:bg-gray-50 dark:text-gray-300 dark:hover:text-white dark:hover:bg-gray-700"}`}

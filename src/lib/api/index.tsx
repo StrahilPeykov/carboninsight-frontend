@@ -1,4 +1,10 @@
-// Export all API modules for easy importing
+/**
+ * Central API module exports
+ * Provides convenient access to all API clients and utilities
+ * Simplifies imports across the application by re-exporting all API modules
+ */
+
+// Export all API modules for easy importing throughout the application
 export * from "./apiClient";
 export * from "./authApi";
 export * from "./userApi";

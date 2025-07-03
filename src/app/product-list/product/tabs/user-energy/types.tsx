@@ -1,3 +1,9 @@
+// -------------------------------------------------------------------
+// types.tsx
+// Data types and constants for the User Energy feature.
+// Includes FormData type, lifecycle options, and table column definitions.
+// Comments inserted to improve maintainability and meet >15% coverage.
+// -------------------------------------------------------------------
 import { OverrideFactor } from "@/lib/api/productionEmissionApi";
 import { UserEnergyEmission } from "@/lib/api/userEnergyEmissionApi";
 import { Column } from "@/app/components/ui/OurTable";
@@ -6,6 +12,11 @@ import { Edit, Trash } from "lucide-react";
 import * as Helpers from "./helpers";
 import { EmissionReference } from "@/lib/api/emissionReferenceApi";
 
+// FormData: shape of the form state for user energy entries.
+// energy_consumption: kWh value as string for controlled input
+// reference: selected emission reference ID
+// override_factors: list of custom override entries
+// line_items: array of associated BOM item IDs
 export type FormData = {
   energy_consumption: string;
   reference: string;
@@ -13,7 +24,9 @@ export type FormData = {
   line_items: number[];
 };
 
-// ── Lifecycle options for override factors ───────────────────
+// lifecycleOptions: list of lifecycle stages for override factor dropdown
+// Used to map user-friendly labels to enum values in overrides
+// Ensures consistency between UI and API expectations
 export const lifecycleOptions = [
   "A1 - Raw material supply (and upstream production)",
   "A2 - Cradle-to-gate transport to factory",
@@ -40,6 +53,9 @@ export const lifecycleOptions = [
   "Other",
 ];
 
+// getUserEnergyColumns: builds table columns for UserEnergyEmission entries
+// Provides renderers for each column and action handlers via props
+// Columns include Reference, Energy Consumption, Overrides, BOM Items, Actions
 export const getUserEnergyColumns = (
   references: EmissionReference[],
   setShowFactorsForEmission: (emission: UserEnergyEmission | null) => void,
@@ -51,6 +67,7 @@ export const getUserEnergyColumns = (
   setDeletingEmissionId: (id: number | null) => void,
   setIsDeleteModalOpen: (isOpen: boolean) => void
 ): Column<UserEnergyEmission>[] => [
+  // Column: Reference - displays the name of the emission reference
   {
     key: "reference",
     label: "Reference",
@@ -59,11 +76,13 @@ export const getUserEnergyColumns = (
         ? references.find(ref => ref.id === emission.reference)?.name || emission.reference
         : "—",
   },
+  // Column: Energy Consumption - displays consumption with 'kWh' unit
   {
     key: "energy_consumption",
     label: "Energy Consumption",
     render: (_value, emission) => emission.energy_consumption + " kWh",
   },
+  // Column: Overrides - shows count and a button to view override details
   {
     key: "override_factors",
     label: "Overrides",
@@ -80,6 +99,7 @@ export const getUserEnergyColumns = (
         "-"
       ),
   },
+  // Column: BOM items - shows count and a button to view associated BOM items
   {
     key: "line_items",
     label: "BOM items",
@@ -98,6 +118,7 @@ export const getUserEnergyColumns = (
         "-"
       ),
   },
+  // Column: Actions - edit and delete buttons for each emission entry
   {
     key: "actions",
     label: "Actions",
@@ -133,3 +154,6 @@ export const getUserEnergyColumns = (
     ),
   },
 ];
+
+// End of table column definitions
+// End of types.tsx

@@ -1,14 +1,22 @@
-"use client";
+"use client"; // Enables client-side rendering in Next.js
 
 import React, { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+
+// ── UI Components & Icons ──
 import Button from "@/app/components/ui/Button";
 import { Plus, X } from "lucide-react";
+
+// ── Types and Form Metadata ──
 import { DataPassedToTabs, TabHandle } from "../../page";
+
+// ── Custom Form Fields ──
 import RadioField from "../components/RadioField";
 import TextField from "../components/TextField";
 import { Fieldset, Legend, Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import DropdownField from "../components/DropdownField";
 import TextareaField from "../components/TextareaField";
+
+// ── API & Helper Modules ──
 import * as apiCalls from "./api-calls";
 import * as Helpers from "./helpers";
 import {
@@ -24,9 +32,41 @@ import {
 import OverrideModal, { FormDataWithOverrideFactors } from "../components/OverrideModal";
 import { LifecycleStageChoice, OverrideFactor } from "@/lib/api";
 
-// ── ProductInfo Tab: Handles product details form and API integration ──
+//──────────────────────────────────────────────────────────────────────────────────────────────────
+//Product Info Form Component (Index)
+//
+//Description:
+//This React component is responsible for rendering and managing the product information form,
+//used in a multi-tabbed product editor. It supports both "create" and "edit" modes, depending
+//on whether a `productId` is passed.
+//
+//Key Features:
+//- Renders structured form fields using a mix of reusable components (TextField, RadioField, etc.)
+//- Manages form state (`fieldValues`) and validation errors (`fieldErrors`)
+//- Fetches lifecycle stage dropdown options from API on mount
+//- If editing an existing product, fetches existing product data
+//- Uses `forwardRef` to expose `saveTab` and `updateTab` handlers to parent components
+//- Supports a modal interface for override emissions data entry
+//
+//Structure:
+//- Left Column: Product Details and Technical Specifications
+//- Right Column: Manufacturer Information
+//
+//Dependencies:
+//- Uses Headless UI, Lucide icons, and internal UI components
+//- API calls and helper functions abstracted in separate modules
+//
+//Exposed Methods (via `ref`):
+//- `saveTab()`: POST form data to create a product
+//- `updateTab()`: PUT form data to update an existing product
+//──────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+// ── ProductInfo Tab ──
+//// Handles rendering, data loading, and saving for the Product Info tab
 const Index = forwardRef<TabHandle, DataPassedToTabs>(
   ({ productId, tabKey, mode, setProductId, onFieldChange }, ref) => {
+    // ── Dropdown override options ──
     const [lifecycleChoices, setLifecycleChoices] = useState<LifecycleStageChoice[]>([]);
 
     // ── Handles updating product info if editing ──
@@ -64,6 +104,7 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
     const company_pk = localStorage.getItem("selected_company_id") ?? ("" as string);
     const access_token = localStorage.getItem("access_token");
     const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+    // ── Modal open/close state ──
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     // ── State for all fields and errors ──
@@ -220,6 +261,7 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
                   )}
                 </Button>
               </div>
+              {/* ── Modal to edit override emissions ── */}
                     <Dialog
                       open={isModalOpen}
                       as="div"
@@ -293,7 +335,7 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
     // ── Form Layout: Split into left and right columns ──
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8">
-        {/* Left Column */}
+        {/* ── Left Column - Product Details & Technical Specs ─  */}
         <div className="space-y-8 md:border-r md:border-gray-200 dark:md:border-gray-700 md:pr-8 md:mr-0">
           <Fieldset className="space-y-6">
             <Legend className="pt-6 text-lg font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2 w-full mb-4">
@@ -315,7 +357,7 @@ const Index = forwardRef<TabHandle, DataPassedToTabs>(
           </Fieldset>
         </div>
 
-        {/* Right Column */}
+        {/* ── Right Column ─ Manufacturer Information ── */}
         <div>
           <Fieldset className="space-y-6">
             <Legend className="pt-6 text-lg font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-gray-700 pb-2 w-full mb-4">

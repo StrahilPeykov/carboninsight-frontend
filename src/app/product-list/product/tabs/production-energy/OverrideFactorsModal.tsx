@@ -1,28 +1,57 @@
+// Client-side modal component for displaying override emission factors
+// Provides read-only view of custom emission factors that override default references
+// Essential for transparency in carbon footprint calculations and audit trail
 "use client";
 
+// Core React library for component architecture and hooks
 /* Imports */
 import React from "react";
+// Headless UI dialog components for accessible modal implementation
+// Dialog provides proper focus management, keyboard navigation, and ARIA support
+// DialogPanel creates the modal content container with proper semantics
+// DialogTitle ensures proper heading structure and screen reader compatibility
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+// Custom button component with consistent styling and interaction patterns
 import Button from "@/app/components/ui/Button";
 
+// API type definition for production energy emission data structure
+// ProductionEnergyEmission contains override factors and calculation metadata
 import { ProductionEnergyEmission } from "@/lib/api/productionEmissionApi";
+// Local type definitions for lifecycle stage options and display formatting
+// lifecycleOptions provides human-readable labels for emission factor categories
 import { lifecycleOptions } from "./types";
 
+// TypeScript interface defining props contract for OverrideFactorsModal component
+// Implements controlled modal pattern for predictable state management
+// Enables parent components to control modal visibility and data display
+// Provides type safety for emission data handling and state mutations
 /* Prop types */
 type OverrideFactorsModalProps = {
+    // Current emission record to display override factors for (null when modal closed)
+    // When non-null, triggers modal display with emission's override factor data
+    // Null value indicates modal should be hidden/closed
     showFactorsForEmission: ProductionEnergyEmission | null;
+    // State setter function for controlling modal visibility and data
+    // Enables parent components to open modal with specific emission data
+    // Setting to null closes the modal and clears displayed data
     setShowFactorsForEmission: React.Dispatch<
         React.SetStateAction<ProductionEnergyEmission | null>
     >;
 };
 
+// OverrideFactorsModal functional component with comprehensive prop destructuring
+// Displays read-only tabular view of custom emission factors for transparency
+// Critical for auditing carbon footprint calculations and understanding deviations
+// from standard emission reference values used in lifecycle assessments
 /*  Component */
 const OverrideFactorsModal: React.FC<OverrideFactorsModalProps> = ({
+    // Emission record containing override factors to display (null when modal closed)
     showFactorsForEmission,
+    // Function to close modal and clear displayed emission data
     setShowFactorsForEmission,
 }) => {
     return (
-        /* Override Factors Modal */
+        // Override Factors Modal
         <Dialog
             open={!!showFactorsForEmission}
             as="div"

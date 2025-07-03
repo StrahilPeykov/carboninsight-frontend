@@ -1,7 +1,26 @@
+/**
+ * OverrideFactorsList Component
+ * 
+ * This component allows users to specify custom emission factors that override 
+ * default reference emission values in the carbon footprint calculation process.
+ * 
+ * Features:
+ * - Dynamic addition and removal of override factors
+ * - Lifecycle stage selection via searchable dropdown
+ * - Separate input fields for biogenic and non-biogenic CO₂ emission factors
+ * - Tooltips providing detailed information about measurement methodologies
+ * - Full accessibility support with ARIA labels and keyboard navigation
+ * 
+ * The component handles both the UI presentation and the data management through
+ * helper functions that ensure proper state updates and data validation.
+ */
+
 "use client";
 
 import React, { useState } from "react";
+// Lucide icons for UI elements
 import { X, ChevronDown, Info } from "lucide-react";
+// Headless UI components for accessible dropdown implementation
 import {
   Combobox,
   ComboboxButton,
@@ -9,16 +28,36 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from "@headlessui/react";
+// Custom tooltip component for displaying additional information
 import { Tooltip } from "../components/ToolTip";
+// Type definitions and lifecycle stage options from shared types
 import { FormData, lifecycleOptions } from "./types";
+// Helper functions for state management and data processing
 import * as Helpers from "./helpers";
 
+/**
+ * Props interface for OverrideFactorsList component
+ * 
+ * @property formData - Current form state containing override factors
+ * @property setFormData - Function to update the form state
+ */
 interface OverrideFactorsListProps {
   formData: FormData;
   setFormData: (formData: FormData) => void;
 }
 
+/**
+ * OverrideFactorsList component for managing custom emission factors
+ * 
+ * Renders a list of override factor inputs that allow users to specify custom
+ * emission factors for different lifecycle stages. Each factor includes
+ * a lifecycle stage selector and numeric inputs for biogenic and non-biogenic values.
+ * 
+ * @param props Component props containing formData and setFormData
+ * @returns React component for managing override factors.
+ */
 export default function OverrideFactorsList({ formData, setFormData }: OverrideFactorsListProps) {
+  // State for tracking the current search query in the combobox
   const [query, setQuery] = useState("");
 
   return (

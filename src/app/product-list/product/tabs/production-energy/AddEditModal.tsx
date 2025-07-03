@@ -1,7 +1,13 @@
+// Client-side component for production energy emission data management
+// Enables create, read, update operations for energy consumption records
 "use client";
 
+// Core React library for component architecture and hooks
 /* Imports */
 import React from "react";
+// Headless UI components for accessible modal and combobox interactions
+// Dialog provides modal foundation with proper focus management and ARIA support
+// Combobox enables searchable dropdown with keyboard navigation and screen reader compatibility
 import {
     Dialog,
     DialogPanel,
@@ -12,55 +18,114 @@ import {
     ComboboxOption,
     ComboboxOptions,
 } from "@headlessui/react";
+// Lucide React icons for consistent visual interface elements
+// Info icon provides contextual help tooltips for complex form fields
+// X icon enables modal closure with clear visual affordance
+// ChevronDown indicates dropdown functionality and state
 import { Info, X, ChevronDown } from "lucide-react";
+// Custom button component with consistent styling and interaction patterns
 import Button from "@/app/components/ui/Button";
+// Tooltip component for providing contextual help and field explanations
+// Critical for explaining complex emission factor calculations and methodologies
 import { Tooltip } from "../components/ToolTip";
 
+// API type definitions for production energy emission data structures
+// ProductionEnergyEmission represents the core data model for energy consumption records
 import { ProductionEnergyEmission } from "@/lib/api/productionEmissionApi";
+// EmissionReference provides standardized emission factors for calculations
+// Used as lookup data for accurate carbon footprint computations
 import { EmissionReference } from "@/lib/api/emissionReferenceApi";
+// LineItem represents bill of materials components that consume energy
+// Links production processes to specific material inputs
 import { LineItem } from "@/lib/api/bomApi";
 
+// Local module imports for business logic and data management
+// API calls module encapsulates server communication and error handling
 import * as apiCalls from "./api-calls";
+// Helpers module provides utility functions for form manipulation and validation
 import * as Helpers from "./helpers";
+// Types module defines local interfaces and constants for component state management
+// FormData interface ensures type safety across form operations
+// lifecycleOptions provides predefined lifecycle stage selections
 import { FormData, lifecycleOptions } from "./types";
-import { on } from "node:stream";
+// BomLineItemsSection handles the selection and management of bill of materials
+// Enables linking energy consumption to specific production components
 import BomLineItemsSection from "./BomLineItemsSection";
+// ReferenceSection manages emission factor selection and override capabilities
+// Provides interface for choosing appropriate carbon intensity factors
 import ReferenceSection from "./ReferenceSection";
 
+// Comprehensive props interface for AddEditModal component
+// Extends functionality from OverrideFactorsModal with additional state management
+// Supports both creation and editing workflows for production energy emissions
+// Implements controlled component pattern for predictable state management
 /* Prop types for AddEditModal, extending off from OverrideFactorsModal */
 type AddEditModalProps = {
+    // Modal visibility and interaction control
+    // isModalOpen determines whether the modal dialog is currently displayed
+    // setIsModalOpen provides callback for opening/closing modal from parent components
     /* modal control */
     isModalOpen: boolean;
     setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>;
 
+    // Current emission record being edited or null for new records
+    // currentEmission holds the complete data structure for existing records
+    // setCurrentEmission enables switching between edit and create modes
+    // Null value indicates creation mode, non-null indicates edit mode
     /* emission being edited */
     currentEmission: ProductionEnergyEmission | null;
     setCurrentEmission: React.Dispatch<
         React.SetStateAction<ProductionEnergyEmission | null>
     >;
 
+    // Form data state management for controlled inputs
+    // formData contains all user inputs in a structured format
+    // setFormData enables real-time form updates and validation
+    // Ensures data consistency and enables form state persistence
     /* form state */
     formData: FormData;
     setFormData: React.Dispatch<React.SetStateAction<FormData>>;
 
+    // Reference data for emission factor lookups and calculations
+    // references array contains available emission factors from database
+    // referenceQuery enables search/filter functionality within references
+    // setReferenceQuery updates search state for real-time filtering
     /* reference list */
     references: EmissionReference[];
     referenceQuery: string;
     setReferenceQuery: React.Dispatch<React.SetStateAction<string>>;
 
+    // Bill of Materials (BOM) line items for production process linking
+    // bomLineItems provides available components that consume energy
+    // bomLineItemQuery enables search functionality within BOM items
+    // setBomLineItemQuery updates search state for component selection
     /* BOM items */
     bomLineItems: LineItem[];
     bomLineItemQuery: string;
     setBomLineItemQuery: React.Dispatch<React.SetStateAction<string>>;
 
+    // Lifecycle stage search functionality for override factors
+    // query represents current search input for lifecycle stage selection
+    // setQuery updates search state for filtering lifecycle options
+    // Enables users to quickly find relevant lifecycle stages
     /* lifecycle search */
     query: string;
     setQuery: React.Dispatch<React.SetStateAction<string>>;
 
+    // Form submission state management for user feedback
+    // isSubmitting indicates whether API call is currently in progress
+    // setIsSubmitting controls loading states and prevents double-submission
+    // Essential for providing clear feedback during async operations
     /* submit state */
     isSubmitting: boolean;
     setIsSubmitting: React.Dispatch<React.SetStateAction<boolean>>;
 
+    // Parent component integration and callback functions
+    // company_pk identifies the company context for data operations
+    // productId function provides dynamic product identifier for API calls
+    // onFieldChange callback notifies parent of form modifications
+    // setIsLoading controls parent loading states during operations
+    // setEmissions updates parent component's emission list after successful operations
     /* parent helpers */
     company_pk: number;
     productId: () => number;
@@ -71,24 +136,36 @@ type AddEditModalProps = {
     >;
 };
 
+// Main AddEditModal functional component with comprehensive prop destructuring
+// Implements React.FC pattern for type safety and clear component contracts
+// Handles both creation and editing workflows based on currentEmission state
+// Provides accessible modal interface for production energy data management
 /* Component */
 const AddEditModal: React.FC<AddEditModalProps> = ({
+    // Modal state management props for visibility control
     isModalOpen,
     setIsModalOpen,
+    // Current record being edited (null for new records)
     currentEmission,
     setCurrentEmission,
+    // Form data state for controlled input management
     formData,
     setFormData,
+    // Reference data and search functionality for emission factors
     references,
     referenceQuery,
     setReferenceQuery,
+    // Bill of Materials data and search functionality
     bomLineItems,
     bomLineItemQuery,
     setBomLineItemQuery,
+    // Lifecycle stage search functionality
     query,
     setQuery,
+    // Submission state for loading indicators and user feedback
     isSubmitting,
     setIsSubmitting,
+    // Parent component integration callbacks and identifiers
     company_pk,
     productId,
     onFieldChange,

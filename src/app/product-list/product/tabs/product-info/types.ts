@@ -7,6 +7,26 @@ type FieldTitles = FieldErrors;
 type requiredFields = Record<FieldKey, boolean>;
 import { OverrideFactor } from "@/lib/api";
 
+//──────────────────────────────────────────────────────────────────────
+//Product Form Field Configuration
+//
+//This module defines all metadata related to the product info form fields.
+//It includes:
+//- `FieldValues`: The shape of the form state
+//- `FieldKey`, `FieldErrors`: Helper types for managing field keys/errors
+//- `placeholderTexts`, `tooltipTexts`: UI helpers for form fields
+//- `fieldTypes`: Indicates how each field should be rendered
+//- `fieldTitles`: Human-readable labels for UI rendering
+//- `requiredFields`: Which fields are mandatory for submission
+//
+//Used in:
+//- Product Info Tab (e.g., creation/editing forms for products)
+//
+//This centralization allows dynamic rendering of forms and consistent
+//validation, placeholders, and tooltips.
+//──────────────────────────────────────────────────────────────────────
+
+
 // ── Field definitions and types ──
 export interface FieldValues {
   name: string;

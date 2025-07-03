@@ -1,6 +1,15 @@
+// Client-side component for managing Bill of Materials (BOM) line item associations
+// Enables linking production energy emissions to specific material components
+// Critical for accurate carbon footprint attribution across product lifecycle
 "use client";
 
+// React library for component architecture and state management
 import React from "react";
+// Headless UI combobox components for accessible multi-select functionality
+// Provides keyboard navigation, screen reader support, and WAI-ARIA compliance
+// ComboboxInput enables searchable text input with real-time filtering
+// ComboboxOptions creates accessible dropdown list with proper focus management
+// ComboboxButton provides visual affordance for dropdown interaction
 import {
     Combobox,
     ComboboxButton,
@@ -8,65 +17,62 @@ import {
     ComboboxOption,
     ComboboxOptions,
 } from "@headlessui/react";
+// Lucide icons for visual interface elements
+// ChevronDown indicates dropdown functionality and collapsed/expanded state
+// X provides clear removal action for selected items with universal recognition
 import { ChevronDown, X } from "lucide-react";
 
+// API type definition for Bill of Materials line item data structure
+// LineItem represents individual components within a product's material composition
+// Contains product information, quantities, and hierarchical relationships
 import { LineItem } from "@/lib/api/bomApi";
+// Local form data type definition for component state management
+// FormData interface ensures type safety across production energy form operations
 import { FormData } from "./types";
 
+// TypeScript interface defining props contract for BomLineItemsSection component
+// Implements controlled component pattern for predictable state management
+// Enables parent components to maintain centralized form state while delegating
+// specific BOM item selection logic to this specialized component
 /**
  * Component responsible for selecting and managing the
  * association between Production Energy emissions and
  * Bill‑of‑Materials (BOM) line items.
  */
 export type BomLineItemsSectionProps = {
+    // Form data containing selected line item IDs and other emission data
+    // Follows controlled component pattern for consistent state management
     formData: FormData;
+    // State setter for updating form data when BOM items are added/removed
+    // Enables real-time updates to parent component's form state
     setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+    // Complete list of available BOM line items for selection
+    // Provides the data source for searchable dropdown options
     bomLineItems: LineItem[];
+    // Current search query for filtering BOM items in real-time
+    // Enables users to quickly locate specific components by name
     bomLineItemQuery: string;
+    // State setter for updating the search query as user types
+    // Triggers re-filtering of available options for improved UX
     setBomLineItemQuery: React.Dispatch<React.SetStateAction<string>>;
 };
 
+// BomLineItemsSection functional component with comprehensive prop destructuring
+// Manages the association between energy consumption and specific BOM components
+// Enables users to specify which materials/components consume the tracked energy
+// Critical for accurate carbon footprint allocation across product components
 const BomLineItemsSection: React.FC<BomLineItemsSectionProps> = ({
+    // Current form state containing selected line item IDs
     formData,
+    // Function to update form state when items are added or removed
     setFormData,
+    // Available BOM line items for selection
     bomLineItems,
+    // Current search query for filtering items
     bomLineItemQuery,
+    // Function to update search query for real-time filtering
     setBomLineItemQuery,
 }) => {
-    /**
-     * Adds a new line‑item id to the form state iff it is
-     * not already present.
-     */
-    const handleAddLineItem = (value: number | null) => {
-        if (value && !formData.line_items.includes(value)) {
-            setFormData((prev) => ({
-                ...prev,
-                line_items: [...prev.line_items, value],
-            }));
-        }
-    };
-
-    /**
-     * Removes the supplied id from the form state.
-     */
-    const handleRemoveLineItem = (id: number) =>
-        setFormData((prev) => ({
-            ...prev,
-            line_items: prev.line_items.filter((item) => item !== id),
-        }));
-
-    /**
-     * Filters the available BOM items according to both the
-     * user’s query *and* currently‑selected items.
-     */
-    const filteredItems = bomLineItems.filter(
-        (item) =>
-            !formData.line_items.includes(item.id) &&
-            (bomLineItemQuery === "" ||
-                item.line_item_product.name
-                    .toLowerCase()
-                    .includes(bomLineItemQuery.toLowerCase()))
-    );
 
     return (
         <div>

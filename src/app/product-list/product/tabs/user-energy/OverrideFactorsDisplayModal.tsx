@@ -1,16 +1,31 @@
+// Client component directive - ensures component renders on client side
+// Required for interactive modal behavior and DOM manipulation
 "use client";
 
 import React from "react";
+// Headless UI components for accessible modal implementation
 import { Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+// Reusable button component with consistent styling
 import Button from "@/app/components/ui/Button";
+// Type definition for user energy emission data structure
 import { UserEnergyEmission } from "@/lib/api/userEnergyEmissionApi";
+// Available lifecycle stage options for energy emissions.
 import { lifecycleOptions } from "./types";
 
+// Props interface for the override factors display modal
 interface OverrideFactorsDisplayModalProps {
-  emission: UserEnergyEmission | null;
-  onClose: () => void;
+  emission: UserEnergyEmission | null;  // Emission data to display, null when modal should be hidden
+  onClose: () => void;                  // Handler function to close the modal
 }
 
+/**
+ * Modal component that displays override factors for user energy emissions
+ * Shows a detailed table of lifecycle stages and their CO₂ emission factors
+ * 
+ * @param props The component props
+ * @param props.emission The emission data containing override factors to display
+ * @param props.onClose Function to call when modal should close
+ */
 export default function OverrideFactorsDisplayModal({
   emission,
   onClose,

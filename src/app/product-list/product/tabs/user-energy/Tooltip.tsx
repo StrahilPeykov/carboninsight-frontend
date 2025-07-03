@@ -1,13 +1,27 @@
+/**
+ * Tooltip.tsx
+ *
+ * A reusable tooltip component built with Radix UI and React.
+ *
+ * Provides an accessible wrapper around RadixTooltip to display
+ * contextual information when users hover or focus an element.
+ */
 "use client";
 
 import React, { FC, ReactNode } from "react";
 import * as RadixTooltip from "@radix-ui/react-tooltip";
 
+/**
+ * Props for the Tooltip component..
+ * @property content - The content to display inside the tooltip (ReactNode).
+ * @property children - The element that triggers the tooltip on hover or focus.
+ */
 interface TooltipProps {
   content: ReactNode;
   children: ReactNode;
 }
 
+// Tooltip component definition using Radix UI's Tooltip primitives.
 export const Tooltip: FC<TooltipProps> = ({ content, children }) => (
   <RadixTooltip.Provider>
     <RadixTooltip.Root delayDuration={100}>

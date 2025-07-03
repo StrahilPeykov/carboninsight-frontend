@@ -72,6 +72,26 @@ export default function AccessibilityStatementPage() {
     setMounted(true);
   }, []);
 
+    const navShortcuts = [
+    { key: "Tab", action: "Navigate to next interactive element" },
+    { key: "Shift + Tab", action: "Navigate to previous interactive element" },
+    { key: "Enter", action: "Activate buttons and links" },
+    { key: "Space", action: "Check/uncheck checkboxes, activate buttons" },
+    { key: "Escape", action: "Close modals and dropdown menus" },
+    { key: "Arrow keys", action: "Navigate within menus and form controls" },
+  ];
+
+  const customShortcuts = [
+    { shortcut: "/", action: "Focus search field", notes: "Works on any page with a search field" },
+    { shortcut: "?", action: "Show keyboard shortcuts help", notes: "Brings you to this section" },
+    {
+      shortcut: "N",
+      action: "Create new item",
+      notes: "Creates product or company based on current page",
+    },
+    { shortcut: "Escape", action: "Close modals and menus", notes: "Universal close action" },
+  ];
+
   return (
     // Main container div that serves as the page wrapper with comprehensive responsive design:
     // - py-12: Applies 3rem (48px) padding top and bottom for generous vertical spacing
@@ -246,43 +266,12 @@ export default function AccessibilityStatementPage() {
               </thead>
               <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                 {/* Basic keyboard navigation shortcuts */}
-                {/* These are standard interactions that work throughout the application */}
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono">Tab</td>
-                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                    Navigate to next interactive element
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono">Shift + Tab</td>
-                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                    Navigate to previous interactive element
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono">Enter</td>
-                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                    Activate buttons and links
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono">Space</td>
-                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                    Check/uncheck checkboxes, activate buttons
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono">Escape</td>
-                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                    Close modals and dropdown menus
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-mono">Arrow keys</td>
-                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                    Navigate within menus and form controls
-                  </td>
-                </tr>
+                {navShortcuts.map(({ key, action }) => (
+                  <tr key={key}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono">{key}</td>
+                    <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{action}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -325,59 +314,17 @@ export default function AccessibilityStatementPage() {
               </thead>
               <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
                 {/* Custom application shortcuts */}
-                {/* Each shortcut includes notes about its context and behavior */}
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <kbd className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-sm font-mono">
-                      /
-                    </kbd>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                    Focus search field
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                    Works on any page with a search field
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <kbd className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-sm font-mono">
-                      ?
-                    </kbd>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                    Show keyboard shortcuts help
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                    Brings you to this section
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <kbd className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-sm font-mono">
-                      N
-                    </kbd>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                    Create new item
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                    Creates product or company based on current page
-                  </td>
-                </tr>
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <kbd className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-sm font-mono">
-                      Escape
-                    </kbd>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
-                    Close modals and menus
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                    Universal close action
-                  </td>
-                </tr>
+                {customShortcuts.map(({ shortcut, action, notes }) => (
+                  <tr key={shortcut}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <kbd className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-sm font-mono">
+                        {shortcut}
+                      </kbd>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{action}</td>
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{notes}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

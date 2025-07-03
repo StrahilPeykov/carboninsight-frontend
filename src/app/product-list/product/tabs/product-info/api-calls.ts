@@ -12,6 +12,24 @@ import RadioField from "@/app/product-list/product/tabs/components/RadioField";
 import DropdownField from "@/app/product-list/product/tabs/components/DropdownField";
 import { LifecycleStageChoice } from "@/lib/api";
 
+//───────────────────────────────────────────────────────────────
+//Product Tab API Utilities
+//
+//This module provides functions for handling product data via
+//API interactions within the product tab of the application UI.
+//
+//Included functions:
+//- fetchProductData: Retrieve existing product data by ID
+//- updateTab: Submit updated product info via PUT
+//- saveTab: Create a new product record via POST
+//- fetchLifecycleStageOptions: Load dropdown options for overrides
+//
+//Dependencies:
+//- Form type definitions (FieldValues, FieldErrors, etc.)
+//- Dropdown/Radio field components
+//- API metadata types
+//───────────────────────────────────────────────────────────────
+
 // ─────────────────────────────────────────────────────────────
 // Fetch detailed product information by ID for initial form load
 // ─────────────────────────────────────────────────────────────

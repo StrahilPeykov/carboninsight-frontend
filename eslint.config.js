@@ -5,6 +5,7 @@ import reactHooksPlugin from "eslint-plugin-react-hooks";
 import nextPlugin from "@next/eslint-plugin-next";
 
 export default [
+  { ignores: ["out/**", ".next/**", "next-env.d.ts"] },
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {

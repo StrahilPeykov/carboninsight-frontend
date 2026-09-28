@@ -92,7 +92,7 @@ export default function Home() {
           </p>
         </div>
         <aside
-          className="border-l-4 border-red bg-white p-6 sm:p-8 dark:bg-gray-900"
+          className="bg-white p-6 sm:p-8 dark:bg-gray-900"
           aria-labelledby="inputs-title"
         >
           <h2 id="inputs-title" className="text-xl font-bold">

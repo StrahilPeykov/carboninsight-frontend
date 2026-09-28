@@ -121,24 +121,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Smooth theme transitions */
-*,
-*::before,
-*::after {
-  transition:
-    background-color 0.2s ease-in-out,
-    border-color 0.2s ease-in-out,
-    color 0.2s ease-in-out,
-    box-shadow 0.2s ease-in-out;
-}
-
-/* Prevent transitions during theme change to avoid flashing */
-.theme-transitioning *,
-.theme-transitioning *::before,
-.theme-transitioning *::after {
-  transition: none !important;
-}
-
 /* Custom theme toggle animation */
 .theme-toggle-icon {
   transition: transform 0.2s ease-in-out;

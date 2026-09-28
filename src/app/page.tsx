@@ -53,7 +53,7 @@ export default function Home() {
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <section
-        className="grid gap-10 py-12 sm:py-16 lg:grid-cols-[1.3fr_1fr] lg:items-center lg:gap-20 lg:py-20"
+        className="grid gap-10 py-10 sm:py-12 lg:grid-cols-[1.3fr_1fr] lg:items-center lg:gap-16"
         aria-labelledby="home-title"
       >
         <div>
@@ -62,7 +62,7 @@ export default function Home() {
           </p>
           <h1
             id="home-title"
-            className="max-w-2xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl"
+            className="max-w-2xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl"
           >
             Understand your product’s carbon footprint.
           </h1>
@@ -112,7 +112,7 @@ export default function Home() {
         </aside>
       </section>
       <section
-        className="border-t border-gray-300 py-10 sm:py-12 dark:border-gray-700"
+        className="border-t border-gray-300 py-8 sm:py-9 dark:border-gray-700"
         aria-labelledby="workflow-title"
       >
         <h2 id="workflow-title" className="text-2xl font-bold">

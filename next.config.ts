@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   output: "export",
 
   // Run npm run lint separately while existing lint errors are being addressed.
